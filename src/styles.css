@@ -545,3 +545,121 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 .opt { background: linear-gradient(#fbeab9, var(--parch)); color: var(--brown); border: 3px solid var(--wood); border-radius: 12px; padding: 2px 12px; text-align: center; line-height: 1.1; box-shadow: var(--shadow); }
 .opt b { display: block; font: 700 19px var(--font); } .opt span { font-size: 14px; }
 .or { font: 700 16px var(--font); color: var(--cream); text-shadow: 0 2px 0 var(--wood-dd); }
+
+/* =====================================================================
+   iPhone: compact "phone" (narrow portrait) and "land" (short landscape) modes.
+   data-fit is set in main.tsx from the real window size.
+   ===================================================================== */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+.shell { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+
+[data-fit] .shell { padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 14px max(10px, env(safe-area-inset-left)); }
+[data-fit] .btn { font-size: 15px; padding: 4px 12px; border-width: 2px; box-shadow: inset 0 2px 0 rgba(255,255,255,.28), 0 3px 0 var(--wood-dd), 0 5px 8px rgba(0,0,0,.2); min-height: 34px; }
+[data-fit] .btn.ghost, [data-fit] .btn.help { font-size: 12px; padding: 2px 8px; min-height: 28px; }
+[data-fit] .btn.big { font-size: 18px; padding: 6px 22px; }
+[data-fit] .topbar { grid-template-columns: auto 1fr auto; grid-template-areas: none; margin-bottom: 2px; gap: 4px; }
+[data-fit] .topbar > * { grid-area: auto; }
+[data-fit] .topbar h1 { font-size: 17px; -webkit-text-stroke: 1.5px var(--wood-dd); text-align: center; }
+[data-fit] .toggles { gap: 4px; }
+[data-fit] .status { font-size: 15px; padding: 2px 12px; margin: 3px auto; border-width: 2px; border-radius: 9px; }
+[data-fit] .hint { font-size: 13px; padding: 1px 10px; margin: 4px auto; border-width: 2px; }
+[data-fit] .hint.prompt { font-size: 13px; }
+[data-fit] .captures { font-size: 13px; min-height: 20px; margin: 3px auto; padding: 0 10px; border-width: 2px; }
+[data-fit] .check-label { font-size: 13px; margin: 3px auto; padding: 1px 10px; }
+[data-fit] .row { margin: 6px 0; gap: 8px; }
+[data-fit] .modebar { gap: 6px; margin-bottom: 2px; }
+[data-fit] .seg { border-width: 2px; border-radius: 9px; }
+[data-fit] .seg button { padding: 3px 10px; font-size: 13px; }
+[data-fit] .seg.small button { padding: 3px 7px; font-size: 12px; }
+[data-fit] .banner { padding: 14px 20px 16px; } [data-fit] .banner h2 { font-size: 26px; } [data-fit] .trophy { font-size: 42px; } [data-fit] .banner p { font-size: 16px; }
+[data-fit] .rules { padding: 10px 14px 6px; max-height: calc(var(--app-h, 100vh) - 16px); } [data-fit] .rules li { font-size: 16px; } [data-fit] .rules h2 { font-size: 17px; } [data-fit] .rules .goal { font-size: 16px; } [data-fit] .rules h3 { font-size: 17px; }
+
+/* ----- menu on phones ----- */
+[data-fit] .hero { gap: 8px; margin: 0; } [data-fit] .hero img { height: 46px; width: auto; }
+[data-fit] .title { font-size: 34px; line-height: 1; letter-spacing: 2px; -webkit-text-stroke-width: 1.5px; }
+[data-fit] .sub { margin: 6px 0 8px; } [data-fit] .sub span, [data-fit] .credit span { font-size: 15px; padding: 1px 12px; }
+[data-fit] .menu { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+[data-fit] .tile { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 6px 6px 8px; row-gap: 0; border-radius: 14px; }
+[data-fit] .tile-icon { grid-row: auto; width: 100%; height: 46px; margin: 0 0 3px; }
+[data-fit] .tile-icon svg { max-width: 44px; max-height: 44px; }
+[data-fit] .tile-name { font-size: 20px; align-self: auto; } [data-fit] .tile-blurb { font-size: 13px; line-height: 1.1; }
+[data-fit] .board-card { margin-top: 10px; padding: 8px 10px; } [data-fit] .board-card th, [data-fit] .board-card td { font-size: 15px; }
+[data-fit] .credit { margin-top: 10px; }
+[data-fit="land"] .menu { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+[data-fit="land"] .title br { display: none; } [data-fit="land"] .hero img { height: 34px; }
+
+/* ----- phone portrait: tighter boards ----- */
+[data-fit="phone"] .game { --bs: min(calc(100vw - 20px), 620px, calc(var(--app-h, 100vh) - 270px)); }
+[data-fit="phone"] .connect4 { --bs: min(calc(100vw - 20px), 560px, calc((var(--app-h, 100vh) - 270px) * 1.1667)); }
+[data-fit="phone"] .game .foot .hint, [data-fit="phone"] .dominoes > .hint { display: none; }
+[data-fit="phone"] .yahtzee .die { width: 13.5vw; height: 13.5vw; max-width: 64px; max-height: 64px; border-radius: 10px; }
+[data-fit="phone"] .dice { margin: 4px 0 2px; gap: 8px; } [data-fit="phone"] .dice + .row { margin-top: 24px; }
+[data-fit="phone"] .score { margin: 6px 0; border-radius: 12px; box-shadow: 0 0 0 3px var(--wood), 0 0 0 5px var(--wood-dd), 0 8px 14px rgba(0,0,0,.3); }
+[data-fit] .score th, [data-fit] .score td { font-size: 15px; padding: 0 8px; line-height: 1.25; }
+[data-fit] .score thead th { font-size: 14px; padding: 3px 8px; } [data-fit] .score .total th, [data-fit] .score .total td { font-size: 17px; padding: 3px 8px; }
+[data-fit="phone"] .pnboard { --cw: clamp(38px, min(calc((100vw - 96px) / 4), calc((var(--app-h, 100vh) - 360px) / 4.7 * 0.714)), 96px); }
+[data-fit] .pgrid { padding: 6px; border-width: 4px; outline-width: 2px; margin: 3px auto; width: calc(4 * var(--cw) + 44px); }
+[data-fit] .cells { gap: 5px; } [data-fit] .pname { font-size: 15px; margin-bottom: 3px; } [data-fit] .pname span { padding: 0 6px; border-width: 2px; }
+[data-fit] .pile > span:last-child { font-size: 12px; min-height: 18px; padding: 0 5px; } [data-fit] .piles { gap: 8px; } [data-fit] .pnmid { gap: 4px; margin: 2px 0; }
+[data-fit] .opt b { font-size: 15px; } [data-fit] .opt span { font-size: 12px; } [data-fit] .opt { padding: 1px 8px; border-width: 2px; } [data-fit] .or { font-size: 13px; }
+[data-fit] .pcard.small { width: calc(var(--cw) * 0.8); } [data-fit] .slot { width: calc(var(--cw) * 0.8); }
+[data-fit] .pcard::after { inset: 3px 0 -3px; }
+[data-fit] .dtile { width: 52px; height: 28px; border-width: 2px; border-radius: 6px; } [data-fit] .dhalf { padding: 2px; }
+[data-fit] .dhand { padding: 5px 8px; margin: 4px auto; border-width: 4px; outline-width: 2px; } [data-fit] .dhand .pname { margin-bottom: 3px; }
+[data-fit] .tiles { gap: 5px; } [data-fit] .chainbox { min-height: 64px; padding: 4px; margin: 4px auto; border-width: 4px; outline-width: 2px; }
+[data-fit] .dtile.vert { margin: 12px 12px; } [data-fit] .chain { gap: 3px; }
+[data-fit="phone"] .bgwrap { gap: 4px; } [data-fit="phone"] .bgoff { width: 40px; } [data-fit="phone"] .tray { font-size: 15px; }
+[data-fit] .bgboard { --rowh: clamp(70px, calc((var(--app-h, 100vh) - 300px) / 2), 232px); border-width: 5px; padding: 2px; gap: 3px; }
+[data-fit] .dicerow { min-height: 40px; margin: 3px 0; gap: 8px; } [data-fit] .die.small { width: 38px; height: 38px; border-width: 2px; border-radius: 8px; }
+[data-fit="phone"] .mancala { --mw: min(calc(100vw - 20px), 1000px, calc((var(--app-h, 100vh) - 200px) * 3.3)); }
+[data-fit] .mboard { padding: 8px; gap: 5px; border-width: 4px; } [data-fit] .mrow { gap: 5px; } [data-fit] .mrows { gap: 6px; }
+[data-fit] .pcount { min-width: 20px; font-size: 13px; padding: 0 4px; border-width: 2px; top: -6px; right: -4px; } [data-fit] .bigcount { font-size: 17px; border-width: 2px; }
+/* battleship on phones */
+[data-fit="phone"] .battleship { --ew: min(calc(100vw - 20px), 560px, calc((var(--app-h, 100vh) - 330px) / 1.55)); }
+[data-fit="phone"] .setup { --ew: min(calc(100vw - 20px), 520px, calc(var(--app-h, 100vh) - 420px)); gap: 4px; }
+[data-fit] .pondlabel { font-size: 13px; padding: 0 10px; border-width: 2px; margin-bottom: 2px; } [data-fit] .pondwrap.small .pondlabel { font-size: 11px; }
+[data-fit] .pond { border-width: 5px; outline-width: 2px; border-radius: 12px; padding: 2px; grid-template-columns: 16px 1fr; grid-template-rows: 16px 1fr; }
+[data-fit] .pond .cols i, [data-fit] .pond .rowsl i { font-size: 10px; }
+[data-fit] .shipbtn { padding: 1px 7px; font-size: 13px; border-width: 2px; gap: 5px; } [data-fit] .shipbtn .mini { height: 14px; } [data-fit] .shipbtn .mini svg { height: 100%; }
+[data-fit] .tray { gap: 4px; } [data-fit] .tray .hint { display: none; } [data-fit] .tray .row { margin: 2px 0; }
+[data-fit] .curtainboat { width: 160px; height: 42px; }
+[data-fit] .duck svg { width: 20px; }
+
+/* ----- landscape phone: split layouts everywhere, controls in a slim row/column ----- */
+[data-fit="land"] .shell { padding-bottom: 6px; }
+[data-fit="land"] .game .foot .hint, [data-fit="land"] .dominoes > .hint, [data-fit="land"] .playnine .foot .hint { display: none; }
+[data-fit="land"] .game .row { margin: 4px 0; }
+[data-fit="land"] .game.split { grid-template-columns: auto minmax(150px, 1fr); grid-template-areas: "main head" "main foot"; column-gap: 16px; align-items: start; justify-items: stretch; --bs: calc(var(--app-h, 100vh) - 58px); }
+[data-fit="land"] .game.split.connect4 { --bs: min(calc((var(--app-h, 100vh) - 64px) * 1.1667), 52vw); }
+[data-fit="land"] .game.split > .head { align-self: end; } [data-fit="land"] .game.split > .foot { align-self: start; }
+[data-fit="land"] .game.split > .main { justify-self: start; align-self: center; }
+[data-fit="land"] .game.split.rev { grid-template-columns: minmax(210px, 1fr) minmax(250px, 1.15fr); grid-template-areas: "head main" "foot main"; }
+[data-fit="land"] .game.split.rev > .main { justify-self: stretch; align-self: start; }
+[data-fit="land"] .game.split .row, [data-fit="land"] .game.split .modebar { justify-content: flex-start; }
+[data-fit="land"] .game.split .status, [data-fit="land"] .game.split .captures, [data-fit="land"] .game.split .check-label { margin-left: 0; margin-right: 0; }
+[data-fit="land"] .yahtzee .die { width: 40px; height: 40px; border-radius: 8px; } [data-fit="land"] .yahtzee .dice { gap: 6px; justify-content: flex-start; margin: 2px 0 0; } [data-fit="land"] .yahtzee .dice + .row { margin-top: 20px; }
+[data-fit="land"] .yahtzee .die em { bottom: -17px; font-size: 11px; }
+[data-fit="land"] .score th, [data-fit="land"] .score td { font-size: 13px; line-height: 1.15; padding: 0 6px; } [data-fit="land"] .score thead th { position: sticky; top: 0; z-index: 2; }
+[data-fit="land"] .score { margin: 0; }
+/* single-column games: head becomes one slim row */
+[data-fit="land"] .game:not(.split) > .head { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 8px; }
+[data-fit="land"] .game:not(.split) > .head > * { margin-top: 0; margin-bottom: 0; }
+[data-fit="land"] .pnboard { --cw: clamp(30px, min(calc((100vw - 290px) / 8), calc(((var(--app-h, 100vh) - 120px) / 2 - 34px) * 0.714)), 90px); grid-template-columns: 1fr auto 1fr; grid-template-areas: "p1 mid p2"; align-items: center; column-gap: 4px; }
+[data-fit="land"] .pnboard .p1 { justify-self: end; } [data-fit="land"] .pnboard .p2 { justify-self: start; }
+[data-fit="land"] .piles { gap: 4px; } [data-fit="land"] .choice2 { flex-direction: column; gap: 2px; } [data-fit="land"] .opt span { display: none; } [data-fit="land"] .discardbtn { font-size: 12px; padding: 3px 8px; }
+[data-fit="land"] .playnine .foot { display: flex; justify-content: center; gap: 10px; align-items: center; } [data-fit="land"] .playnine .foot .row { margin: 0; }
+[data-fit="land"] .backgammon { grid-template-columns: minmax(0, 1fr) 170px; grid-template-areas: "head head" "main foot"; column-gap: 10px; align-items: start; justify-items: stretch; }
+[data-fit="land"] .backgammon > .foot { align-self: center; } [data-fit="land"] .backgammon .dicerow { flex-wrap: wrap; }
+[data-fit="land"] .bgboard { --rowh: clamp(50px, calc((var(--app-h, 100vh) - 112px) / 2), 232px); } [data-fit="land"] .bgwrap { max-width: none; } [data-fit="land"] .bgoff { width: 44px; }
+[data-fit="land"] .dtile { width: 44px; height: 24px; } [data-fit="land"] .dhand { margin: 1px auto; padding: 2px 8px; border-width: 3px; } [data-fit="land"] .dhand .pname { margin-bottom: 1px; font-size: 13px; } [data-fit="land"] .chainbox { min-height: 40px; margin: 1px auto; padding: 2px; } [data-fit="land"] .dominoes .row { margin: 2px 0; } [data-fit="land"] .dtile.vert { margin: 10px; }
+[data-fit="land"] .mancala { --mw: min(calc(100vw - 24px), 1000px, calc((var(--app-h, 100vh) - 104px) * 3.3)); }
+[data-fit="land"] .battleship { grid-template-columns: minmax(0, 1fr) 150px; grid-template-areas: "head head" "main foot"; column-gap: 10px; align-items: start; justify-items: stretch; --ew: calc(var(--app-h, 100vh) - 106px); }
+[data-fit="land"] .battleship > .foot { align-self: center; } [data-fit="land"] .battleship .boards { flex-direction: row; justify-content: center; align-items: flex-start; gap: 14px; margin: 0; }
+[data-fit="land"] .pondwrap.small { width: calc(var(--ew) * 0.66); margin-top: 18px; }
+[data-fit="land"] .setup { grid-template-columns: auto minmax(0, 1fr); --ew: calc(var(--app-h, 100vh) - 92px); gap: 10px; align-items: start; }
+[data-fit="land"] .setup .tray { max-height: calc(var(--app-h, 100vh) - 52px); overflow-y: auto; }
+[data-fit="land"] .tray .btn.big { font-size: 15px; padding: 4px 12px; }
+[data-fit="land"] .mboard { border-radius: 40px / 34px; }
+
+/* no accidental pull-to-refresh / rubber-band while playing */
+html, body { overscroll-behavior-y: contain; }

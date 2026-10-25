@@ -119,9 +119,11 @@ export default function Dominoes() {
 
   return (
     <div className="game dominoes">
-      <ModeBar opp={opp} onChange={reset} />
-      <div className="status">{status}</div>
-      <div className="captures">ROUND {round} · FIRST TO {TARGET} · {names[0]} {scores[0]} · {names[1]} {scores[1]}</div>
+      <div className="head">
+        <ModeBar opp={opp} onChange={reset} />
+        <div className="status">{status}</div>
+        <div className="captures">ROUND {round} · FIRST TO {TARGET} · {names[0]} {scores[0]} · {names[1]} {scores[1]}</div>
+      </div>
       {hand(top)}
       <div className="chainbox">
         {ds.chain.length ? (
