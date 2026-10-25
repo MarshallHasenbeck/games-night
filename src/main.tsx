@@ -60,8 +60,8 @@ window.addEventListener('scroll', snapTop, { passive: true });
 window.visualViewport?.addEventListener('scroll', snapTop);
 document.addEventListener('focusin', () => requestAnimationFrame(snapTop));
 
-// Temporary diagnostics for iPad Safari layout quirks (add ?nodebug to the address to hide)
-if (!location.search.includes('nodebug')) {
+// Diagnostics for iPad Safari layout quirks (add ?debug to the address to show)
+if (location.search.includes('debug')) {
   const box = document.createElement('pre');
   box.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:9999;margin:0;padding:6px 8px;background:#000c;color:#9f9;font:11px/1.3 monospace;border-radius:6px;pointer-events:none;white-space:pre';
   document.body.appendChild(box);
