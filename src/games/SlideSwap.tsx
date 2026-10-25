@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { sfx } from '../lib/sfx';
 import { PLAYER_COLORS, playerName, seatsFor } from '../lib/seats';
 import {
@@ -6,8 +6,9 @@ import {
   type SState, type SMove,
 } from '../lib/slide';
 import { Celebrate, Overlay, SeatPicker, useSeatCfg } from '../ui';
-import { CardBack } from '../art';
-import { MushroomPiece } from '../racers';
+import { CardBack, DuckArt } from '../art';
+import { FxLayer, MushroomPiece, useFx } from '../racers';
+import { makeBoardTexture } from '../boardart';
 import { recordResult } from '../lib/stats';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -46,11 +47,19 @@ export default function SlideSwap() {
   const [flip, setFlip] = useState(0);
   const [lock, setLock] = useState(false);
   const [confirmNew, setConfirmNew] = useState(false);
+  const [fx, addFx] = useFx();
+  const [flying, setFlying] = useState<Set<string>>(new Set());
   const busy = useRef(false);
   const gRef = useRef(g); gRef.current = g;
   const recorded = useRef(false);
   const setBusy = (v: boolean) => { busy.current = v; setLock(v); };
 
+  const texture = useMemo(() => {
+    const used = new Set<string>(), path = new Set<string>(RING_RC.map(([a, b]) => `${a},${b}`));
+    seats.forEach((st) => { [0, 1, 2, 3, 4].forEach((i) => { const [a, b] = safeRC(st, i); used.add(`${a},${b}`); }); [0, 1, 2, 3].forEach((i) => { const [a, b] = homeRC(st, i), [c, d] = penRC(st, i); used.add(`${a},${b}`); used.add(`${c},${d}`); }); });
+    return makeBoardTexture(16, 12, used, path, 11, { r: 7.5, c: 7.5, rad: 2.7 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cfg.n]);
   const cpuTurn = cfg.cpu[order(g.turn)] && g.winner === null;
   const pawns = view ?? g.pawns;
 
@@ -102,21 +111,32 @@ export default function SlideSwap() {
     const { state, info } = play(s, m);
     const v = s.pawns.map((a) => [...a]);
     const show = (q: number, w = 1) => { v[t][m.pawn] = q; setView(v.map((a) => [...a])); setHop({ seat: t, pawn: m.pawn, n: q + w * 1000 }); };
+    const at = (seat: number, pawn: number, q: number, all: number[]) => cellOf(seat, pawn, q, all);
     if (m.kind === 'move' && from !== PEN && m.to < SAFE + 6) {
       const dir = m.to >= from ? 1 : -1;
-      for (let q = from + dir; dir > 0 ? q <= m.to : q >= m.to; q += dir) { show(q); sfx.move(); await sleep(130); }
+      for (let q = from + dir; dir > 0 ? q <= m.to : q >= m.to; q += dir) { show(q); sfx.move(); await sleep(130); const [fr, fc] = at(t, m.pawn, q, v[t]); addFx(fr, fc, 'dust'); }
     } else { show(m.to); sfx.move(); await sleep(350); }
-    if (m.target) { v[m.target.seat][m.target.pawn] = m.kind === 'swap' ? m.oppTo! : PEN; setView(v.map((a) => [...a])); await sleep(250); }
+    const [lr, lc] = at(t, m.pawn, m.to, v[t]);
+    if (m.kind === 'enter') addFx(lr, lc, 'dust');
+    if (m.target) {
+      if (m.kind === 'sorry') addFx(lr, lc, 'sorry', 'SORRY!');
+      else { const [or, oc] = at(m.target.seat, m.target.pawn, s.pawns[m.target.seat][m.target.pawn], s.pawns[m.target.seat]); addFx(or, oc, 'swap', 'SWAP!'); addFx(lr, lc, 'swap'); }
+      setFlying(new Set([`${m.target.seat}-${m.target.pawn}`, `${t}-${m.pawn}`])); setTimeout(() => setFlying(new Set()), 900);
+      v[m.target.seat][m.target.pawn] = m.kind === 'swap' ? m.oppTo! : PEN; setView(v.map((a) => [...a])); await sleep(450);
+    }
     if (info.slide) {
       sfx.score(); setMsg('WHEEE! SLIDE!');
       const sl = SLIDES.find((x) => ringOf(t, m.to) === x.start && x.owner !== t)!;
-      for (let i = (sl.start + 1) % 60; ; i = (i + 1) % 60) { show(progOf(t, i), 2); await sleep(90); if (i === sl.end) break; }
+      for (let i = (sl.start + 1) % 60; ; i = (i + 1) % 60) { show(progOf(t, i), 2); addFx(RING_RC[i][0], RING_RC[i][1], 'slide'); await sleep(90); if (i === sl.end) break; }
+      addFx(RING_RC[sl.end][0], RING_RC[sl.end][1], 'bump', 'WHEEE!');
     }
     if (info.bumped.length) {
       sfx.capture();
+      setFlying((f) => new Set([...f, ...info.bumped.map((b) => `${b.seat}-${b.pawn}`)])); setTimeout(() => setFlying(new Set()), 900);
+      if (!info.slide) addFx(lr, lc, 'bump', 'BUMP!');
       setMsg(`${nameOf(t)} BUMPED ${info.bumped.length > 1 ? info.bumped.length + ' PAWNS' : nameOf(info.bumped[0].seat) + "'S PAWN"} BACK TO START!`);
       await sleep(500);
-    } else if (m.to === HOME) { sfx.score(); setMsg(`${nameOf(t)} GOT A PAWN HOME!`); }
+    } else if (m.to === HOME) { addFx(lr, lc, 'home', 'HOME!'); sfx.score(); setMsg(`${nameOf(t)} GOT A PAWN HOME!`); }
     else if (m.kind === 'swap') { sfx.flip(); setMsg('SWAPPED PLACES!'); }
     else if (!info.slide) setMsg('');
     setView(null); setHop(null); setG(state);
@@ -186,7 +206,9 @@ export default function SlideSwap() {
         <div className="captures">{msg || 'DRAW A CARD, THEN MOVE A PAWN. LAND ON A TRIANGLE TO SLIDE!'}</div>
       </div>
       <div className="main slmain">
-        <div className="slboard">
+        <div className="slboard" style={{ backgroundImage: `url(${texture})` }}>
+          <span className="sduck" aria-hidden><DuckArt px={3} /></span>
+          <FxLayer fx={fx} n={16} />
           {seats.map((s) => blk([0, 1, 2, 3].map((i) => homeRC(s, i)), 'home', s))}
           {seats.map((s) => blk([0, 1, 2, 3].map((i) => penRC(s, i)), 'pen', s))}
           {seats.map((s) => [0, 1, 2, 3, 4].map((i) => {
@@ -202,8 +224,8 @@ export default function SlideSwap() {
           {seats.flatMap((s) => g.pawns[s].map((_, k) => {
             const q = pawns[s][k], rc = cellOf(s, k, q, pawns[s]), can = canPawn(s, k), hopping = hop && hop.seat === s && hop.pawn === k;
             return (
-              <button key={`${s}-${k}`} className={`spawn ${can ? 'can' : ''} ${sel === k && s === g.turn ? 'sel' : ''} ${hopping ? 'hopping' : ''} ${s !== g.turn && can ? 'victim' : ''}`} disabled={!can}
-                style={{ left: pct(rc[1]), top: pct(rc[0]), transitionDuration: hopping ? '.13s' : '.5s' }} onClick={() => clickPawn(s, k)} aria-label={`${nameOf(s)} pawn ${k + 1}`}>
+              <button key={`${s}-${k}`} className={`spawn ${can ? 'can' : ''} ${sel === k && s === g.turn ? 'sel' : ''} ${flying.has(`${s}-${k}`) ? 'flying' : ''} ${hopping ? 'hopping' : ''} ${s !== g.turn && can ? 'victim' : ''}`} disabled={!can}
+                style={{ left: pct(rc[1]), top: pct(rc[0]), transitionDuration: hopping ? '.13s' : '.65s', ['--d' as string]: `${-((s * 4 + k) * 0.37)}s` }} onClick={() => clickPawn(s, k)} aria-label={`${nameOf(s)} pawn ${k + 1}`}>
                 <span key={hopping ? hop!.n : 0} className="pegbob"><MushroomPiece color={order(s)} /></span>
               </button>
             );

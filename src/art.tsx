@@ -131,7 +131,7 @@ export const BoardIcon = ({ px = 6 }: { px?: number }) => (
 );
 
 /* ================= landscape (canvas → image) ================= */
-function rng(seed: number) {
+export function rng(seed: number) {
   return () => {
     seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
     let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
@@ -139,15 +139,15 @@ function rng(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-type Pal = { l: string; g: string; G: string; b: string; B: string };
-const PALS: Record<string, Pal> = {
+export type Pal = { l: string; g: string; G: string; b: string; B: string };
+export const PALS: Record<string, Pal> = {
   far: { l: '#c4e3d0', g: '#a4d0b6', G: '#86b79c', b: '#8aa595', B: '#6f8b7c' },
   mid: { l: '#a4de68', g: '#58a64e', G: '#33763f', b: '#8a5a2e', B: '#5b3716' },
   fall: { l: '#ffdc7a', g: '#ee9d3e', G: '#bd5a2c', b: '#8a5a2e', B: '#5b3716' },
   near: { l: '#b5ee72', g: '#4a9b4a', G: '#27693c', b: '#8a5a2e', B: '#5b3716' },
 };
 /** Draws a tiered pine; returns nothing, paints directly. (x = centre, base = ground y) */
-function pine(ctx: CanvasRenderingContext2D, rand: () => number, x: number, base: number, H: number, pal: Pal) {
+export function pine(ctx: CanvasRenderingContext2D, rand: () => number, x: number, base: number, H: number, pal: Pal) {
   const trunk = Math.max(2, Math.round(H * 0.14)), crown = H - trunk, tiers = H > 40 ? 5 : 4;
   const halfMax = H * 0.3;
   ctx.fillStyle = pal.B; ctx.fillRect(Math.round(x - 1), base - trunk, 3, trunk);
