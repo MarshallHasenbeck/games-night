@@ -3,8 +3,8 @@ import { sfx } from '../lib/sfx';
 import { PLAYER_COLORS, playerName, seatsFor } from '../lib/seats';
 import { HOME, PEN, RING_RC, HOME_RC, cellOf, newAcorn, legalMoves, applyMove, noMove, cpuMove, ringIdx, onRing, type AState, type AMove } from '../lib/acorn';
 import { Celebrate, Overlay, SeatPicker, useSeatCfg } from '../ui';
-import { AcornPiece, FxLayer, useFx } from '../racers';
-import { makeBoardTexture } from '../boardart';
+import { AcornPiece, Butterflies, FxLayer, useFx } from '../racers';
+import { drawAcornParts, makeBoardTexture } from '../boardart';
 import { recordResult } from '../lib/stats';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -35,8 +35,14 @@ export default function AcornPop() {
 
   const texture = useMemo(() => {
     const used = new Set<string>(), path = new Set<string>(RING_RC.map(([a, b]) => `${a},${b}`));
+    const tone = (st: number) => PLAYER_COLORS[seats.indexOf(st)];
     seats.forEach((st) => { HOME_RC[st].forEach(([a, b]) => used.add(`${a},${b}`)); [0, 1, 2, 3].forEach((k) => { const [a, b] = cellOf(st, k, PEN); used.add(`${a},${b}`); }); });
-    return makeBoardTexture(9, 14, used, path, 7);
+    return makeBoardTexture(9, 16, used, path, 7, undefined, (ctx, rand) => drawAcornParts(ctx, 16, {
+      track: RING_RC,
+      starts: seats.map((st) => ({ rc: RING_RC[ringIdx(st, 0)], tone: tone(st) })),
+      homes: seats.map((st) => ({ cells: HOME_RC[st], tone: tone(st) })),
+      pens: seats.map((st) => ({ cells: [0, 1, 2, 3].map((k) => cellOf(st, k, PEN)), tone: tone(st) })),
+    }, rand));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cfg.n]);
   const cpuTurn = cfg.cpu[order(g.turn)] && g.winner === null;
@@ -132,6 +138,7 @@ export default function AcornPop() {
       <div className="main apmain">
         <div className="apboard" style={{ backgroundImage: `url(${texture})` }}>
           <FxLayer fx={fx} n={9} />
+          <Butterflies />
           {RING_RC.map((rc, i) => cell(rc, `track ${targets.has(`r${i}`) ? 'tgt' : ''} ${seats.some((s) => ringIdx(s, 0) === i) ? 'startsq' : ''} ${seats.find((s) => ringIdx(s, 0) === i) === g.turn && g.winner === null ? 'mine' : ''}`, `r${i}`,
             seats.some((s) => ringIdx(s, 0) === i) ? { ['--pc' as string]: color(seats.find((s) => ringIdx(s, 0) === i)!) } : undefined))}
           {seats.map((s) => <i key={`lane${s}`} className="apblock lane" style={{ ...box([...HOME_RC[s]]), ['--pc' as string]: color(s) } as CSSProperties} />)}

@@ -984,7 +984,7 @@ html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
 .slpile { display: grid; justify-items: center; gap: 4px; background: none; border: 0; padding: 0; color: var(--cream); font: 700 14px var(--font); }
 .slpile em { font-style: normal; text-shadow: 0 2px 0 var(--wood-dd); }
 .slpile.deck:not(:disabled) { cursor: pointer; } .slpile.deck:not(:disabled) .scard { animation: domeglow 1.2s ease-in-out infinite; box-shadow: 0 0 0 4px var(--sun), 0 0 18px #f2b632aa; }
-.scard { position: relative; display: grid; align-content: center; justify-items: center; gap: 4px; width: clamp(84px, 11vw, 132px); aspect-ratio: 5 / 7; padding: 6px; text-align: center; box-sizing: border-box;
+.scard { container-type: inline-size; position: relative; display: grid; align-content: center; justify-items: center; gap: 4px; width: clamp(92px, 12vw, 140px); aspect-ratio: 5 / 7; padding: 6px; text-align: center; box-sizing: border-box;
   background: linear-gradient(#fffaf0, #fff0c8); color: var(--brown); border: 3px solid var(--wood-dd); border-radius: 10px; box-shadow: 0 6px 0 rgba(0,0,0,.25), var(--shadow); overflow: hidden; }
 .scard b { font: 700 clamp(34px, 5vw, 54px)/1 var(--num); }
 .scard small { font: 600 clamp(9px, 1.1vw, 12px)/1.15 var(--num); color: #7a4a1a; }
@@ -1075,3 +1075,27 @@ html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
 /* card draw (Slide & Swap) */
 @keyframes cardin { 0% { transform: translate(-130%, -10%) rotateY(180deg) scale(.85); opacity: .3; } 55% { transform: translate(-30%, -22%) rotateY(90deg) scale(1.1); opacity: 1; } 100% { transform: none; opacity: 1; } }
 .sblock.pen::after { display: none; }
+
+/* the board parts are drawn into the pixel texture now; the DOM cells only catch taps and show targets */
+.apc::before, .apblock, .sblock { display: none !important; }
+.slc.track, .slc.safe, .slc.slide { background: none !important; border: 0 !important; box-shadow: none !important; }
+.slc.slide { display: none; }
+.slc.tgt { box-shadow: inset 0 0 0 3px #fff, 0 0 10px 2px #fff !important; border-radius: 6px; }
+.slc.homemark { background: none !important; animation: none; }
+
+/* card text scales with the card itself so SORRY! (and everything else) always fits */
+.scard b { font-size: 40cqw; white-space: nowrap; }
+.scard small { font-size: max(9px, 10.5cqw); line-height: 1.15; max-width: 100%; }
+.scard.sorry b { font-size: 21cqw; letter-spacing: -.02em; }
+.scard.sorry small { font-size: max(9px, 10.5cqw); }
+[data-fit="phone"] .scard small { display: block; font-size: 9px; } [data-fit="phone"] .scard { width: 76px; } [data-fit="phone"] .scard b { font-size: 34cqw; } [data-fit="phone"] .scard.sorry b { font-size: 19cqw; }
+
+/* butterflies */
+.bfly { position: absolute; z-index: 7; pointer-events: none; left: 0; top: 0; line-height: 0; }
+.bflap { display: block; animation: flap .22s ease-in-out infinite alternate; transform-origin: center; }
+@keyframes flap { from { transform: scaleX(1); } to { transform: scaleX(.35); } }
+.bfly.b0 { animation: flyA 23s linear infinite; } .bfly.b1 { animation: flyB 31s linear infinite -9s; } .bfly.b2 { animation: flyC 27s linear infinite -15s; }
+@keyframes flyA { 0% { transform: translate(5vw, 20vh); } 25% { transform: translate(30vw, 5vh); } 50% { transform: translate(45vw, 30vh); } 75% { transform: translate(15vw, 40vh); } 100% { transform: translate(5vw, 20vh); } }
+@keyframes flyB { 0% { transform: translate(40vw, 35vh); } 33% { transform: translate(8vw, 28vh); } 66% { transform: translate(35vw, 6vh); } 100% { transform: translate(40vw, 35vh); } }
+@keyframes flyC { 0% { transform: translate(20vw, 8vh); } 30% { transform: translate(44vw, 14vh); } 60% { transform: translate(28vw, 38vh); } 100% { transform: translate(20vw, 8vh); } }
+@media (prefers-reduced-motion: reduce) { .bfly, .bflap { animation: none; } }

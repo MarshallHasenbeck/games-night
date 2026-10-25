@@ -7,16 +7,15 @@ import {
 } from '../lib/slide';
 import { Celebrate, Overlay, SeatPicker, useSeatCfg } from '../ui';
 import { CardBack, DuckArt } from '../art';
-import { FxLayer, MushroomPiece, useFx } from '../racers';
-import { makeBoardTexture } from '../boardart';
+import { Butterflies, FxLayer, MushroomPiece, useFx } from '../racers';
+import { drawSlideParts, makeBoardTexture } from '../boardart';
 import { recordResult } from '../lib/stats';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const pct = (n: number) => `${(n * 100) / 16}%`;
 const CARD_TEXT: Record<number, string> = {
-  0: 'SORRY! Take a pawn from START and bump any opponent.', 1: 'Start a pawn, or move 1.', 2: 'Start a pawn, or move 2. Then draw again!',
-  3: 'Move 3.', 4: 'Move BACKWARD 4.', 5: 'Move 5.', 7: 'Move 7, or split it between two pawns.', 8: 'Move 8.',
-  10: 'Move 10, or go back 1.', 11: 'Move 11, or SWAP with an opponent.', 12: 'Move 12.',
+  0: 'Bump any pawn!', 1: 'Start, or move 1', 2: 'Start, or move 2. Draw again!', 3: 'Move 3', 4: 'Move BACK 4', 5: 'Move 5',
+  7: 'Move 7, or split', 8: 'Move 8', 10: 'Move 10, or back 1', 11: 'Move 11, or swap', 12: 'Move 12',
 };
 const angle = (idx: number) => {
   const a = RING_RC[idx], b = RING_RC[(idx + 1) % 60];
@@ -56,8 +55,20 @@ export default function SlideSwap() {
 
   const texture = useMemo(() => {
     const used = new Set<string>(), path = new Set<string>(RING_RC.map(([a, b]) => `${a},${b}`));
+    const tone = (st: number) => PLAYER_COLORS[seats.indexOf(st)];
     seats.forEach((st) => { [0, 1, 2, 3, 4].forEach((i) => { const [a, b] = safeRC(st, i); used.add(`${a},${b}`); }); [0, 1, 2, 3].forEach((i) => { const [a, b] = homeRC(st, i), [c, d] = penRC(st, i); used.add(`${a},${b}`); used.add(`${c},${d}`); }); });
-    return makeBoardTexture(16, 12, used, path, 11, { r: 7.5, c: 7.5, rad: 2.7 });
+    return makeBoardTexture(16, 16, used, path, 11, { r: 7.5, c: 7.5, rad: 2.7 }, (ctx, rand) => drawSlideParts(ctx, 16, {
+      track: RING_RC,
+      slides: SLIDES.map((sl) => {
+        const cells: [number, number][] = [];
+        for (let i = sl.start; ; i = (i + 1) % 60) { cells.push(RING_RC[i]); if (i === sl.end) break; }
+        const a = RING_RC[sl.start], b = RING_RC[(sl.start + 1) % 60];
+        return { cells, tone: seats.includes(sl.owner) ? tone(sl.owner).main : '#a89a80', dir: [b[0] - a[0], b[1] - a[1]] };
+      }),
+      safes: seats.map((st) => ({ cells: [0, 1, 2, 3, 4].map((i) => safeRC(st, i)), tone: tone(st) })),
+      homes: seats.map((st) => ({ cells: [0, 1, 2, 3].map((i) => homeRC(st, i)), tone: tone(st) })),
+      pens: seats.map((st) => ({ cells: [0, 1, 2, 3].map((i) => penRC(st, i)), tone: tone(st) })),
+    }, rand));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cfg.n]);
   const cpuTurn = cfg.cpu[order(g.turn)] && g.winner === null;
@@ -209,6 +220,7 @@ export default function SlideSwap() {
         <div className="slboard" style={{ backgroundImage: `url(${texture})` }}>
           <span className="sduck" aria-hidden><DuckArt px={3} /></span>
           <FxLayer fx={fx} n={16} />
+          <Butterflies />
           {seats.map((s) => blk([0, 1, 2, 3].map((i) => homeRC(s, i)), 'home', s))}
           {seats.map((s) => blk([0, 1, 2, 3].map((i) => penRC(s, i)), 'pen', s))}
           {seats.map((s) => [0, 1, 2, 3, 4].map((i) => {

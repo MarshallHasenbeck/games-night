@@ -63,3 +63,18 @@ export function FxLayer({ fx, n }: { fx: Fx[]; n: number }) {
     </div>
   );
 }
+
+const WING = ['.oo.oo.', 'owhowho', 'owwxwwo', '.owxwo.', '..oxo..'];
+/** A few butterflies fluttering over a board. */
+export function Butterflies() {
+  const cols = [['#ff9ec0', '#ffd0e0'], ['#ffd54a', '#fff0a0'], ['#9fd2ff', '#d8eeff']];
+  return (
+    <>
+      {cols.map(([a, b], i) => (
+        <span key={i} className={`bfly b${i}`} aria-hidden>
+          <span className="bflap"><PixelArt rows={WING} palette={{ o: '#4a2a40', w: a, x: '#3a2410', h: b }} px={4} /></span>
+        </span>
+      ))}
+    </>
+  );
+}

@@ -2,6 +2,10 @@
 
 ## Saved for later: 2-player on separate devices (online play)
 
+**Decision (Oct 2026):** use **Supabase Realtime** (a brand-new project, separate from the gettoit app). Not set up yet - parked until
+the owner is ready. First games wanted: **Battleship** and **Play Nine** (then Connect 4 / Chess / the rest). The newer 2-4 player
+games (**Acorn Pop**, **Slide & Swap**) would need a room with up to 4 seats, so build the sync layer for N seats from the start.
+
 **Goal:** each player uses their own phone/iPad. One creates a game and gets a 4-letter room code (or a share link),
 the other joins with it. Moves sync live. Pass-the-iPad curtains are no longer needed in this mode.
 
