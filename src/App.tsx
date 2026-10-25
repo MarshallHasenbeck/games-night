@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Chess from './games/Chess';
 import Yahtzee from './games/Yahtzee';
 import PlayNine from './games/PlayNine';
@@ -10,6 +10,7 @@ import { Scenery, Piece, Disc, ConnectDisc, DieArt, FlagArt, BoardIcon, DominoAr
 import { isMuted, setMuted, sfx } from './lib/sfx';
 import { cycleTime, useTime } from './lib/theme';
 import { getStats, resetStats } from './lib/stats';
+import { RulesModal } from './ui';
 
 const GAMES = [
   { id: 'chess', name: 'Chess', icon: <Piece side="w" type="n" px={5} />, blurb: 'Classic kings & pawns. Legal moves glow.', C: Chess },
@@ -52,8 +53,17 @@ export default function App() {
     window.scrollTo(0, 0);
   };
   const game = GAMES.find((g) => g.id === id);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  // first time in each game, show how to play
+  useEffect(() => {
+    if (!id) return;
+    try {
+      if (!localStorage.getItem(`gn-rules-${id}`)) { localStorage.setItem(`gn-rules-${id}`, '1'); setRulesOpen(true); }
+    } catch { /* ignore */ }
+  }, [id]);
   const toggles = (
     <div className="toggles">
+      {game && <button className="btn ghost help" onClick={() => { sfx.click(); setRulesOpen(true); }}>? RULES</button>}
       <button className="btn ghost" onClick={() => { cycleTime(); sfx.click(); }}>{mode === 'auto' ? `AUTO·${resolved.toUpperCase()}` : mode.toUpperCase()}</button>
       <button className="btn ghost" onClick={() => { setMuted(!muted); setM(!muted); }}>{muted ? 'SND OFF' : 'SND ON'}</button>
     </div>
@@ -71,6 +81,7 @@ export default function App() {
         </header>
         <game.C />
         </div>
+        {rulesOpen && <RulesModal game={game.id} onClose={() => setRulesOpen(false)} />}
       </>
     );
   }
@@ -79,7 +90,7 @@ export default function App() {
     <Scenery />
     <div className="shell">
       <div className="menutop">{toggles}</div>
-      <div className="hero"><TreeIcon h={34} px={3} /><h1 className="title">GAME<br />NIGHT</h1><TreeIcon h={34} px={3} /></div>
+      <div className="hero"><TreeIcon h={34} px={3} /><h1 className="title">GAME{' '}<br />NIGHT</h1><TreeIcon h={34} px={3} /></div>
       <p className="sub blink"><span>Pick a game, grab a friend</span></p>
       <div className="menu">
         {GAMES.map((g) => (

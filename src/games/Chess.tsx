@@ -100,11 +100,13 @@ export default function Chess() {
   };
 
   return (
-    <div className="chess">
-      <ModeBar opp={opp} />
-      <div className="status">{status}</div>
-      <div className="captures">BLACK LOST {captured('b')}</div>
-      <div className="board">
+    <div className="game split chess">
+      <div className="head">
+        <ModeBar opp={opp} />
+        <div className="status">{status}</div>
+        <div className="captures">BLACK LOST {captured('b')}</div>
+      </div>
+      <div className="main board">
         {rows.map((row, r) =>
           (flip ? [...row].reverse() : row).map((_, c) => {
             const rank = flip ? r + 1 : 8 - r;
@@ -134,6 +136,7 @@ export default function Chess() {
           }),
         )}
       </div>
+      <div className="foot">
       <div className="captures">WHITE LOST {captured('w')}</div>
       <div className="row">
         <button className="btn" onClick={undo} disabled={!hist.length || thinking}>UNDO</button>
@@ -147,6 +150,7 @@ export default function Chess() {
         </label>
       )}
       <p className="hint">Pawns promote to queens. {opp.cpu ? 'You are White.' : ''}</p>
+      </div>
       {over && <Celebrate title={title} sub={sub} onAgain={reset} />}
     </div>
   );

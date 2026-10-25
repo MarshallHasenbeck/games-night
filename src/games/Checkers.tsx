@@ -68,11 +68,13 @@ export default function Checkers() {
     : moves.some((m) => m.cap) ? `${NAMES[s.turn]} TO MOVE · MUST JUMP` : `${NAMES[s.turn]} TO MOVE`;
 
   return (
-    <div className="checkers">
-      <ModeBar opp={opp} />
-      <div className="status">{status}</div>
-      <div className="captures">CREAM {counts[1]} · BERRY {counts[0]}</div>
-      <div className="board">
+    <div className="game split checkers">
+      <div className="head">
+        <ModeBar opp={opp} />
+        <div className="status">{status}</div>
+        <div className="captures">CREAM {counts[1]} · BERRY {counts[0]}</div>
+      </div>
+      <div className="main board">
         {rs.map((r) => rs.map((c) => {
           const p = s.board[r][c];
           const dark = (r + c) % 2 === 1;
@@ -94,6 +96,7 @@ export default function Checkers() {
           );
         }))}
       </div>
+      <div className="foot">
       <div className="row">
         <button className="btn" onClick={() => setFlip(!flip)}>FLIP</button>
         <button className="btn" onClick={reset}>NEW GAME</button>
@@ -105,6 +108,7 @@ export default function Checkers() {
         </label>
       )}
       <p className="hint">Berry starts at the bottom. Jumps are forced; reach the far row to crown a king.</p>
+      </div>
       {s.winner !== null && <Celebrate title={`${NAMES[s.winner]} WINS!`} sub={opp.cpu ? (s.winner === 0 ? 'You beat the CPU!' : 'The CPU got you this time') : undefined} onAgain={reset} />}
     </div>
   );

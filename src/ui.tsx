@@ -62,3 +62,31 @@ export function Celebrate({ title, sub, onAgain }: { title: string; sub?: string
 }
 
 export const Plaque = ({ children }: { children: ReactNode }) => <div className="status">{children}</div>;
+
+/* ---------- how to play ---------- */
+import { RULES } from './rules';
+
+export function RulesModal({ game, onClose }: { game: string; onClose: () => void }) {
+  const r = RULES[game];
+  if (!r) return null;
+  return (
+    <div className="rules-overlay" onClick={onClose} role="dialog" aria-label={`How to play ${r.title}`}>
+      <div className="rules" onClick={(e) => e.stopPropagation()}>
+        <div className="rules-head">
+          <h2>HOW TO PLAY · {r.title.toUpperCase()}</h2>
+          <button className="btn small" onClick={onClose}>CLOSE ✕</button>
+        </div>
+        <div className="rules-body">
+          <p className="goal"><b>GOAL</b> {r.goal}</p>
+          {r.sections.map((s) => (
+            <section key={s.h}>
+              <h3>{s.h}</h3>
+              <ul>{s.items.map((it, i) => <li key={i}>{it}</li>)}</ul>
+            </section>
+          ))}
+        </div>
+        <div className="row"><button className="btn primary" onClick={onClose}>GOT IT - LET'S PLAY</button></div>
+      </div>
+    </div>
+  );
+}

@@ -48,11 +48,13 @@ export default function Connect4() {
   const status = winner !== null ? `${NAMES[winner]} WINS!` : full ? 'DRAW!' : cpuTurn ? 'CPU IS THINKING...' : `${NAMES[turn]} TO DROP`;
 
   return (
-    <div className="connect4">
-      <ModeBar opp={opp} onChange={() => { again(); setScore([0, 0]); }} />
-      <div className="status">{status}</div>
-      <div className="captures">BERRY {score[0]} · SUN {score[1]}</div>
-      <div className="c4board">
+    <div className="game split connect4">
+      <div className="head">
+        <ModeBar opp={opp} onChange={() => { again(); setScore([0, 0]); }} />
+        <div className="status">{status}</div>
+        <div className="captures">BERRY {score[0]} · SUN {score[1]}</div>
+      </div>
+      <div className="main c4board">
         {Array.from({ length: C }, (_, c) => (
           <button key={c} className={`c4col ${over || cpuTurn ? '' : `t${turn}`}`} onClick={() => !cpuTurn && !over && drop(c, turn)} aria-label={`column ${c + 1}`}>
             {Array.from({ length: R }, (_, r) => {
@@ -73,11 +75,13 @@ export default function Connect4() {
           </button>
         ))}
       </div>
+      <div className="foot">
       <div className="row">
         <button className={`btn ${over ? 'primary' : ''}`} onClick={again}>{over ? 'PLAY AGAIN' : 'RESTART'}</button>
         <button className="btn" onClick={() => { again(); setScore([0, 0]); }}>RESET SCORE</button>
       </div>
       <p className="hint">Tap a column to drop a disc. Four in a row wins.</p>
+      </div>
       {over && <Celebrate title={winner !== null ? `${NAMES[winner]} WINS!` : 'DRAW!'} sub={opp.cpu && winner === 0 ? 'You beat the CPU!' : undefined} onAgain={again} />}
     </div>
   );

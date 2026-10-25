@@ -125,10 +125,12 @@ export default function Backgammon() {
   };
 
   return (
-    <div className="backgammon">
-      <ModeBar opp={opp} onChange={reset} />
-      <div className="status">{status}</div>
-      <div className="bgwrap">
+    <div className="game backgammon">
+      <div className="head">
+        <ModeBar opp={opp} onChange={reset} />
+        <div className="status">{status}</div>
+      </div>
+      <div className="main bgwrap">
         <div className="bgboard" key={lastHit}>
           <div className="bgrow">
             {TOP.slice(0, 6).map((i) => point(i, true))}
@@ -146,6 +148,7 @@ export default function Backgammon() {
           <button className={`tray ${dests.some((m) => m.to === 'off') && s.turn === 0 ? 'dest' : ''}`} onClick={() => clickOff(0)} aria-label="berry off tray"><span className="trayn"><Disc side={0} px={2} /> {s.off[0]}</span></button>
         </div>
       </div>
+      <div className="foot">
       <div className="dicerow">
         {rollShown.length ? rollShown.map((d, i) => {
           let used = false;
@@ -157,7 +160,8 @@ export default function Backgammon() {
         <button className="btn primary" onClick={doRoll} disabled={!needsRoll || cpuTurn || !!tumble}>ROLL</button>
         <button className="btn" onClick={reset}>NEW GAME</button>
       </div>
-      <p className="hint">Berry moves counter-clockwise toward the bottom-right home. Hit lone blots, then bear off all 15 checkers to win.</p>
+      <p className="hint">Berry moves counter-clockwise to the bottom-right home. Hit lone blots, then bear off all 15.</p>
+      </div>
       {s.winner !== null && <Celebrate title={`${NAMES[s.winner]} WINS!`} sub={opp.cpu ? (s.winner === 0 ? 'You beat the CPU!' : 'The CPU got you this time') : undefined} onAgain={reset} />}
     </div>
   );

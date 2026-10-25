@@ -1,0 +1,161 @@
+export type Rules = { title: string; goal: string; sections: { h: string; items: string[] }[] };
+
+export const RULES: Record<string, Rules> = {
+  chess: {
+    title: 'Chess',
+    goal: 'Trap the other player\'s king so it cannot escape capture (checkmate).',
+    sections: [
+      { h: 'How to play', items: [
+        'White moves first, then you take turns. Tap one of your pieces, then tap a glowing square to move it.',
+        'Green dots show where the piece can go. A green ring means you can capture there.',
+        'Playing the CPU? You are White. Pick Easy, Medium, or Hard.',
+        'UNDO takes back your last move. FLIP spins the board.',
+      ] },
+      { h: 'How the pieces move', items: [
+        'Pawn: forward 1 (2 on its first move). It captures one step diagonally forward.',
+        'Rook: any distance in a straight line. Bishop: any distance diagonally.',
+        'Queen: any distance in any direction. King: 1 square in any direction.',
+        'Knight: an "L" - two squares one way, then one sideways. It jumps over other pieces.',
+      ] },
+      { h: 'Special rules', items: [
+        'Check: your king is attacked. You must get out of it right away.',
+        'Checkmate: your king is attacked and cannot escape - you lose.',
+        'Castling: move the king two squares toward a rook, and that rook hops over it. Neither may have moved, and the squares between must be clear and not attacked.',
+        'En passant: a pawn that just moved two squares can be captured as if it had moved one.',
+        'Promotion: a pawn reaching the far end becomes a queen automatically.',
+        'Draws: stalemate (no legal move but not in check), repeating the same position three times, or not enough pieces left to checkmate.',
+      ] },
+    ],
+  },
+  checkers: {
+    title: 'Checkers',
+    goal: 'Capture all of your opponent\'s pieces, or leave them with no legal move.',
+    sections: [
+      { h: 'How to play', items: [
+        'Berry (bottom) moves first. Tap a piece that is bobbing, then tap a green dot to move there.',
+        'Pieces move one square diagonally forward onto empty dark squares.',
+      ] },
+      { h: 'Capturing', items: [
+        'Jump over an adjacent enemy piece into the empty square right behind it. The jumped piece is removed.',
+        'Jumps are forced: if you can capture, you must.',
+        'Keep jumping in the same turn if another jump is available.',
+      ] },
+      { h: 'Kings', items: [
+        'Reach the far row and your piece becomes a king (shown with a gold crown).',
+        'Kings move and jump both forward and backward, one square at a time.',
+        'Becoming a king ends your turn.',
+      ] },
+    ],
+  },
+  connect4: {
+    title: 'Connect 4',
+    goal: 'Be the first to line up four of your discs - across, up and down, or diagonally.',
+    sections: [
+      { h: 'How to play', items: [
+        'Take turns tapping a column. Your disc drops to the lowest open spot.',
+        'Berry goes first. Winning discs flash when four connect.',
+        'If the board fills with no four-in-a-row, it is a draw.',
+      ] },
+      { h: 'Tips', items: [
+        'The middle column is the most powerful - it is part of the most possible lines.',
+        'Watch for a row of three with open space on either end: that is two ways to win at once.',
+        'Block your opponent\'s three before making your own.',
+      ] },
+    ],
+  },
+  yahtzee: {
+    title: 'Yahtzee',
+    goal: 'Score the most points over 13 rounds by making the best dice combinations.',
+    sections: [
+      { h: 'Your turn', items: [
+        'Tap ROLL to throw all 5 dice. You get up to 3 rolls per turn.',
+        'After a roll, tap dice to HOLD them (they lift up). Held dice stay put when you roll again.',
+        'When you are happy (or out of rolls), tap a glowing box on your scorecard. Each box can only be filled once - you must fill one every turn, even for 0.',
+      ] },
+      { h: 'Upper section', items: [
+        'Ones through Sixes: add up only the dice that show that number.',
+        'Score 63 or more in the upper section (for example three of each number) and get a 35-point bonus.',
+      ] },
+      { h: 'Lower section', items: [
+        '3 of a Kind / 4 of a Kind: at least that many matching dice. Score the total of all 5 dice.',
+        'Full House: three of one number + two of another = 25.',
+        'Small Straight (4 in a row) = 30. Large Straight (5 in a row) = 40.',
+        'Yahtzee (all 5 the same) = 50. Chance: any roll, add up all the dice.',
+        'Extra Yahtzees: +100 bonus each if you already scored 50 in the Yahtzee box. They also count as a wild card for other boxes.',
+      ] },
+    ],
+  },
+  playnine: {
+    title: 'Play Nine',
+    goal: 'Have the LOWEST total score after 9 holes (rounds). Like golf - low is good!',
+    sections: [
+      { h: 'Setup', items: [
+        'Each player has 8 cards in a 2 x 4 grid, all face down. Flip any 2 of yours to start.',
+        'The piles in the middle: the DECK (face down) and the DISCARD pile (top card face up).',
+      ] },
+      { h: 'On your turn (3 steps)', items: [
+        'STEP 1 - Get a card: tap the DECK to draw a new card, OR tap the DISCARD pile to take the face-up card.',
+        'STEP 2 - Use it: tap any card in YOUR grid to SWAP. Your old card goes to the discard pile and the new one takes its place, face up.',
+        'Don\'t want the card you drew from the deck? Press DISCARD & FLIP. You throw it away, then tap one of your face-down cards to flip it over.',
+        'If you took the discard, you must swap it into your grid - you cannot throw it back.',
+      ] },
+      { h: 'Scoring', items: [
+        'Each card is worth its number. The flag card is -5 (great!). A 0 card is worth 0.',
+        'Matching pair: two cards with the same number in the same column both score 0 - even high ones!',
+        'A hole ends when someone has all 8 cards face up. The other player gets one last turn, then every card is revealed and scored.',
+        'After 9 holes, the lowest total wins.',
+      ] },
+      { h: 'Tips', items: [
+        'Take low cards (0-3) and flags from the discard pile. Swap away high cards (9-12) fast.',
+        'Matching a column zeroes it out - but do not keep a 12 just hoping for a match.',
+      ] },
+    ],
+  },
+  backgammon: {
+    title: 'Backgammon',
+    goal: 'Move all 15 of your checkers home, then bear them all off the board before your opponent.',
+    sections: [
+      { h: 'Direction', items: [
+        'Berry moves counter-clockwise: top-right, across the top, down the left, along the bottom to the bottom-right home.',
+        'Cream goes the opposite way and its home is the top-right. The 6 points in your home are the last 6 before your tray.',
+      ] },
+      { h: 'Your turn', items: [
+        'Tap ROLL. Each die is a separate move: move one checker that many points. Doubles give you four moves.',
+        'Tap a glowing checker, then tap a green dot to move it. Used dice fade out.',
+        'You may land on an empty point, a point with your own checkers, or a point with just ONE enemy checker.',
+        'A point with 2 or more enemy checkers is blocked.',
+      ] },
+      { h: 'Hitting and the bar', items: [
+        'Landing on a lone enemy checker HITS it. It goes to the bar (middle strip).',
+        'If you have a checker on the bar you must bring it back in before doing anything else. It enters in your opponent\'s home, matching a die number.',
+        'You must use as many dice as you can. If only one die can be played, you must play the larger one.',
+        'No legal move? The turn passes automatically.',
+      ] },
+      { h: 'Bearing off', items: [
+        'Once ALL 15 of your checkers are in your home board, you can remove them: tap a checker then your tray.',
+        'A die that matches a point number removes a checker from that point. A bigger die can remove from your furthest point if nothing is further back.',
+        'First to bear off all 15 wins. (This version has no doubling cube or gammon bonuses.)',
+      ] },
+    ],
+  },
+  dominoes: {
+    title: 'Dominoes',
+    goal: 'Get rid of all your tiles first, or have the fewest pips left when the game blocks. First to 100 points wins.',
+    sections: [
+      { h: 'Setup', items: [
+        'A double-six set has 28 tiles. Each player gets 7. The rest wait in the draw pile.',
+        'Playing two players on one screen? Your tiles hide behind a "pass the iPad" screen between turns.',
+      ] },
+      { h: 'Your turn', items: [
+        'Play a tile whose number matches one end of the line. Glowing tiles are playable; dim ones are not.',
+        'If a tile fits both ends, tap it and choose LEFT or RIGHT.',
+        'No match? Tap DRAW until you get one. If the draw pile is empty, tap PASS.',
+      ] },
+      { h: 'Scoring', items: [
+        'Empty your hand first and you win the round: you score all the pips (dots) left in your opponent\'s hand.',
+        'If both players are stuck, the player with fewer pips wins the round and scores the difference.',
+        'Rounds repeat until someone reaches 100 points.',
+      ] },
+    ],
+  },
+};

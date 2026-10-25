@@ -146,7 +146,8 @@ export default function Yahtzee() {
   );
 
   return (
-    <div className="yahtzee">
+    <div className="game split rev yahtzee">
+      <div className="head">
       <ModeBar opp={opp} levels onChange={reset} />
       <div className="status">
         {done
@@ -162,8 +163,9 @@ export default function Yahtzee() {
         </button>
         <button className="btn" onClick={reset}>NEW GAME</button>
       </div>
-      {rolled && !done && !cpuTurn && <p className="hint">Tap dice to HOLD. Tap a glowing box to score.{joker ? ' YAHTZEE BONUS +100!' : ''}</p>}
-      <table className="score">
+      <p className="hint">{rolled && !done && !cpuTurn ? <>Tap dice to HOLD. Tap a glowing box to score.{joker ? ' YAHTZEE BONUS +100!' : ''}</> : 'Roll up to 3 times, then fill one box.'}</p>
+      </div>
+      <table className="main score">
         <thead><tr><th /><th className={s.turn === 0 ? 'cur' : ''}>{names[0]}</th><th className={s.turn === 1 ? 'cur' : ''}>{names[1]}</th></tr></thead>
         <tbody>
           {UPPER.map(row)}
@@ -173,6 +175,7 @@ export default function Yahtzee() {
           <tr className="total"><th>Total</th><td>{t[0]}</td><td>{t[1]}</td></tr>
         </tbody>
       </table>
+      <div className="foot" />
       {done && <Celebrate title={t[0] === t[1] ? 'IT\'S A TIE!' : `${names[t[0] > t[1] ? 0 : 1]} WINS!`} sub={`${t[0]} to ${t[1]}`} onAgain={reset} />}
     </div>
   );

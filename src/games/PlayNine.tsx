@@ -9,7 +9,7 @@ import { Celebrate, ModeBar, useOpponent } from '../ui';
 import { recordResult } from '../lib/stats';
 
 const tone = (v: number) => (v < 0 ? 'ace' : v === 0 ? 'zero' : v <= 4 ? 'low' : v <= 8 ? 'mid' : 'high');
-const TONE_HEX: Record<string, string> = { ace: '#ffffff', zero: '#2f9a4c', low: '#2b6fd6', mid: '#b86f00', high: '#c4302b' };
+const TONE_HEX: Record<string, string> = { ace: '#ffffff', zero: '#1f8a3e', low: '#1f5fc0', mid: '#c06a00', high: '#c01f1f' };
 
 function Card({ v, up, onClick, active, small, i }: { v?: number; up: boolean; onClick?: () => void; active?: boolean; small?: boolean; i?: number }) {
   const t = v === undefined ? '' : tone(v);
@@ -28,7 +28,7 @@ function Card({ v, up, onClick, active, small, i }: { v?: number; up: boolean; o
               <span className="cn tl">{v}</span>
               <span className="cn br">{v}</span>
               <span className="cmid">
-                {v === -5 ? <FlagArt px={small ? 3 : 4} fill="#fff" /> : <Leaf color={TONE_HEX[t]} px={small ? 2 : 3} />}
+                {v === -5 ? <FlagArt px={small ? 2 : 3} fill="#fff" /> : <Leaf color={TONE_HEX[t]} px={small ? 2 : 3} />}
                 <b>{v}</b>
               </span>
             </>
@@ -79,7 +79,7 @@ export default function PlayNine() {
     const [a, b] = [sum(totals[0]), sum(totals[1])];
     const title = a === b ? `TIE AT ${a}!` : `${names[a < b ? 0 : 1]} WINS!`;
     return (
-      <div className="playnine">
+      <div className="game playnine">
         <ModeBar opp={opp} onChange={reset} />
         <div className="status">{title} {a === b ? '' : `${Math.min(a, b)} TO ${Math.max(a, b)}`}</div>
         <Scoreboard totals={totals} names={names} />
@@ -90,12 +90,15 @@ export default function PlayNine() {
   }
 
   const can = (phase: Round['phase']) => r.phase === phase && !cpuTurn;
+  const fromDeck = r.drawn?.from === 'deck';
   const prompt =
     cpuTurn ? 'CPU IS PLAYING...'
-    : r.phase === 'setup' ? `${names[r.turn]}: FLIP 2 CARDS (${2 - r.setupFlips[r.turn]} TO GO)`
-    : r.phase === 'draw' ? `${names[r.turn]}: DRAW OR TAKE DISCARD`
-    : r.phase === 'place' ? `${names[r.turn]}: SWAP A CARD${r.drawn?.from === 'deck' ? ' OR DISCARD' : ''}`
-    : r.phase === 'flip' ? `${names[r.turn]}: FLIP A HIDDEN CARD`
+    : r.phase === 'setup' ? `${names[r.turn]}: FLIP ANY 2 OF YOUR CARDS (${2 - r.setupFlips[r.turn]} TO GO)`
+    : r.phase === 'draw' ? `${names[r.turn]} · STEP 1: TAP THE DECK TO DRAW, OR TAP THE DISCARD TO TAKE IT`
+    : r.phase === 'place' ? (fromDeck
+        ? `${names[r.turn]} · STEP 2: TAP A CARD IN YOUR GRID TO SWAP IT, OR PRESS DISCARD & FLIP`
+        : `${names[r.turn]} · STEP 2: TAP A CARD IN YOUR GRID TO SWAP (YOU KEEP THE CARD YOU TOOK)`)
+    : r.phase === 'flip' ? `${names[r.turn]} · STEP 3: TAP ONE OF YOUR FACE-DOWN CARDS TO FLIP IT`
     : 'HOLE COMPLETE!';
 
   const clickSlot = (p: number, i: number): (() => void) | undefined => {
@@ -122,36 +125,47 @@ export default function PlayNine() {
   );
 
   return (
-    <div className="playnine">
-      <ModeBar opp={opp} onChange={reset} />
-      <div className="status">HOLE {hole} OF {HOLES}</div>
-      <p className="hint prompt">{prompt}</p>
-      {grid(0)}
-      <div className="center">
-        <div className="pile">
-          <Card up={false} small onClick={can('draw') ? () => go(drawDeck(r)) : undefined} active={can('draw')} />
-          <span>DECK {r.deck.length}</span>
-        </div>
-        <div className="pile">
-          {r.drawn ? <Card v={r.drawn.v} up small /> : <span className="slot" />}
-          <span>{r.drawn ? 'IN HAND' : ''}</span>
-        </div>
-        <div className="pile">
-          <Card
-            v={r.discard.at(-1)} up small
-            onClick={can('draw') ? () => go(takeDiscard(r)) : can('place') && r.drawn?.from === 'deck' ? () => go(discardDrawn(r)) : undefined}
-            active={can('draw') || (can('place') && r.drawn?.from === 'deck')}
-          />
-          <span>{can('place') && r.drawn?.from === 'deck' ? 'DISCARD IT' : 'DISCARD'}</span>
-        </div>
+    <div className="game playnine">
+      <div className="head">
+        <ModeBar opp={opp} onChange={reset} />
+        <div className="status">HOLE {hole} OF {HOLES}</div>
+        <p className="hint prompt">{prompt}</p>
       </div>
-      {grid(1)}
-      {r.phase === 'roundOver' && (
-        <button className="btn primary" onClick={finishRound}>{hole < HOLES ? 'NEXT HOLE' : 'FINAL SCORE'}</button>
-      )}
-      <Scoreboard totals={totals} names={names} />
-      <div className="row"><button className="btn" onClick={reset}>NEW GAME</button></div>
-      <p className="hint">Matching columns = 0. Flag = -5. Lowest total after 9 holes wins. When someone flips their last card, the other player gets one last turn.</p>
+      <div className="main pnboard">
+        <div className="area p1">{grid(0)}</div>
+        <div className="area pnmid">
+          <div className="piles">
+            <div className="pile">
+              <Card up={false} small onClick={can('draw') ? () => go(drawDeck(r)) : undefined} active={can('draw')} />
+              <span>{can('draw') ? 'DRAW NEW' : `DECK ${r.deck.length}`}</span>
+            </div>
+            <div className="pile">
+              {r.drawn ? <Card v={r.drawn.v} up small /> : <span className="slot" />}
+              <span>{r.drawn ? 'YOUR CARD' : ''}</span>
+            </div>
+            <div className="pile">
+              <Card
+                v={r.discard.at(-1)} up small
+                onClick={can('draw') ? () => go(takeDiscard(r)) : undefined}
+                active={can('draw')}
+              />
+              <span>{can('draw') ? 'TAKE THIS' : 'DISCARD'}</span>
+            </div>
+          </div>
+          {can('place') && fromDeck && (
+            <button className="btn primary discardbtn" onClick={() => go(discardDrawn(r))}>DISCARD &amp; FLIP A CARD</button>
+          )}
+        </div>
+        <div className="area p2">{grid(1)}</div>
+      </div>
+      <div className="foot">
+        {r.phase === 'roundOver' && (
+          <button className="btn primary" onClick={finishRound}>{hole < HOLES ? 'NEXT HOLE' : 'FINAL SCORE'}</button>
+        )}
+        <Scoreboard totals={totals} names={names} />
+        <div className="row"><button className="btn" onClick={reset}>NEW GAME</button></div>
+        <p className="hint">Low score wins. Matching columns = 0. Flag = -5. Stuck? Tap ? RULES.</p>
+      </div>
     </div>
   );
 }

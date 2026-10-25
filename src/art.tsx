@@ -130,46 +130,6 @@ export const BoardIcon = ({ px = 6 }: { px?: number }) => (
   <PixelArt rows={TRI.concat(TRI.slice().reverse())} palette={{ o: '#3a2410', h: '#e0556a', s: '#b83048' }} px={px} />
 );
 
-/* card back: 15×21 woodland design */
-function cardBackRows(): string[] {
-  const W = 15, H = 21;
-  const g: string[][] = Array.from({ length: H }, (_, y) => Array.from({ length: W }, (_, x) => {
-    const d = Math.min(x, y, W - 1 - x, H - 1 - y);
-    if (d === 0) return 'o';
-    if (d === 1) return 'p';
-    if (d === 2) return 'd';
-    return (x + y) % 4 === 0 || (x - y + 40) % 4 === 0 ? 'l' : (x + y) % 2 === 0 ? 'g' : 'm';
-  }));
-  const cx = 7, cy = 10;
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    const d2 = (x - cx) ** 2 + (y - cy) ** 2;
-    if (d2 <= 20) g[y][x] = 'd';
-    if (d2 >= 17 && d2 <= 20) g[y][x] = 'o';
-  }
-  ['...y...', '..yyy..', '.yyhyy.', 'yyhhhyy', '.yyhyy.', '..yyy..', '...y...'].forEach((row, my) => [...row].forEach((ch, mx) => { if (ch !== '.') g[cy - 3 + my][cx - 3 + mx] = ch; }));
-  [[3, 3], [11, 3], [3, 17], [11, 17]].forEach(([x, y]) => { g[y][x] = 'y'; });
-  return g.map((r) => r.join(''));
-}
-const CARD_BACK = cardBackRows();
-const CARD_PAL: Record<string, string> = { o: '#3a2410', p: '#f6dca0', d: '#1f5a35', g: '#3f8f4a', m: '#2d7a40', l: '#6fbf4a', y: '#f2b632', h: '#fff0a0' };
-export function CardBack() {
-  return (
-    <svg className="cardart" viewBox="0 0 15 21" preserveAspectRatio="none" shapeRendering="crispEdges" aria-hidden>
-      {CARD_BACK.flatMap((row, y) => {
-        const out: ReactElement[] = [];
-        let x = 0;
-        while (x < row.length) {
-          let n = 1;
-          while (row[x + n] === row[x]) n++;
-          out.push(<rect key={`${x},${y}`} x={x} y={y} width={n} height="1" fill={CARD_PAL[row[x]]} />);
-          x += n;
-        }
-        return out;
-      })}
-    </svg>
-  );
-}
-
 /* ================= landscape (canvas → image) ================= */
 function rng(seed: number) {
   return () => {
@@ -205,6 +165,53 @@ function pine(ctx: CanvasRenderingContext2D, rand: () => number, x: number, base
     }
   }
 }
+/* ================= card back: forest at dusk (canvas → image) ================= */
+let CARD_BACK = '';
+function makeCardBack(): string {
+  const W = 50, H = 70;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d')!;
+  const r = rng(77);
+  const R = (x: number, y: number, w: number, h: number, c: string) => { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), w, h); };
+  R(0, 0, W, H, '#3a2410'); R(1, 1, W - 2, H - 2, '#f6dca0'); R(2, 2, W - 4, H - 4, '#c98f3c'); R(3, 3, W - 6, H - 6, '#3a2410');
+  const sx = 4, sy = 4, sw = W - 8, sh = H - 8;
+  ctx.save(); ctx.beginPath(); ctx.rect(sx, sy, sw, sh); ctx.clip();
+  const bands = ['#121a44', '#19235a', '#242d6e', '#383a80', '#554689', '#7a4f8d', '#a65b88', '#d2707a', '#f19068', '#ffbc78'];
+  const skyH = Math.round(sh * 0.7);
+  for (let y = 0; y < skyH; y++) R(sx, sy + y, sw, 1, bands[Math.min(bands.length - 1, Math.floor((y / skyH) * bands.length))]);
+  for (let i = 0; i < 22; i++) { const x = sx + r() * sw, y = sy + r() * skyH * 0.55; R(x, y, 1, 1, r() < 0.3 ? '#ffffff' : '#c9d4ff'); }
+  // moon
+  const mx = sx + sw - 12, my = sy + 12;
+  for (let y = -7; y <= 7; y++) for (let x = -7; x <= 7; x++) {
+    const d = x * x + y * y;
+    if (d <= 30 && (x - 2) ** 2 + (y - 1) ** 2 > 22) R(mx + x, my + y, 1, 1, d < 16 ? '#fffbe0' : '#f4e7a8');
+    else if (d <= 56 && d > 30) R(mx + x, my + y, 1, 1, '#ffffff12');
+  }
+  // far hills
+  for (let x = 0; x < sw; x++) { const h = Math.round(sh * 0.72 - 6 * (0.5 + 0.5 * Math.sin(x / 7)) - 3 * Math.sin(x / 3)); R(sx + x, sy + h, 1, sh, '#3a3f78'); }
+  const far: Pal = { l: '#5f6fa8', g: '#4a5a92', G: '#384675', b: '#2a3358', B: '#1e2544' };
+  const mid: Pal = { l: '#3e8a6a', g: '#2c6b55', G: '#1e4a3d', b: '#4a3a2a', B: '#2e2218' };
+  const near: Pal = { l: '#2a7a52', g: '#1b5a3f', G: '#103a2a', b: '#3a2c1e', B: '#241a10' };
+  for (let i = 0; i < 6; i++) pine(ctx, r, sx + 3 + i * 8 + r() * 3, sy + sh * 0.76, 14 + r() * 5, far);
+  R(sx, sy + sh * 0.76, sw, sh, '#233a4a');
+  for (let i = 0; i < 5; i++) pine(ctx, r, sx + 2 + i * 10 + r() * 4, sy + sh * 0.86, 22 + r() * 6, mid);
+  R(sx, sy + sh * 0.86, sw, sh, '#173a2c'); R(sx, sy + sh * 0.86, sw, 1, '#2d6a48');
+  pine(ctx, r, sx + 6, sy + sh * 0.98, 40, near); pine(ctx, r, sx + sw - 7, sy + sh * 0.98, 36, near);
+  R(sx, sy + sh * 0.93, sw, sh, '#10281e');
+  // mushrooms + fireflies
+  [[16, 0.92], [30, 0.95], [24, 0.97]].forEach(([x, y]) => { const px = sx + x, py = sy + sh * y; R(px - 2, py, 5, 2, '#e0475a'); R(px - 1, py - 1, 3, 1, '#e0475a'); R(px, py, 1, 1, '#fff4d6'); R(px, py + 2, 1, 2, '#f1dfb0'); });
+  for (let i = 0; i < 9; i++) { const x = sx + r() * sw, y = sy + sh * (0.55 + r() * 0.35); R(x, y, 1, 1, '#fff7a0'); R(x - 1, y, 3, 1, '#fff7a044'); }
+  ctx.restore();
+  // gold corner studs
+  [[2, 2], [W - 3, 2], [2, H - 3], [W - 3, H - 3]].forEach(([x, y]) => R(x, y, 1, 1, '#fff0a0'));
+  return cv.toDataURL('image/png');
+}
+export function CardBack() {
+  const url = useMemo(() => (CARD_BACK ||= makeCardBack()), []);
+  return <span className="cardart" style={{ backgroundImage: `url(${url})` }} aria-hidden />;
+}
+
 function makeLandscape(): string {
   const W = 448, H = 168, GY = 138;
   const cv = document.createElement('canvas');
