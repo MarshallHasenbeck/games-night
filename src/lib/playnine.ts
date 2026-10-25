@@ -158,3 +158,55 @@ export function flipAfterDiscard(r0: Round, i: number): Round {
   slot.up = true;
   return endTurn(r);
 }
+
+/* ---------- computer player ---------- */
+export type Action =
+  | { t: 'flipSetup'; i: number } | { t: 'drawDeck' } | { t: 'takeDiscard' }
+  | { t: 'swap'; i: number } | { t: 'discard' } | { t: 'flipAfter'; i: number };
+
+const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
+const downSlots = (g: Slot[]) => g.map((s, i) => (s.up ? -1 : i)).filter((i) => i >= 0);
+const matched = (g: Slot[], i: number) => { const j = (i + 4) % 8; return g[i].up && g[j].up && g[i].v === g[j].v; };
+/** A face-down slot whose column partner is face-up with value v. */
+const pairSlot = (g: Slot[], v: number) => g.findIndex((s, i) => !s.up && g[(i + 4) % 8].up && g[(i + 4) % 8].v === v);
+const worstUp = (g: Slot[]) => {
+  let bi = -1;
+  g.forEach((s, i) => { if (s.up && !matched(g, i) && (bi < 0 || s.v > g[bi].v)) bi = i; });
+  return bi;
+};
+
+export function cpuDecide(r: Round, level: 1 | 2 | 3 = 2): Action {
+  const g = r.grids[r.turn];
+  const rnd = level === 1 && Math.random() < 0.3;
+  if (r.phase === 'setup') return { t: 'flipSetup', i: pick(downSlots(g)) };
+  if (r.phase === 'draw') {
+    const v = r.discard[r.discard.length - 1];
+    const w = worstUp(g);
+    const good = v <= 2 || pairSlot(g, v) >= 0 || (w >= 0 && g[w].v >= v + 5);
+    return !rnd && good ? { t: 'takeDiscard' } : { t: 'drawDeck' };
+  }
+  if (r.phase === 'flip') return { t: 'flipAfter', i: pick(downSlots(g)) };
+  const c = r.drawn!.v;
+  const pair = pairSlot(g, c);
+  if (pair >= 0 && !rnd) return { t: 'swap', i: pair };
+  const w = worstUp(g);
+  if (w >= 0 && g[w].v >= c + 4 && !rnd) return { t: 'swap', i: w };
+  const down = downSlots(g);
+  if (r.drawn!.from === 'deck') {
+    if (c <= 4 && down.length && !rnd) return { t: 'swap', i: pick(down) };
+    return { t: 'discard' };
+  }
+  if (w >= 0 && g[w].v > c) return { t: 'swap', i: w };
+  return { t: 'swap', i: down.length ? pick(down) : g.findIndex((_, i) => !matched(g, i)) };
+}
+
+export function applyAction(r: Round, a: Action): Round {
+  switch (a.t) {
+    case 'flipSetup': return flipSetup(r, a.i);
+    case 'drawDeck': return drawDeck(r);
+    case 'takeDiscard': return takeDiscard(r);
+    case 'swap': return swapSlot(r, a.i);
+    case 'discard': return discardDrawn(r);
+    case 'flipAfter': return flipAfterDiscard(r, a.i);
+  }
+}

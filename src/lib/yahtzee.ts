@@ -44,3 +44,40 @@ export const upperSum = (card: Card) => UPPER.reduce((a, c) => a + (card[c] ?? 0
 export const upperBonus = (card: Card) => (upperSum(card) >= 63 ? 35 : 0);
 export const total = (card: Card, yahtzeeBonuses: number) =>
   CATS.reduce((a, c) => a + (card[c] ?? 0), 0) + upperBonus(card) + yahtzeeBonuses * 100;
+
+/* ---------- computer player ---------- */
+const PAR: Record<Cat, number> = {
+  ones: 2.1, twos: 5.3, threes: 8.6, fours: 12.2, fives: 15.6, sixes: 19.2,
+  threeKind: 21.7, fourKind: 13.1, fullHouse: 22.9, smStraight: 29.5, lgStraight: 32.7, yahtzee: 16.9, chance: 22,
+};
+const open = (card: Card) => CATS.filter((c) => card[c] === null);
+const rand6 = () => 1 + Math.floor(Math.random() * 6);
+const isJoker = (card: Card, d: number[]) => isYahtzee(d) && card.yahtzee === 50 && card[UPPER[d[0] - 1]] !== null;
+
+function bestValue(card: Card, d: number[]): number {
+  const joker = isJoker(card, d);
+  return Math.max(...open(card).map((c) => scoreFor(c, d, joker) - PAR[c]));
+}
+export function cpuCategory(card: Card, d: number[]): Cat {
+  const joker = isJoker(card, d);
+  let best = open(card)[0], bv = -Infinity;
+  for (const c of open(card)) {
+    const v = scoreFor(c, d, joker) - PAR[c];
+    if (v > bv) { bv = v; best = c; }
+  }
+  return best;
+}
+/** Returns a hold mask, or null if the CPU should stop rolling and score. */
+export function cpuHolds(card: Card, d: number[], level: 1 | 2 | 3): boolean[] | null {
+  if (level === 1 && Math.random() < 0.25) return d.map(() => Math.random() < 0.4);
+  const samples = level === 3 ? 80 : 30;
+  let bestAvg = bestValue(card, d), bestMask: boolean[] | null = null;
+  for (let m = 0; m < 31; m++) {
+    const held = d.map((_, i) => !!(m & (1 << i)));
+    let sum = 0;
+    for (let s = 0; s < samples; s++) sum += bestValue(card, d.map((x, i) => (held[i] ? x : rand6())));
+    const avg = sum / samples;
+    if (avg > bestAvg + 0.01) { bestAvg = avg; bestMask = held; }
+  }
+  return bestMask;
+}

@@ -1,7 +1,13 @@
 # Game Night — forest edition
 
-Two-player, one-screen 8-bit board games: **Chess**, **Checkers**, **Connect 4**, **Yahtzee**, and **Play Nine** (card golf).
-Pass-and-play — the app rolls, deals and scores. Built with Vite + React + TypeScript; chess rules via `chess.js`.
+Seven two-player, one-screen games in a cozy 16-bit forest: **Chess**, **Checkers**, **Connect 4**, **Yahtzee**,
+**Play Nine** (card golf), **Backgammon**, and **Dominoes**. Pass-and-play on one device, or play **vs CPU**
+(Easy / Medium / Hard) in every game. The app rolls, deals, and scores for you.
+
+- Animated pieces, tumbling dice, flipping and dealt cards, dropping discs, and confetti wins
+- Day / dusk / night landscape (auto from your clock, or tap the toggle), with falling leaves and fireflies
+- All-time scoreboard saved on the device (localStorage)
+- Dominoes has a "pass the iPad" screen so hidden hands stay hidden
 
 ```
 npm install
@@ -10,5 +16,4 @@ npm run build    # static site in dist/
 ```
 
 Deploys to GitHub Pages on every push to `main` (see `.github/workflows/pages.yml`).
-Enable it once under Settings → Pages → Source: **GitHub Actions**.
 On iPad: Share → Add to Home Screen for a full-screen app.

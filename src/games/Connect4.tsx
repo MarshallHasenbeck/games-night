@@ -1,68 +1,72 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { sfx } from '../lib/sfx';
+import { R, C, empty, findWin, landingRow, type Grid } from '../lib/connect4';
+import { bestColumn } from '../cpu/connect4AI';
+import { Celebrate, ModeBar, useOpponent } from '../ui';
+import { recordResult } from '../lib/stats';
 
-const R = 6, C = 7;
 const NAMES = ['BERRY', 'SUN'];
-type Grid = (0 | 1 | null)[][];
-const empty = (): Grid => Array.from({ length: R }, () => Array(C).fill(null));
-
-function findWin(g: Grid): [number, number][] | null {
-  for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
-    const v = g[r][c];
-    if (v === null) continue;
-    for (const [dr, dc] of [[0, 1], [1, 0], [1, 1], [1, -1]]) {
-      const line: [number, number][] = [];
-      for (let k = 0; k < 4; k++) {
-        const rr = r + dr * k, cc = c + dc * k;
-        if (rr < 0 || rr >= R || cc < 0 || cc >= C || g[rr][cc] !== v) break;
-        line.push([rr, cc]);
-      }
-      if (line.length === 4) return line;
-    }
-  }
-  return null;
-}
 
 export default function Connect4() {
+  const opp = useOpponent('connect4');
   const [g, setG] = useState<Grid>(empty);
   const [turn, setTurn] = useState<0 | 1>(0);
-  const [last, setLast] = useState<[number, number] | null>(null);
+  const [last, setLast] = useState<[number, number, number] | null>(null);
   const [score, setScore] = useState<[number, number]>([0, 0]);
+  const recorded = useRef(false);
   const win = findWin(g);
   const full = g[0].every((x) => x !== null);
   const over = !!win || full;
   const winSet = new Set((win ?? []).map((x) => x.join(',')));
+  const winner = win ? g[win[0][0]][win[0][1]]! : null;
+  const cpuTurn = opp.cpu && turn === 1 && !over;
 
   useEffect(() => {
-    if (win) { sfx.win(); setScore((s) => (g[win[0][0]][win[0][1]] === 0 ? [s[0] + 1, s[1]] : [s[0], s[1] + 1])); }
-  }, [!!win]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!over) { recorded.current = false; return; }
+    if (recorded.current) return;
+    recorded.current = true;
+    recordResult('connect4', winner ?? 'draw');
+    if (winner !== null) { setScore((s) => (winner === 0 ? [s[0] + 1, s[1]] : [s[0], s[1] + 1])); setTimeout(sfx.win, 350); }
+  }, [over, winner]);
 
-  const drop = (c: number) => {
-    if (over) return;
-    const r = [...Array(R).keys()].reverse().find((rr) => g[rr][c] === null);
-    if (r === undefined) return;
+  const drop = (c: number, who: 0 | 1) => {
+    const r = landingRow(g, c);
+    if (r < 0) return;
     const ng = g.map((row) => [...row]);
-    ng[r][c] = turn;
+    ng[r][c] = who;
     sfx.move();
-    setG(ng); setLast([r, c]); setTurn(turn === 0 ? 1 : 0);
+    setG(ng); setLast([r, c, (last?.[2] ?? 0) + 1]); setTurn(who === 0 ? 1 : 0);
   };
-  const again = () => { setG(empty()); setLast(null); setTurn(0); };
+  useEffect(() => {
+    if (!cpuTurn) return;
+    const id = setTimeout(() => drop(bestColumn(g, 1, opp.level), 1), 700);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cpuTurn, g, opp.level]);
 
-  const status = win ? `${NAMES[g[win[0][0]][win[0][1]]!]} WINS!` : full ? 'DRAW!' : `${NAMES[turn]} TO DROP`;
+  const again = () => { setG(empty()); setLast(null); setTurn(0); };
+  const status = winner !== null ? `${NAMES[winner]} WINS!` : full ? 'DRAW!' : cpuTurn ? 'CPU IS THINKING...' : `${NAMES[turn]} TO DROP`;
 
   return (
     <div className="connect4">
+      <ModeBar opp={opp} onChange={() => { again(); setScore([0, 0]); }} />
       <div className="status">{status}</div>
       <div className="captures">BERRY {score[0]} · SUN {score[1]}</div>
       <div className="c4board">
         {Array.from({ length: C }, (_, c) => (
-          <button key={c} className={`c4col ${over ? '' : `t${turn}`}`} onClick={() => drop(c)} aria-label={`column ${c + 1}`}>
+          <button key={c} className={`c4col ${over || cpuTurn ? '' : `t${turn}`}`} onClick={() => !cpuTurn && !over && drop(c, turn)} aria-label={`column ${c + 1}`}>
             {Array.from({ length: R }, (_, r) => {
               const v = g[r][c];
               const isLast = last && last[0] === r && last[1] === c;
               return (
                 <span key={r} className="c4cell">
-                  {v !== null && <i className={`chip p${v} ${winSet.has(`${r},${c}`) ? 'win' : ''} ${isLast && !win ? 'drop' : ''}`} />}
+                  {v !== null && (
+                    <i
+                      key={isLast ? `d${last![2]}` : 'c'}
+                      className={`chip p${v} ${winSet.has(`${r},${c}`) ? 'win' : ''} ${isLast ? 'drop' : ''}`}
+                      style={isLast ? { ['--rows' as string]: r + 1 } : undefined}
+                    />
+                  )}
                 </span>
               );
             })}
@@ -74,6 +78,7 @@ export default function Connect4() {
         <button className="btn" onClick={() => { again(); setScore([0, 0]); }}>RESET SCORE</button>
       </div>
       <p className="hint">Tap a column to drop a disc. Four in a row wins.</p>
+      {over && <Celebrate title={winner !== null ? `${NAMES[winner]} WINS!` : 'DRAW!'} sub={opp.cpu && winner === 0 ? 'You beat the CPU!' : undefined} onAgain={again} />}
     </div>
   );
 }

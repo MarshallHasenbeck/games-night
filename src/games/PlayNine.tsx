@@ -1,74 +1,105 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   HOLES, deal, flipSetup, drawDeck, takeDiscard, swapSlot, discardDrawn, flipAfterDiscard,
-  visibleScore, finalScore, type Round, type Slot,
+  visibleScore, finalScore, cpuDecide, applyAction, type Round, type Slot,
 } from '../lib/playnine';
 import { sfx } from '../lib/sfx';
 import { CardBack, FlagArt, Leaf } from '../art';
+import { Celebrate, ModeBar, useOpponent } from '../ui';
+import { recordResult } from '../lib/stats';
 
 const tone = (v: number) => (v < 0 ? 'ace' : v === 0 ? 'zero' : v <= 4 ? 'low' : v <= 8 ? 'mid' : 'high');
 const TONE_HEX: Record<string, string> = { ace: '#ffffff', zero: '#2f9a4c', low: '#2b6fd6', mid: '#b86f00', high: '#c4302b' };
 
-function Card({ v, up, onClick, active, small }: { v?: number; up: boolean; onClick?: () => void; active?: boolean; small?: boolean }) {
-  const t = up ? tone(v!) : '';
+function Card({ v, up, onClick, active, small, i }: { v?: number; up: boolean; onClick?: () => void; active?: boolean; small?: boolean; i?: number }) {
+  const t = v === undefined ? '' : tone(v);
   return (
-    <button className={`pcard ${up ? `up ${t}` : 'down'} ${active ? 'active' : ''} ${small ? 'small' : ''}`} onClick={onClick} disabled={!onClick}>
-      {up ? (
-        <>
-          <span className="cn tl">{v}</span>
-          <span className="cn br">{v}</span>
-          <span className="cmid">
-            {v === -5 ? <FlagArt px={small ? 3 : 4} fill="#fff" /> : <Leaf color={TONE_HEX[t]} px={small ? 2 : 3} />}
-            <b>{v}</b>
-          </span>
-        </>
-      ) : <CardBack />}
+    <button
+      className={`pcard ${up ? 'up' : ''} ${t} ${active ? 'active' : ''} ${small ? 'small' : ''} ${i !== undefined ? 'dealt' : ''}`}
+      style={i !== undefined ? { ['--i' as string]: i } : undefined}
+      onClick={onClick}
+      disabled={!onClick}
+    >
+      <span className="flip">
+        <span className="face back"><CardBack /></span>
+        <span className="face front">
+          {v !== undefined && (
+            <>
+              <span className="cn tl">{v}</span>
+              <span className="cn br">{v}</span>
+              <span className="cmid">
+                {v === -5 ? <FlagArt px={small ? 3 : 4} fill="#fff" /> : <Leaf color={TONE_HEX[t]} px={small ? 2 : 3} />}
+                <b>{v}</b>
+              </span>
+            </>
+          )}
+        </span>
+      </span>
     </button>
   );
 }
 
 export default function PlayNine() {
+  const opp = useOpponent('playnine');
   const [hole, setHole] = useState(1);
   const [round, setRound] = useState<Round>(() => deal(0));
   const [totals, setTotals] = useState<[number[], number[]]>([[], []]);
-  const names = ['P1', 'P2'];
+  const recorded = useRef(false);
+  const names = ['P1', opp.cpu ? 'CPU' : 'P2'];
   const r = round;
   const over = hole > HOLES;
-  useEffect(() => { if (over) sfx.win(); }, [over]);
-  const go = (next: Round) => { sfx.flip(); setRound(next); };
+  const cpuTurn = opp.cpu && r.turn === 1 && r.phase !== 'roundOver' && !over;
+  const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
 
+  useEffect(() => {
+    if (!over) { recorded.current = false; return; }
+    if (recorded.current) return;
+    recorded.current = true;
+    const [a, b] = [sum(totals[0]), sum(totals[1])];
+    recordResult('playnine', a === b ? 'draw' : a < b ? 0 : 1);
+    setTimeout(sfx.win, 300);
+  }, [over]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!cpuTurn) return;
+    const id = setTimeout(() => { sfx.flip(); setRound((cur) => applyAction(cur, cpuDecide(cur, opp.level))); }, r.phase === 'setup' ? 650 : 950);
+    return () => clearTimeout(id);
+  }, [round, cpuTurn, opp.level]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const go = (next: Round) => { sfx.flip(); setRound(next); };
   const finishRound = () => {
     const next: [number[], number[]] = [[...totals[0], finalScore(r.grids[0])], [...totals[1], finalScore(r.grids[1])]];
     setTotals(next);
-    if (hole < HOLES) {
-      setHole(hole + 1);
-      setRound(deal(hole % 2 === 0 ? 0 : 1));
-    } else setHole(HOLES + 1);
+    sfx.click();
+    if (hole < HOLES) { setHole(hole + 1); setRound(deal(hole % 2 === 0 ? 0 : 1)); } else setHole(HOLES + 1);
   };
   const reset = () => { setHole(1); setTotals([[], []]); setRound(deal(0)); };
-  const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
 
-  if (hole > HOLES) {
+  if (over) {
     const [a, b] = [sum(totals[0]), sum(totals[1])];
+    const title = a === b ? `TIE AT ${a}!` : `${names[a < b ? 0 : 1]} WINS!`;
     return (
       <div className="playnine">
-        <div className="status">{a === b ? `TIE AT ${a}!` : `${names[a < b ? 0 : 1]} WINS ${Math.min(a, b)} TO ${Math.max(a, b)}!`}</div>
+        <ModeBar opp={opp} onChange={reset} />
+        <div className="status">{title} {a === b ? '' : `${Math.min(a, b)} TO ${Math.max(a, b)}`}</div>
         <Scoreboard totals={totals} names={names} />
         <button className="btn primary" onClick={reset}>PLAY AGAIN</button>
+        <Celebrate title={title} sub={`${a} to ${b}`} onAgain={reset} />
       </div>
     );
   }
 
-  const can = (phase: Round['phase']) => r.phase === phase;
+  const can = (phase: Round['phase']) => r.phase === phase && !cpuTurn;
   const prompt =
-    r.phase === 'setup' ? `${names[r.turn]}: FLIP 2 CARDS (${2 - r.setupFlips[r.turn]} TO GO)`
+    cpuTurn ? 'CPU IS PLAYING...'
+    : r.phase === 'setup' ? `${names[r.turn]}: FLIP 2 CARDS (${2 - r.setupFlips[r.turn]} TO GO)`
     : r.phase === 'draw' ? `${names[r.turn]}: DRAW OR TAKE DISCARD`
     : r.phase === 'place' ? `${names[r.turn]}: SWAP A CARD${r.drawn?.from === 'deck' ? ' OR DISCARD' : ''}`
     : r.phase === 'flip' ? `${names[r.turn]}: FLIP A HIDDEN CARD`
     : 'HOLE COMPLETE!';
 
   const clickSlot = (p: number, i: number): (() => void) | undefined => {
-    if (p !== r.turn) return undefined;
+    if (p !== r.turn || cpuTurn) return undefined;
     const s: Slot = r.grids[p][i];
     if (can('setup') && !s.up) return () => go(flipSetup(r, i));
     if (can('place')) return () => go(swapSlot(r, i));
@@ -82,9 +113,9 @@ export default function PlayNine() {
         {names[p]} <span>{r.phase === 'roundOver' ? finalScore(r.grids[p]) : visibleScore(r.grids[p])}</span>
         {r.finisher === p && <b> OUT!</b>}
       </div>
-      <div className="cells">
+      <div className="cells" key={`${hole}-${p}`}>
         {r.grids[p].map((s, i) => (
-          <Card key={i} v={s.v} up={s.up} onClick={clickSlot(p, i)} active={!!clickSlot(p, i)} />
+          <Card key={i} v={s.v} up={s.up} onClick={clickSlot(p, i)} active={!!clickSlot(p, i)} i={i + p * 8} />
         ))}
       </div>
     </div>
@@ -92,6 +123,7 @@ export default function PlayNine() {
 
   return (
     <div className="playnine">
+      <ModeBar opp={opp} onChange={reset} />
       <div className="status">HOLE {hole} OF {HOLES}</div>
       <p className="hint prompt">{prompt}</p>
       {grid(0)}

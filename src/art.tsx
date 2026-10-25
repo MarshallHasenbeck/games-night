@@ -1,52 +1,136 @@
-import type { ReactElement } from 'react';
+import { useMemo, type ReactElement } from 'react';
 import { PixelArt } from './Sprite';
+import { useTime, type Resolved } from './lib/theme';
 
-/* ---------- chess pieces: 12×12, o=outline a=body h=highlight s=shade ---------- */
-export const PIECES: Record<string, string[]> = {
-  p: ['............', '............', '....oooo....', '...ohaaso...', '...oaaaso...', '....oaso....', '...ohaaso...', '..ohaaaaso..', '..oaaaaaaso.', '.ohaaaaaaaso', '.oaaaaaaaaso', '.oooooooooo.'],
-  r: ['............', '.ooo.oo.ooo.', '.ohaoaaoaaso', '.ohaaaaaaaso', '..ohaaaaaso.', '...ohaaaso..', '...ohaaaso..', '...ohaaaso..', '..ohaaaaaso.', '.ohaaaaaaaso', '.oaaaaaaaaso', '.oooooooooo.'],
-  n: ['............', '...oo.......', '..ohho......', '.ohaaaoo....', 'ohaaaaaaoo..', 'oohoaaaaaso.', '.oo.oaaaaso.', '.....ohaaaso', '....ohaaaaso', '...ohaaaaaso', '..oaaaaaaaso', '..oooooooooo'],
-  b: ['............', '.....oo.....', '....ohao....', '...ohaaso...', '...ohaaso...', '....oaaso...', '.....ooo....', '....ohaso...', '...ohaaaso..', '..ohaaaaaso.', '.oaaaaaaaaso', '.oooooooooo.'],
-  q: ['............', '.o...oo...o.', '.oo.ohao.oo.', '..ohaaaaaso.', '...ohaaaso..', '....ohaso...', '...ohaaaso..', '..ohaaaaaso.', '..ohaaaaaso.', '.ohaaaaaaaso', '.oaaaaaaaaso', '.oooooooooo.'],
-  k: ['.....oo.....', '...oohaoo...', '.....oo.....', '..ohaaaaaso.', '..ohaaaaaso.', '...ohaaaso..', '....ohaso...', '...ohaaaso..', '..ohaaaaaso.', '.ohaaaaaaaso', '.oaaaaaaaaso', '.oooooooooo.'],
+/* ================= procedural pixel art ================= */
+type Pt = [number, number];
+type Shape =
+  | { t: 'poly'; p: Pt[]; cut?: boolean }
+  | { t: 'circ'; c: Pt; r: number; cut?: boolean; mark?: string }
+  | { t: 'ell'; c: Pt; rx: number; ry: number; cut?: boolean };
+
+function inside(sh: Shape, x: number, y: number): boolean {
+  if (sh.t === 'circ') return (x - sh.c[0]) ** 2 + (y - sh.c[1]) ** 2 <= sh.r * sh.r;
+  if (sh.t === 'ell') return ((x - sh.c[0]) / sh.rx) ** 2 + ((y - sh.c[1]) / sh.ry) ** 2 <= 1;
+  let ins = false;
+  const p = sh.p;
+  for (let i = 0, j = p.length - 1; i < p.length; j = i++) {
+    if ((p[i][1] > y) !== (p[j][1] > y) && x < ((p[j][0] - p[i][0]) * (y - p[i][1])) / (p[j][1] - p[i][1]) + p[i][0]) ins = !ins;
+  }
+  return ins;
+}
+
+/** Rasterise shapes on an N×N grid with 4-tone cylinder shading (h,a,m,s) and a 1px outline (o). */
+function rasterize(shapes: Shape[], N = 16): string[] {
+  const on: boolean[][] = Array.from({ length: N }, () => Array(N).fill(false));
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    let v = false;
+    for (const sh of shapes) {
+      if ((sh as { mark?: string }).mark) continue;
+      if (inside(sh, x + 0.5, y + 0.5)) v = !sh.cut;
+    }
+    on[y][x] = v;
+  }
+  const g: string[][] = Array.from({ length: N + 2 }, () => Array(N + 2).fill('.'));
+  for (let y = 0; y < N; y++) {
+    const xs = on[y].map((v, x) => (v ? x : -1)).filter((x) => x >= 0);
+    if (!xs.length) continue;
+    const lo = xs[0], hi = xs[xs.length - 1];
+    xs.forEach((x) => {
+      const t = (x - lo + 0.5) / (hi - lo + 1);
+      g[y + 1][x + 1] = t < 0.25 ? 'h' : t < 0.5 ? 'a' : t < 0.75 ? 'm' : 's';
+    });
+  }
+  for (let y = 0; y < N + 2; y++) for (let x = 0; x < N + 2; x++) {
+    if (g[y][x] !== '.') continue;
+    if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => (g[y + dy]?.[x + dx] ?? '.') !== '.' && g[y + dy][x + dx] !== 'o')) g[y][x] = 'o';
+  }
+  for (const sh of shapes) {
+    if (!(sh as { mark?: string }).mark) continue;
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (inside(sh, x + 0.5, y + 0.5) && on[y][x]) g[y + 1][x + 1] = (sh as { mark: string }).mark;
+  }
+  return g.map((r) => r.join(''));
+}
+
+const rect = (x0: number, y0: number, x1: number, y1: number): Shape => ({ t: 'poly', p: [[x0, y0], [x1, y0], [x1, y1], [x0, y1]] });
+const BASE: Shape[] = [rect(3, 13.2, 13, 15.6), { t: 'poly', p: [[4.2, 12], [11.8, 12], [12.2, 13.2], [3.8, 13.2]] }];
+const SHAPES: Record<string, Shape[]> = {
+  p: [{ t: 'circ', c: [8, 4.4], r: 2.7 }, { t: 'poly', p: [[6.6, 6.4], [9.4, 6.4], [10, 9], [6, 9]] }, rect(5.2, 8.6, 10.8, 9.8), { t: 'poly', p: [[6, 9.8], [10, 9.8], [11.6, 12], [4.4, 12]] }, ...BASE],
+  r: [rect(4, 2.2, 12, 4.6), { t: 'poly', p: [[6.2, 2], [7.4, 2], [7.4, 3.4], [6.2, 3.4]], cut: true }, { t: 'poly', p: [[8.6, 2], [9.8, 2], [9.8, 3.4], [8.6, 3.4]], cut: true },
+    rect(4.4, 4.6, 11.6, 5.8), { t: 'poly', p: [[5.4, 5.8], [10.6, 5.8], [11, 12], [5, 12]] }, ...BASE],
+  b: [{ t: 'ell', c: [8, 5.4], rx: 2.6, ry: 3.6 }, { t: 'circ', c: [8, 1.7], r: 1 }, { t: 'poly', p: [[8.3, 3], [9.2, 3], [10, 5.6], [9.1, 5.6]], cut: true },
+    rect(5.6, 8.6, 10.4, 9.7), { t: 'poly', p: [[6.2, 9.7], [9.8, 9.7], [11.4, 12], [4.6, 12]] }, ...BASE],
+  q: [{ t: 'poly', p: [[4, 3.4], [5.6, 6.4], [6.6, 2.8], [8, 6.2], [9.4, 2.8], [10.4, 6.4], [12, 3.4], [11.2, 9], [4.8, 9]] },
+    { t: 'circ', c: [4, 2.7], r: 0.9 }, { t: 'circ', c: [6.6, 2.1], r: 0.9 }, { t: 'circ', c: [9.4, 2.1], r: 0.9 }, { t: 'circ', c: [12, 2.7], r: 0.9 },
+    rect(4.6, 8.6, 11.4, 9.8), { t: 'poly', p: [[5, 9.8], [11, 9.8], [11.8, 12], [4.2, 12]] }, ...BASE],
+  k: [rect(7.2, 0.6, 8.8, 4.8), rect(5.8, 1.9, 10.2, 3.3), { t: 'ell', c: [8, 6.5], rx: 3.4, ry: 2.3 },
+    rect(5, 8.4, 11, 9.6), { t: 'poly', p: [[5.4, 9.6], [10.6, 9.6], [11.8, 12], [4.2, 12]] }, ...BASE],
+  n: [{ t: 'poly', p: [[3.6, 12.2], [4.6, 8.6], [5, 6.8], [3.8, 6.8], [2.2, 7.8], [1.6, 6.6], [3.8, 3.8], [5.2, 1.6], [6.6, 2.7], [8, 1.7], [10.4, 3.6], [12, 7.4], [12.4, 12.2]] },
+    { t: 'circ', c: [5.8, 4.6], r: 0.55, mark: 'o' }, { t: 'circ', c: [2.5, 7.1], r: 0.45, mark: 'o' }, ...BASE],
 };
+const PIECE_ROWS: Record<string, string[]> = Object.fromEntries(Object.entries(SHAPES).map(([k, v]) => [k, rasterize(v)]));
+
 export const SIDE = {
-  w: { o: '#2f1a0b', a: '#fff4d6', h: '#ffffff', s: '#d4b87c' },
-  b: { o: '#14301c', a: '#3f8f4a', h: '#8fd45a', s: '#25643a' },
+  w: { o: '#3a2410', h: '#ffffff', a: '#fff4d6', m: '#ecd9a8', s: '#c4a468' },
+  b: { o: '#102a18', h: '#a6e86e', a: '#5fb356', m: '#3f8f4a', s: '#25643a' },
 };
 export const Piece = ({ side, type, px = 4 }: { side: 'w' | 'b'; type: string; px?: number }) => (
-  <PixelArt rows={PIECES[type]} palette={SIDE[side]} px={px} />
+  <PixelArt rows={PIECE_ROWS[type]} palette={SIDE[side]} px={px} />
 );
 
-/* ---------- checkers: 10×10 shaded discs; k = gold crown mark ---------- */
-const DISC = ['..oooooo..', '.ohhhaaao.', 'ohhaaaaaso', 'ohaaaaaaso', 'oaaaaaaaso', 'oaaaaaaaso', 'oaaaaassso', 'oaasssssso', '.osssssso.', '..oooooo..'];
-const KING = ['..oooooo..', '.ohhhaaao.', 'ohhaaaaaso', 'ohakakakso', 'oaakkkaaso', 'oaakkkaaso', 'oaaaaassso', 'oaasssssso', '.osssssso.', '..oooooo..'];
+/* discs: radial-lit 14×14 */
+function discRows(N: number, king: boolean): string[] {
+  const g: string[][] = Array.from({ length: N + 2 }, () => Array(N + 2).fill('.'));
+  const c = N / 2, R = N / 2 - 0.2;
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const dx = (x + 0.5 - c) / R, dy = (y + 0.5 - c) / R, d = Math.hypot(dx, dy);
+    if (d > 1) continue;
+    const l = -(dx * 0.5 + dy * 0.6);
+    let ch = l > 0.5 ? 'h' : l > 0.0 ? 'a' : l > -0.45 ? 'm' : 's';
+    if (d > 0.58 && d < 0.7) ch = ch === 'h' ? 'a' : ch === 'a' ? 'm' : ch;
+    g[y + 1][x + 1] = ch;
+  }
+  for (let y = 0; y < N + 2; y++) for (let x = 0; x < N + 2; x++) {
+    if (g[y][x] === '.' && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => (g[y + dy]?.[x + dx] ?? '.') !== '.' && g[y + dy][x + dx] !== 'o')) g[y][x] = 'o';
+  }
+  if (king) {
+    const crown = ['k.k.k', 'kkkkk', 'kkkkk'];
+    const ox = Math.floor((N + 2 - 5) / 2), oy = Math.floor((N + 2 - 3) / 2);
+    crown.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === 'k') g[oy + y][ox + x] = 'k'; }));
+  }
+  return g.map((r) => r.join(''));
+}
+const DISC = discRows(14, false), KING = discRows(14, true);
 const CHECK_SIDE = {
-  0: { o: '#2f1a0b', a: '#d4475a', h: '#f27a8a', s: '#9a2a40', k: '#f2b632' },
-  1: { o: '#2f1a0b', a: '#fff4d6', h: '#ffffff', s: '#d4b87c', k: '#c27a00' },
+  0: { o: '#3a1218', h: '#ff9aa8', a: '#e0556a', m: '#b83048', s: '#821e34', k: '#ffd84a' },
+  1: { o: '#3a2410', h: '#ffffff', a: '#fff4d6', m: '#e8d49c', s: '#bfa062', k: '#c27a00' },
 };
 export const Disc = ({ side, king, px = 4 }: { side: 0 | 1; king?: boolean; px?: number }) => (
   <PixelArt rows={king ? KING : DISC} palette={CHECK_SIDE[side]} px={px} />
 );
-export const ConnectDisc = ({ px = 4 }: { px?: number }) => (
-  <PixelArt rows={DISC} palette={{ o: '#2f1a0b', a: '#f2b632', h: '#fff0a0', s: '#c27a00' }} px={px} />
+export const ConnectDisc = ({ px = 4, side = 1 as 0 | 1 }: { px?: number; side?: 0 | 1 }) => (
+  <PixelArt rows={DISC} palette={side === 1 ? { o: '#3a2410', h: '#fff2a0', a: '#ffd54a', m: '#e9a91c', s: '#b87a08' } : CHECK_SIDE[0]} px={px} />
 );
 
-/* ---------- menu / misc art ---------- */
-const DIE = ['oooooooooo', 'ohhhhhhhso', 'ohkhhhhkso', 'ohhhhhhhso', 'ohhhkkhhso', 'ohhhkkhhso', 'ohhhhhhhso', 'ohkhhhhkso', 'ossssssswo', 'oooooooooo'];
+/* small hand-drawn icons */
+const DIE = ['oooooooooo', 'ohhhhhhhso', 'ohkhhhhkso', 'ohhhhhhhso', 'ohhhkkhhso', 'ohhhkkhhso', 'ohhhhhhhso', 'ohkhhhhkso', 'osssssssso', 'oooooooooo'];
 export const DieArt = ({ px = 6 }: { px?: number }) => (
-  <PixelArt rows={DIE.map((r) => r.replace('w', 's'))} palette={{ o: '#2f1a0b', h: '#fff4d6', s: '#d4b87c', k: '#4a2a10' }} px={px} />
+  <PixelArt rows={DIE} palette={{ o: '#3a2410', h: '#fff4d6', s: '#d4b87c', k: '#4a2a10' }} px={px} />
 );
 const FLAG = ['..o.........', '..ooo.......', '..oggoo.....', '..ogggggo...', '..oggoo.....', '..ooo.......', '..o.........', '..o.........', '..o.........', '.ooo........', 'ooooo.......', '............'];
 export const FlagArt = ({ px = 5, fill = '#6fbf4a' }: { px?: number; fill?: string }) => (
-  <PixelArt rows={FLAG} palette={{ o: '#2f1a0b', g: fill }} px={px} />
+  <PixelArt rows={FLAG} palette={{ o: '#3a2410', g: fill }} px={px} />
 );
 const LEAF = ['...ll..', '..llll.', '.lllll.', 'llllll.', '.lllbl.', '..lbl..', '..b....'];
 export const Leaf = ({ color, px = 2 }: { color: string; px?: number }) => (
   <PixelArt rows={LEAF} palette={{ l: color, b: '#5b3716' }} px={px} />
 );
+const TRI = ['.........', '.ooooooo.', '.ohhhhhso', '..ohhhso.', '...ohso..', '....oo...'];
+export const BoardIcon = ({ px = 6 }: { px?: number }) => (
+  <PixelArt rows={TRI.concat(TRI.slice().reverse())} palette={{ o: '#3a2410', h: '#e0556a', s: '#b83048' }} px={px} />
+);
 
-/* ---------- card back: 15×21 woodland design ---------- */
+/* card back: 15×21 woodland design */
 function cardBackRows(): string[] {
   const W = 15, H = 21;
   const g: string[][] = Array.from({ length: H }, (_, y) => Array.from({ length: W }, (_, x) => {
@@ -54,24 +138,20 @@ function cardBackRows(): string[] {
     if (d === 0) return 'o';
     if (d === 1) return 'p';
     if (d === 2) return 'd';
-    // diamond lattice
     return (x + y) % 4 === 0 || (x - y + 40) % 4 === 0 ? 'l' : (x + y) % 2 === 0 ? 'g' : 'm';
   }));
-  // medallion: dark disc with a golden acorn-leaf motif
   const cx = 7, cy = 10;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    const dx = x - cx, dy = y - cy;
-    if (dx * dx + dy * dy <= 20) g[y][x] = 'd';
-    if (dx * dx + dy * dy >= 17 && dx * dx + dy * dy <= 20) g[y][x] = 'o';
+    const d2 = (x - cx) ** 2 + (y - cy) ** 2;
+    if (d2 <= 20) g[y][x] = 'd';
+    if (d2 >= 17 && d2 <= 20) g[y][x] = 'o';
   }
-  const motif = ['...y...', '..yyy..', '.yyhyy.', 'yyhhhyy', '.yyhyy.', '..yyy..', '...y...'];
-  motif.forEach((row, my) => [...row].forEach((ch, mx) => { if (ch !== '.') g[cy - 3 + my][cx - 3 + mx] = ch; }));
-  // corner sprouts
+  ['...y...', '..yyy..', '.yyhyy.', 'yyhhhyy', '.yyhyy.', '..yyy..', '...y...'].forEach((row, my) => [...row].forEach((ch, mx) => { if (ch !== '.') g[cy - 3 + my][cx - 3 + mx] = ch; }));
   [[3, 3], [11, 3], [3, 17], [11, 17]].forEach(([x, y]) => { g[y][x] = 'y'; });
   return g.map((r) => r.join(''));
 }
 const CARD_BACK = cardBackRows();
-const CARD_PAL = { o: '#2f1a0b', p: '#f6dca0', d: '#1f5a35', g: '#3f8f4a', m: '#2d7a40', l: '#6fbf4a', y: '#f2b632', h: '#fff0a0' };
+const CARD_PAL: Record<string, string> = { o: '#3a2410', p: '#f6dca0', d: '#1f5a35', g: '#3f8f4a', m: '#2d7a40', l: '#6fbf4a', y: '#f2b632', h: '#fff0a0' };
 export function CardBack() {
   return (
     <svg className="cardart" viewBox="0 0 15 21" preserveAspectRatio="none" shapeRendering="crispEdges" aria-hidden>
@@ -81,7 +161,7 @@ export function CardBack() {
         while (x < row.length) {
           let n = 1;
           while (row[x + n] === row[x]) n++;
-          out.push(<rect key={`${x},${y}`} x={x} y={y} width={n} height="1" fill={CARD_PAL[row[x] as keyof typeof CARD_PAL]} />);
+          out.push(<rect key={`${x},${y}`} x={x} y={y} width={n} height="1" fill={CARD_PAL[row[x]]} />);
           x += n;
         }
         return out;
@@ -90,7 +170,7 @@ export function CardBack() {
   );
 }
 
-/* ---------- landscape ---------- */
+/* ================= landscape (canvas → image) ================= */
 function rng(seed: number) {
   return () => {
     seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
@@ -99,105 +179,166 @@ function rng(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-const PINE = ['.....l.....', '....lgg....', '....lggG...', '...lggggG..', '...lgggggG.', '..lgggggggG', '..lggggggGG', '.lggggggggG', '.lgggggggGG', 'lgggggggggG', '....bbB....', '....bbB....', '....bbB....'];
-const PALS = {
-  far: { l: '#b4dcc0', g: '#8cc4a0', G: '#6aa58a', b: '#7f9a86', B: '#628072' },
-  mid: { l: '#8fd45a', g: '#4a9a4a', G: '#2f7040', b: '#8a5a2e', B: '#5b3716' },
-  fall: { l: '#ffd36b', g: '#e8963a', G: '#b8582a', b: '#8a5a2e', B: '#5b3716' },
-  near: { l: '#a6e36a', g: '#3f8f4a', G: '#25643a', b: '#8a5a2e', B: '#5b3716' },
+type Pal = { l: string; g: string; G: string; b: string; B: string };
+const PALS: Record<string, Pal> = {
+  far: { l: '#c4e3d0', g: '#a4d0b6', G: '#86b79c', b: '#8aa595', B: '#6f8b7c' },
+  mid: { l: '#a4de68', g: '#58a64e', G: '#33763f', b: '#8a5a2e', B: '#5b3716' },
+  fall: { l: '#ffdc7a', g: '#ee9d3e', G: '#bd5a2c', b: '#8a5a2e', B: '#5b3716' },
+  near: { l: '#b5ee72', g: '#4a9b4a', G: '#27693c', b: '#8a5a2e', B: '#5b3716' },
 };
-function tree(key: string, x: number, baseY: number, scale: number, pal: Record<string, string>) {
-  const rects: ReactElement[] = [];
-  PINE.forEach((row, y) => {
-    let cx = 0;
-    while (cx < row.length) {
-      if (row[cx] === '.') { cx++; continue; }
-      let n = 1;
-      while (row[cx + n] === row[cx]) n++;
-      rects.push(<rect key={`${cx},${y}`} x={cx * scale} y={y * scale} width={n * scale} height={scale} fill={pal[row[cx]]} />);
-      cx += n;
+/** Draws a tiered pine; returns nothing, paints directly. (x = centre, base = ground y) */
+function pine(ctx: CanvasRenderingContext2D, rand: () => number, x: number, base: number, H: number, pal: Pal) {
+  const trunk = Math.max(2, Math.round(H * 0.14)), crown = H - trunk, tiers = H > 40 ? 5 : 4;
+  const halfMax = H * 0.3;
+  ctx.fillStyle = pal.B; ctx.fillRect(Math.round(x - 1), base - trunk, 3, trunk);
+  ctx.fillStyle = pal.b; ctx.fillRect(Math.round(x - 1), base - trunk, 1, trunk);
+  for (let y = 0; y < crown; y++) {
+    const t = y / crown, tier = Math.floor(t * tiers), p = (t * tiers) % 1;
+    const half = Math.max(0.8, halfMax * (0.45 + 0.55 * (tier + 1) / tiers) * (0.25 + 0.75 * p));
+    const x0 = Math.round(x - half), x1 = Math.round(x + half);
+    for (let px = x0; px <= x1; px++) {
+      const u = (px - x) / half;
+      let col = u < -0.35 ? pal.l : u > 0.35 ? pal.G : pal.g;
+      if (p < 0.1 && tier > 0) col = pal.G;
+      else if (rand() < 0.1) col = col === pal.g ? pal.l : col === pal.G ? pal.g : col;
+      ctx.fillStyle = col; ctx.fillRect(px, base - trunk - crown + y, 1, 1);
     }
-  });
-  return <g key={key} transform={`translate(${x} ${baseY - PINE.length * scale})`}>{rects}</g>;
-}
-function ridge(key: string, seed: number, base: number, amp: number, color: string, shade: string) {
-  const r = rng(seed);
-  const cols: ReactElement[] = [];
-  let h = base;
-  for (let x = 0; x < 192; x++) {
-    if (x % 4 === 0) h = Math.round(base - amp * (0.5 + 0.5 * Math.sin(x / 17 + seed)) - r() * 3);
-    cols.push(<rect key={x} x={x} y={h} width="1" height={72 - h} fill={color} />);
-    cols.push(<rect key={`s${x}`} x={x} y={h} width="1" height="1" fill={shade} />);
   }
-  return <g key={key}>{cols}</g>;
+}
+function makeLandscape(): string {
+  const W = 448, H = 168, GY = 138;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d')!;
+  const r = rng(11);
+  const R = (x: number, y: number, w: number, h: number, c: string) => { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), w, h); };
+  const ridge = (seed: number, base: number, amp: number, col: string, hi: string) => {
+    for (let x = 0; x < W; x += 2) {
+      const h = Math.round(base - amp * (0.5 + 0.5 * Math.sin(x / 47 + seed)) - amp * 0.35 * Math.sin(x / 19 + seed * 2) - r() * 1.2);
+      R(x, h, 2, GY - h, col); R(x, h, 2, 1, hi);
+    }
+  };
+  ridge(3, 82, 30, '#a9cfc0', '#c9e6d6');
+  for (let i = 0; i < 52; i++) pine(ctx, r, i * 8.8 + r() * 5, 122, 18 + r() * 8, PALS.far);
+  ridge(11, 98, 22, '#7fb996', '#a0d1ae');
+  for (let i = 0; i < 34; i++) pine(ctx, r, i * 13.4 + r() * 6, 134, 28 + r() * 10, r() < 0.16 ? PALS.fall : PALS.mid);
+  ridge(19, 118, 10, '#58a064', '#7cc070');
+  // ground
+  R(0, GY, W, 2, '#9bdc62'); R(0, GY + 2, W, 5, '#74c04a'); R(0, GY + 7, W, 9, '#58a640'); R(0, GY + 16, W, H - GY - 16, '#3f8a34');
+  for (let i = 0; i < 260; i++) { const x = r() * W, y = GY + 3 + r() * (H - GY - 4); R(x, y, 1, 1, r() < 0.5 ? '#86d150' : '#357a2c'); }
+  // pond
+  const pcx = 316, pcy = 152, prx = 46, pry = 8;
+  for (let y = pcy - pry; y <= pcy + pry; y++) {
+    const half = Math.round(prx * Math.sqrt(1 - ((y - pcy) / pry) ** 2));
+    const col = y < pcy - 3 ? '#9adcf0' : y < pcy + 2 ? '#62b8e0' : '#3f94c8';
+    R(pcx - half - 1, y, half * 2 + 2, 1, '#2d6f9a'); R(pcx - half, y, half * 2, 1, col);
+  }
+  for (let i = 0; i < 12; i++) R(pcx - 34 + r() * 68, pcy - 6 + r() * 11, 2, 1, '#e8f8ff');
+  [[-18, 2], [8, 4], [24, -2]].forEach(([dx, dy]) => { R(pcx + dx, pcy + dy, 5, 2, '#4aa84a'); R(pcx + dx + 1, pcy + dy, 1, 1, '#ff9ec0'); });
+  // fence
+  for (let x = 120; x < 200; x += 13) {
+    R(x, 148, 4, 15, '#7a4a22'); R(x, 148, 1, 15, '#b9813f'); R(x, 147, 4, 1, '#b9813f');
+  }
+  R(120, 151, 80, 2, '#9c6a38'); R(120, 151, 80, 1, '#c28a4c'); R(120, 157, 80, 2, '#9c6a38'); R(120, 157, 80, 1, '#c28a4c');
+  // bushes with berries
+  const bush = (bx: number, by: number, rr: number) => {
+    for (let y = -rr; y <= rr; y++) for (let x = -rr * 1.4; x <= rr * 1.4; x++) {
+      const d = Math.hypot(x / 1.4, y);
+      if (d > rr) continue;
+      const l = -(x * 0.3 + y * 0.6) / rr;
+      R(bx + x, by + y, 1, 1, l > 0.35 ? '#7fd05a' : l > -0.15 ? '#4a9a46' : '#2f7438');
+    }
+    for (let i = 0; i < rr / 2; i++) R(bx - rr + r() * rr * 2, by - rr / 2 + r() * rr, 1, 1, '#e0405a');
+  };
+  [[40, 142, 7], [92, 146, 6], [236, 143, 7], [262, 146, 5], [372, 145, 8], [420, 143, 6]].forEach(([x, y, rr]) => bush(x, y, rr));
+  // flowers and tufts
+  const cols = ['#ff7aa8', '#fff4d6', '#ffd54a', '#b394ff'];
+  for (let i = 0; i < 170; i++) {
+    const x = Math.floor(r() * W), y = GY + 6 + Math.floor(r() * (H - GY - 8));
+    if (x > pcx - prx - 3 && x < pcx + prx + 3 && y > pcy - pry - 2) continue;
+    R(x, y + 1, 1, 2, '#2d7a3a'); R(x, y, 1, 1, cols[i % 4]);
+    if (i % 3 === 0) { R(x - 1, y, 1, 1, cols[i % 4]); R(x + 1, y, 1, 1, cols[i % 4]); R(x, y - 1, 1, 1, cols[i % 4]); R(x, y, 1, 1, '#ffd54a'); }
+  }
+  for (let i = 0; i < 90; i++) { const x = r() * W, y = GY + 4 + r() * (H - GY - 6); R(x, y, 1, 3, '#2d6e2d'); R(x + 1, y + 1, 1, 2, '#3b8a35'); R(x - 1, y + 1, 1, 2, '#3b8a35'); }
+  // mushrooms
+  [[205, 160], [212, 162], [60, 158]].forEach(([x, y]) => { R(x - 2, y, 5, 2, '#d4475a'); R(x - 1, y - 1, 3, 1, '#d4475a'); R(x, y, 1, 1, '#fff4d6'); R(x, y + 2, 1, 2, '#f1dfb0'); });
+  // framing trees
+  [[18, 176, 100, 'near'], [66, 170, 70, 'fall'], [404, 176, 96, 'near'], [440, 172, 76, 'mid'], [372, 170, 60, 'fall']].forEach(([x, y, h, p]) => pine(ctx, r, x as number, y as number, h as number, PALS[p as string]));
+  return cv.toDataURL('image/png');
 }
 
-export function Landscape() {
-  const r = rng(7);
-  const far = Array.from({ length: 22 }, (_, i) => tree(`f${i}`, i * 9 + r() * 5 - 4, 50, 1, PALS.far));
-  const mid = Array.from({ length: 15 }, (_, i) => tree(`m${i}`, i * 13.5 + r() * 6 - 3, 58, 1, i % 5 === 3 ? PALS.fall : PALS.mid));
-  const near = [[-6, 72, PALS.near], [14, 74, PALS.fall], [150, 73, PALS.near], [172, 72, PALS.mid]].map(([x, y, p], i) => tree(`n${i}`, x as number, y as number, 2, p as Record<string, string>));
-  const flowers: ReactElement[] = [];
-  const fr = rng(21);
-  const cols = ['#ff7aa8', '#fff4d6', '#f2b632', '#a98bff'];
-  for (let i = 0; i < 70; i++) {
-    const x = Math.floor(fr() * 192), y = 62 + Math.floor(fr() * 9);
-    flowers.push(<rect key={`fl${i}`} x={x} y={y} width="1" height="1" fill={cols[i % 4]} />);
-    if (i % 3 === 0) flowers.push(<rect key={`st${i}`} x={x} y={y + 1} width="1" height="1" fill="#2d7a3a" />);
-  }
-  const tufts = Array.from({ length: 40 }, (_, i) => {
-    const x = Math.floor(fr() * 190), y = 61 + Math.floor(fr() * 10);
-    return <path key={`t${i}`} d={`M${x} ${y + 1}v-1M${x + 1} ${y + 1}v-2M${x + 2} ${y + 1}v-1`} stroke="#2d6e2d" strokeWidth="1" fill="none" />;
-  });
-  return (
-    <svg className="landscape" viewBox="0 0 192 72" preserveAspectRatio="xMidYMax slice" shapeRendering="crispEdges" aria-hidden>
-      {ridge('r1', 3, 40, 14, '#9ccdb8', '#b7dfcb')}
-      {ridge('r2', 11, 46, 10, '#6fb08c', '#8cc7a3')}
-      {far}
-      {ridge('r3', 19, 55, 7, '#4f9a5a', '#6fbf4a')}
-      {mid}
-      <rect x="0" y="60" width="192" height="12" fill="#4a9a3a" />
-      <rect x="0" y="60" width="192" height="1" fill="#8fd45a" />
-      <rect x="0" y="61" width="192" height="1" fill="#6fbf4a" />
-      <rect x="0" y="68" width="192" height="4" fill="#3b8530" />
-      {tufts}
-      {flowers}
-      {near}
-    </svg>
-  );
-}
-
+/* ================= sky ================= */
 const CLOUD = ['....wwww....', '..wwwwwwww..', '.wwwwwwwwww.', 'wwwwwwwwwwww', 'ssssssssssss'];
-export function Sky() {
-  const sun = [] as ReactElement[];
-  for (let y = -6; y <= 6; y++) for (let x = -6; x <= 6; x++) {
-    const d = x * x + y * y;
-    if (d <= 36) sun.push(<rect key={`${x},${y}`} x={160 + x} y={14 + y} width="1" height="1" fill={d <= 22 ? '#fff0a0' : '#ffd84a'} />);
-    else if (d <= 56) sun.push(<rect key={`${x},${y}`} x={160 + x} y={14 + y} width="1" height="1" fill="#ffe27a33" />);
-  }
+function Cloud({ x, y, dur, delay, night }: { x: number; y: number; dur: number; delay: number; night: boolean }) {
+  const pal = night ? { w: '#4b5a86', s: '#38466f' } : { w: '#ffffff', s: '#cfe3f2' };
   return (
-    <svg className="sky" viewBox="0 0 192 48" preserveAspectRatio="xMidYMin slice" shapeRendering="crispEdges" aria-hidden>
-      {sun}
-      {[[14, 12, 40, 0], [88, 24, 52, 14], [132, 6, 46, 6], [60, 4, 36, 22]].map(([x, y, dur, delay], i) => (
-        <g key={i} className="cloud" style={{ animationDuration: `${dur}s`, animationDelay: `-${delay}s` }}>
-          <g transform={`translate(${x} ${y})`}>
-            <PixelArtRects rows={CLOUD} palette={{ w: '#ffffff', s: '#cfe3f2' }} />
-          </g>
-        </g>
-      ))}
-    </svg>
+    <g className="cloud" style={{ animationDuration: `${dur}s`, animationDelay: `-${delay}s` }}>
+      <g transform={`translate(${x} ${y}) scale(1.3)`}>
+        {CLOUD.flatMap((row, cy) => [...row].map((ch, cx) => (ch === '.' ? null : <rect key={`${cx},${cy}`} x={cx} y={cy} width="1" height="1" fill={pal[ch as 'w' | 's']} />)))}
+      </g>
+    </g>
   );
 }
-function PixelArtRects({ rows, palette }: { rows: string[]; palette: Record<string, string> }) {
-  return <>{rows.flatMap((row, y) => [...row].map((ch, x) => ch === '.' ? null : <rect key={`${x},${y}`} x={x} y={y} width="1" height="1" fill={palette[ch]} />))}</>;
+const STARS = (() => { const r = rng(5); return Array.from({ length: 46 }, () => [r() * 384, r() * 70, r() < 0.2 ? 2 : 1, r() * 4] as const); })();
+
+export function Sky({ time }: { time: Resolved }) {
+  const body: ReactElement[] = [];
+  if (time === 'night') {
+    for (let y = -9; y <= 9; y++) for (let x = -9; x <= 9; x++) {
+      const d = x * x + y * y, d2 = (x - 4) ** 2 + (y - 2) ** 2;
+      if (d <= 64 && d2 > 52) body.push(<rect key={`${x},${y}`} x={310 + x} y={26 + y} width="1" height="1" fill={d <= 30 ? '#fff8dc' : '#f0e6b8'} />);
+    }
+  } else {
+    const [cx, cy] = time === 'dusk' ? [262, 104] : [326, 30];
+    const core = time === 'dusk' ? '#ffb347' : '#fff0a0', edge = time === 'dusk' ? '#ff7a3a' : '#ffd84a';
+    for (let y = -14; y <= 14; y++) for (let x = -14; x <= 14; x++) {
+      const d = x * x + y * y;
+      if (d <= 100) body.push(<rect key={`${x},${y}`} x={cx + x} y={cy + y} width="1" height="1" fill={d <= 56 ? core : edge} />);
+      else if (d <= 196) body.push(<rect key={`${x},${y}`} x={cx + x} y={cy + y} width="1" height="1" fill={time === 'dusk' ? '#ffb34722' : '#fff0a022'} />);
+    }
+  }
+  return (
+    <svg className="sky" viewBox="0 0 384 120" preserveAspectRatio="xMidYMin slice" shapeRendering="crispEdges" aria-hidden>
+      {time === 'night' && STARS.map(([x, y, s, d], i) => <rect key={i} className="star" x={x} y={y} width={s} height={s} fill="#fff8dc" style={{ animationDelay: `-${d}s` }} />)}
+      {body}
+      {[[24, 20, 70, 0], [150, 46, 90, 22], [236, 8, 80, 12], [96, 6, 64, 40]].map(([x, y, dur, delay], i) => <Cloud key={i} x={x} y={y} dur={dur} delay={delay} night={time === 'night'} />)}
+    </svg>
+  );
 }
 
 export function Scenery() {
+  const { resolved } = useTime();
+  const url = useMemo(makeLandscape, []);
   return (
-    <div className="scenery" aria-hidden>
-      <Sky />
-      <Landscape />
-      {Array.from({ length: 7 }, (_, i) => <i key={i} className={`leaf l${i}`} />)}
+    <div className="scenery" data-time={resolved} aria-hidden>
+      <Sky time={resolved} />
+      <div className="landscape" style={{ backgroundImage: `url(${url})` }} />
+      <div className="tint" />
+      {Array.from({ length: 7 }, (_, i) => <i key={`l${i}`} className={`leaf l${i}`} />)}
+      {Array.from({ length: 14 }, (_, i) => <i key={`f${i}`} className={`firefly f${i}`} />)}
     </div>
   );
 }
+
+/* tree icon for the menu */
+export function TreeIcon({ h = 34, px = 3 }: { h?: number; px?: number }) {
+  const url = useMemo(() => {
+    const cv = document.createElement('canvas');
+    cv.width = h; cv.height = h;
+    const ctx = cv.getContext('2d')!;
+    pine(ctx, rng(h), h / 2, h, h, PALS.mid);
+    return cv.toDataURL('image/png');
+  }, [h]);
+  return <img src={url} width={h * px} height={h * px} alt="" style={{ imageRendering: 'pixelated' }} />;
+}
+
+/* domino icon (15×9) */
+function dominoRows(): string[] {
+  const g: string[][] = Array.from({ length: 9 }, (_, y) => Array.from({ length: 15 }, (_, x) => (y === 0 || y === 8 || x === 0 || x === 14 || x === 7 ? 'o' : y === 7 ? 's' : 'h')));
+  [[2, 2], [5, 5], [9, 2], [12, 2], [9, 5], [12, 5]].forEach(([x, y]) => { g[y][x] = 'k'; });
+  return g.map((r) => r.join(''));
+}
+const DOMINO = dominoRows();
+export const DominoArt = ({ px = 5 }: { px?: number }) => (
+  <PixelArt rows={DOMINO} palette={{ o: '#3a2410', h: '#fff4d6', s: '#d4b87c', k: '#4a2a10' }} px={px} />
+);
