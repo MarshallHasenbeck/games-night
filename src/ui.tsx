@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { sfx } from './lib/sfx';
+import { PLAYER_COLORS, playerName, type SeatCfg } from './lib/seats';
 
 /** Full-screen popups render on <body> so the auto-fit scaling of the game can't displace them. */
 export const Overlay = ({ children }: { children: ReactNode }) => createPortal(children, document.body);
@@ -15,6 +16,45 @@ export function useOpponent(id: string): Opp {
   });
   useEffect(() => { try { localStorage.setItem(key, JSON.stringify(v)); } catch { /* ignore */ } }, [key, v]);
   return { cpu: v.cpu, level: v.level, setCpu: (cpu) => setV((p) => ({ ...p, cpu })), setLevel: (level) => setV((p) => ({ ...p, level })) };
+}
+
+
+/* ---------- 2-4 player seats (human or CPU) for the race games ---------- */
+export function useSeatCfg(id: string): [SeatCfg, (c: SeatCfg) => void] {
+  const key = `gn-seats-${id}`;
+  const [cfg, setCfg] = useState<SeatCfg>(() => {
+    const base: SeatCfg = { n: 2, cpu: [false, false, false, false], level: 2 };
+    try { return { ...base, ...JSON.parse(localStorage.getItem(key) || '{}') }; } catch { return base; }
+  });
+  const set = (c: SeatCfg) => { setCfg(c); try { localStorage.setItem(key, JSON.stringify(c)); } catch { /* ignore */ } };
+  return [cfg, set];
+}
+
+export function SeatPicker({ cfg, set }: { cfg: SeatCfg; set: (c: SeatCfg) => void }) {
+  const anyCpu = cfg.cpu.slice(0, cfg.n).some(Boolean);
+  return (
+    <div className="modebar seatbar">
+      <div className="seg">
+        {([2, 3, 4] as const).map((n) => (
+          <button key={n} className={cfg.n === n ? 'on' : ''} onClick={() => { sfx.click(); set({ ...cfg, n }); }}>{n} PLAYERS</button>
+        ))}
+      </div>
+      <div className="seatchips">
+        {Array.from({ length: cfg.n }, (_, i) => (
+          <button key={i} className="seatchip" style={{ ['--pc' as string]: PLAYER_COLORS[i].main }} onClick={() => { sfx.click(); const cpu = [...cfg.cpu] as SeatCfg['cpu']; cpu[i] = !cpu[i]; set({ ...cfg, cpu }); }}>
+            <i />{playerName({ ...cfg, cpu: [false, false, false, false] }, i)} <b>{cfg.cpu[i] ? 'CPU' : 'HUMAN'}</b>
+          </button>
+        ))}
+      </div>
+      {anyCpu && (
+        <div className="seg small">
+          {(['EASY', 'MEDIUM', 'HARD'] as const).map((n, i) => (
+            <button key={n} className={cfg.level === i + 1 ? 'on' : ''} onClick={() => { sfx.click(); set({ ...cfg, level: (i + 1) as 1 | 2 | 3 }); }}>{n}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function ModeBar({ opp, onChange, levels = true }: { opp: Opp; onChange?: () => void; levels?: boolean }) {

@@ -8,6 +8,9 @@ import Backgammon from './games/Backgammon';
 import Dominoes from './games/Dominoes';
 import Mancala from './games/Mancala';
 import Battleship from './games/Battleship';
+import AcornPop from './games/AcornPop';
+import SlideSwap from './games/SlideSwap';
+import { AcornPiece, MushroomPiece } from './racers';
 import { Scenery, Piece, Disc, ConnectDisc, DieArt, FlagArt, BoardIcon, DominoArt, TreeIcon, Boat } from './art';
 import { isMuted, setMuted, sfx } from './lib/sfx';
 import { cycleTime, useTime } from './lib/theme';
@@ -23,6 +26,8 @@ const GAMES = [
   { id: 'backgammon', name: 'Backgammon', icon: <BoardIcon px={5} />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
   { id: 'mancala', name: 'Mancala', icon: <span style={{ display: 'flex' }}><ConnectDisc px={3} side={0} /><ConnectDisc px={3} /></span>, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
   { id: 'battleship', name: 'Battleship', icon: <span style={{ display: 'block', width: 70, height: 26 }}><Boat len={3} id={3} /></span>, blurb: 'Hunt the cute little boats. Pass-the-iPad secret!', C: Battleship },
+  { id: 'acorn', name: 'Acorn Pop', icon: <span style={{ display: 'block', width: 45, height: 50 }}><AcornPiece color={0} /></span>, blurb: 'Pop the dice, race your acorns home. 2-4 players!', C: AcornPop },
+  { id: 'slide', name: 'Slide & Swap', icon: <span style={{ display: 'block', width: 45, height: 45 }}><MushroomPiece color={1} /></span>, blurb: 'Draw cards, slide, bump, swap. A friendly race!', C: SlideSwap },
   { id: 'dominoes', name: 'Dominoes', icon: <DominoArt px={5} />, blurb: 'Match the ends. First to 100.', C: Dominoes },
 ] as const;
 

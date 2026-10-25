@@ -113,6 +113,51 @@ export const RULES: Record<string, Rules> = {
       ] },
     ],
   },
+  acorn: {
+    title: 'Acorn Pop',
+    goal: 'Be the first to get all 4 of your acorns round the board and into your home row.',
+    sections: [
+      { h: 'How to play', items: [
+        'Pick 2, 3 or 4 players at the top. Tap a player chip to switch it between HUMAN and CPU.',
+        'On your turn, tap the bubble to POP the dice. Then tap one of your glowing acorns to move it that many squares, clockwise.',
+        'You need a 6 to bring an acorn out of the pen onto your start square. A 6 also lets you roll again!',
+        'No acorns out yet? You get 3 tries to roll a 6.',
+      ] },
+      { h: 'Bumping and blocking', items: [
+        'Land on another player\'s acorn and it goes back to its pen - they need another 6 to get out again.',
+        'You cannot land on your own acorn. If that is the only way to move, that acorn cannot move.',
+        'If you can move, you must. If nothing can move, your turn passes.',
+      ] },
+      { h: 'Going home', items: [
+        'After a full lap, an acorn turns into your home row. Count exactly: it has to land on an empty home square, so you cannot overshoot.',
+        'Acorns in the home row are safe. Get all four in to win!',
+      ] },
+    ],
+  },
+  slide: {
+    title: 'Slide & Swap',
+    goal: 'Be the first to get all 4 of your pawns round the board and exactly onto your HOME.',
+    sections: [
+      { h: 'How to play', items: [
+        'Pick 2, 3 or 4 players at the top. Tap a player chip to switch it between HUMAN and CPU.',
+        'On your turn, tap the DECK to draw a card, then tap a glowing pawn to move it. Some cards give you a choice - tap the pawn, then tap where you want to go.',
+        'Pawns run clockwise round the edge, then turn into their own coloured safe squares and finish exactly on HOME.',
+        'Landing on another player\'s pawn bumps it back to START. You cannot land on your own pawn.',
+      ] },
+      { h: 'The cards', items: [
+        '1 or 2: bring a pawn out of START onto the board, or move 1 or 2. A 2 lets you draw again!',
+        '3, 5, 8, 12: move forward that many. 4: move BACKWARD 4. 10: forward 10, or back 1.',
+        '7: move one pawn 7, or split it between two pawns (tap a smaller number, then move another pawn the rest).',
+        '11: forward 11, or SWAP places with an opponent\'s pawn. No move possible? Your turn is skipped.',
+        'SORRY!: take a pawn from START and bump any opponent\'s pawn off the board - your pawn takes its place.',
+      ] },
+      { h: 'Slides', items: [
+        'Land exactly on the arrow of a slide that is NOT your colour and you whoosh along it to the dot at the end.',
+        'Everyone on the slide gets bumped back to START - even your own pawns!',
+        'Safe squares and HOME cannot be bumped. Pawns on the safe squares just need the exact count to get HOME.',
+      ] },
+    ],
+  },
   backgammon: {
     title: 'Backgammon',
     goal: 'Move all 15 of your checkers home, then bear them all off the board before your opponent.',
