@@ -7,6 +7,8 @@ createRoot(document.getElementById('root')!).render(<App />);
 // Real visible height in px: works on every Safari, including the iPad address-bar / home-screen cases
 const setAppHeight = () => {
   const el = document.documentElement, vv = window.visualViewport, w = window.innerWidth, h = Math.round(Math.min(window.innerHeight, vv?.height ?? Infinity));
+  const wpx = `${document.documentElement.clientWidth || w}px`;
+  if (el.style.getPropertyValue('--app-w') !== wpx) el.style.setProperty('--app-w', wpx); // iOS leaves vw units stale after rotating
   const top = `${Math.max(0, Math.round(vv?.offsetTop ?? 0))}px`;
   if (el.style.getPropertyValue('--app-h') !== `${h}px`) el.style.setProperty('--app-h', `${h}px`);
   if (el.style.getPropertyValue('--vv-top') !== top) el.style.setProperty('--vv-top', top); // pin to what is really visible
@@ -20,7 +22,9 @@ document.addEventListener('focusout', () => setTimeout(setAppHeight, 300));
 window.addEventListener('resize', setAppHeight);
 window.visualViewport?.addEventListener('resize', setAppHeight);
 window.visualViewport?.addEventListener('scroll', setAppHeight);
-window.addEventListener('orientationchange', () => setTimeout(setAppHeight, 250));
+window.addEventListener('orientationchange', () => [0, 120, 300, 700].forEach((ms) => setTimeout(setAppHeight, ms)));
+// phones: let the page run under the notch / home bar (the layouts pad for the safe areas themselves); iPads keep the plain viewport
+if (Math.min(screen.width, screen.height) < 600) document.querySelector('meta[name=viewport]')?.setAttribute('content', 'width=device-width, initial-scale=1, viewport-fit=cover');
 
 // Never scroll on a game screen: if the table is taller than the visible area, shrink it to fit (rarely needed -
 // the layouts are already sized to the viewport; this is the safety net for odd Safari toolbar heights).
