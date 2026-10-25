@@ -52,23 +52,24 @@ const boxOf = (key: string): Box | null => {
 };
 
 function Ghost({ f, done }: { f: Flight; done: () => void }) {
-  const [up, setUp] = useState(f.upFrom);
+  // Everything runs on the compositor: no React state while flying (a re-render mid-flight caused the stutter),
+  // the flip is a class toggle, and the animation holds its last frame until React swaps in the real card (no snap-back flash).
   const ref = (el: HTMLDivElement | null) => {
     if (!el || el.dataset.go) return;
     el.dataset.go = '1';
     const dx = f.to.x - f.from.x, dy = f.to.y - f.from.y, lift = Math.max(24, Math.hypot(dx, dy) * 0.18);
     const k = f.to.w / f.from.w;
     const an = el.animate([
-      { transform: 'translate(0,0) scale(1) rotate(0deg)' },
-      { transform: `translate(${dx / 2}px,${dy / 2 - lift}px) scale(${(1 + k) / 2 * 1.18}) rotate(${dx > 0 ? 4 : -4}deg)`, offset: 0.5 },
-      { transform: `translate(${dx}px,${dy}px) scale(${k}) rotate(0deg)` },
-    ], { duration: f.dur, easing: 'cubic-bezier(.35,.1,.25,1)' });
+      { transform: 'translate3d(0,0,0) scale(1) rotate(0deg)' },
+      { transform: `translate3d(${dx / 2}px,${dy / 2 - lift}px,0) scale(${(1 + k) / 2 * 1.18}) rotate(${dx > 0 ? 4 : -4}deg)`, offset: 0.5 },
+      { transform: `translate3d(${dx}px,${dy}px,0) scale(${k}) rotate(0deg)` },
+    ], { duration: f.dur, easing: 'cubic-bezier(.35,.1,.25,1)', fill: 'forwards' });
     an.onfinish = an.oncancel = done;
-    if (f.upTo !== f.upFrom) setTimeout(() => setUp(f.upTo), f.dur * 0.18);
+    if (f.upTo !== f.upFrom) setTimeout(() => el.querySelector('.pcard')?.classList.toggle('up', f.upTo), f.dur * 0.18);
   };
   return (
     <div ref={ref} className="ghostcard" style={{ left: f.from.x, top: f.from.y, width: f.from.w, height: f.from.h }}>
-      <Card v={f.v} up={up} small={f.from.w < 100} sty={{ width: '100%', fontSize: f.from.w * 0.4 }} />
+      <Card v={f.v} up={f.upFrom} small={f.from.w < 100} sty={{ width: '100%', fontSize: f.from.w * 0.4 }} />
     </div>
   );
 }

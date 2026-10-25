@@ -17,17 +17,43 @@ const view = () => {
   return { w: pw, h: fresh ? Math.min(ph, ih) : ph };
 };
 
-// Real visible height in px: works on every Safari, including the iPad address-bar / home-screen cases
+// ---- The stage -------------------------------------------------------------------------------------------------
+// Game layouts are written against --app-w x --app-h. Instead of letting those become whatever odd size a phone's toolbars leave,
+// a game screen gets a *virtual* viewport: the real size divided by a scale S (S = 1 on anything roomy, like an iPad). S only drops
+// when the real screen is smaller than the design minimum, so a layout never sees a cramped size; the shell is then scaled by S to
+// fill the real screen exactly (same aspect, so no bars). The scenery stays real-size behind it (--real-w / --real-h).
+const MIN_PORTRAIT = { w: 390, h: 700 }, MIN_LANDSCAPE = { w: 844, h: 390 };
+const stage = { s: 1, vw: 0, vh: 0, w: 0, h: 0 };
+const insetProbe = document.createElement('div');
+insetProbe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
+document.body.appendChild(insetProbe);
+
+let onResized: () => void = () => {};
+let lastKey = '';
 const setAppHeight = () => {
   const el = document.documentElement, vv = window.visualViewport, { w, h } = view();
-  const wpx = `${w}px`;
-  if (el.style.getPropertyValue('--app-w') !== wpx) el.style.setProperty('--app-w', wpx); // iOS leaves vw units stale after rotating
+  const inGame = !!document.querySelector('.game');
+  const min = w > h ? MIN_LANDSCAPE : MIN_PORTRAIT;
+  const s = inGame ? Math.min(1, w / min.w, h / min.h) : 1;
+  const vw = Math.round(w / s), vh = Math.round(h / s);
+  Object.assign(stage, { s, vw, vh, w, h });
+  const key = `${w}x${h}@${s.toFixed(3)}`;
+  if (key !== lastKey) {
+    lastKey = key;
+    const st = el.style, ins = getComputedStyle(insetProbe);
+    st.setProperty('--real-w', `${w}px`); st.setProperty('--real-h', `${h}px`); // the scenery is always the real size
+    st.setProperty('--app-w', `${vw}px`); st.setProperty('--app-h', `${vh}px`); // layouts use the virtual size
+    st.setProperty('--stage-s', String(s));
+    // safe areas in virtual px (the shell is scaled by s, so env() would come out too small)
+    st.setProperty('--sat', `${parseFloat(ins.paddingTop) / s}px`); st.setProperty('--sar', `${parseFloat(ins.paddingRight) / s}px`);
+    st.setProperty('--sab', `${parseFloat(ins.paddingBottom) / s}px`); st.setProperty('--sal', `${parseFloat(ins.paddingLeft) / s}px`);
+    onResized();
+  }
   const top = `${Math.max(0, Math.round(vv?.offsetTop ?? 0))}px`;
-  if (el.style.getPropertyValue('--app-h') !== `${h}px`) el.style.setProperty('--app-h', `${h}px`);
   if (el.style.getPropertyValue('--vv-top') !== top) el.style.setProperty('--vv-top', top); // pin to what is really visible
   // 'land' = phone held sideways (short), 'phone' = narrow portrait; anything bigger keeps the roomy iPad layouts
-  const fit = w > h && h < 560 ? 'land' : w < 600 ? 'phone' : '';
-  if (fit) el.dataset.fit = fit; else delete el.dataset.fit; // an empty data-fit would still match [data-fit] in CSS
+  const fit = vw > vh && vh < 560 ? 'land' : vw < 600 ? 'phone' : '';
+  if (fit) { if (el.dataset.fit !== fit) el.dataset.fit = fit; } else delete el.dataset.fit; // an empty data-fit would still match [data-fit] in CSS
 };
 setAppHeight();
 setInterval(setAppHeight, 500); // iPad Safari can leave the viewport nudged (e.g. after the keyboard closes) without firing an event
@@ -37,8 +63,8 @@ new ResizeObserver(setAppHeight).observe(probe);
 window.visualViewport?.addEventListener('resize', setAppHeight);
 window.visualViewport?.addEventListener('scroll', setAppHeight);
 window.addEventListener('orientationchange', () => [0, 120, 300, 700].forEach((ms) => setTimeout(setAppHeight, ms)));
-// phones: let the page run under the notch / home bar (the layouts pad for the safe areas themselves); iPads keep the plain viewport
-if (Math.min(screen.width, screen.height) < 600) document.querySelector('meta[name=viewport]')?.setAttribute('content', 'width=device-width, initial-scale=1, viewport-fit=cover');
+// viewport-fit=cover is fixed in index.html (switching it on from JS is unreliable on iOS and left a green strip beside the notch after rotating);
+// the layouts pad for the safe areas themselves.
 
 // Never scroll on a game screen: if the table is taller than the visible area, shrink it to fit (rarely needed -
 // the layouts are already sized to the viewport; this is the safety net for odd Safari toolbar heights).
@@ -50,21 +76,26 @@ const fitGame = () => {
   const shell = document.querySelector<HTMLElement>('.shell');
   const root = document.documentElement;
   if (!shell) return;
-  shell.style.transform = ''; shell.style.height = '';
+  shell.style.transform = ''; shell.style.height = ''; shell.style.width = ''; shell.style.maxWidth = ''; shell.style.margin = '';
   if (!shell.querySelector('.game')) { delete root.dataset.fitted; return; }
   window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; // Safari restores the old scroll position on refresh, which hid the top of the table
-  const avail = view().h, need = shell.offsetHeight;
-  if (need > avail + 1) {
-    const s = Math.max(0.55, avail / need);
-    shell.style.transformOrigin = 'top center';
-    shell.style.transform = `scale(${s})`;
-    shell.style.height = `${avail / s}px`; // keeps the page itself exactly one screen tall
-    root.dataset.fitted = '1';
-  } else root.dataset.fitted = '1'; // game screens never scroll
+  const { s: S, w: W, h: H } = stage;
+  if (S < 1) { shell.style.width = `${W / S}px`; shell.style.maxWidth = 'none'; shell.style.margin = '0'; } // lay out at the virtual width
+  const avail = H / S, need = shell.offsetHeight;
+  const s2 = need > avail + 1 ? Math.max(0.55, avail / need) : 1; // safety net: still too tall for the virtual screen, shrink a little more
+  const total = S * s2;
+  if (total < 1) {
+    shell.style.transformOrigin = S < 1 ? 'top left' : 'top center';
+    shell.style.transform = `scale(${total})`;
+    shell.style.height = `${H / total}px`; // keeps the page itself exactly one screen tall
+    if (S < 1) shell.style.width = `${W / total}px`;
+  }
+  root.dataset.fitted = '1'; // game screens never scroll
 };
 const queueFit = () => { if (!fitQueued) { fitQueued = true; requestAnimationFrame(fitGame); } };
+onResized = () => { queueFit(); setTimeout(queueFit, 150); setTimeout(queueFit, 500); }; // again once the new layout has settled
 // re-fit when a different game screen appears (not on every tap, so the table never twitches mid-game)
-new MutationObserver(() => { if (document.querySelector('.game') !== fittedGame) queueFit(); }).observe(document.getElementById('root')!, { childList: true, subtree: true });
+new MutationObserver(() => { if (document.querySelector('.game') !== fittedGame) { setAppHeight(); queueFit(); } }).observe(document.getElementById('root')!, { childList: true, subtree: true });
 window.addEventListener('resize', queueFit);
 window.visualViewport?.addEventListener('resize', queueFit);
 window.addEventListener('pageshow', queueFit);

@@ -14,7 +14,7 @@ body {
   touch-action: manipulation; -webkit-user-select: none; user-select: none; overflow-x: hidden;
 }
 button { font-family: inherit; color: inherit; touch-action: manipulation; }
-.shell { position: relative; max-width: 780px; margin: 0 auto; padding: max(16px, env(safe-area-inset-top)) 16px 120px; animation: rise .4s backwards; }
+.shell { position: relative; max-width: 780px; margin: 0 auto; padding: max(16px, var(--sat, 0px)) 16px 120px; animation: rise .4s backwards; }
 @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
 
 /* ---------- scenery ---------- */
@@ -23,8 +23,8 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 .scenery[data-time=dusk] { --sky: linear-gradient(#3a3f92 0%, #a2548a 36%, #ee8f5c 68%, #ffd28c 100%); }
 .scenery[data-time=night] { --sky: linear-gradient(#070b24 0%, #141d4a 45%, #25386a 80%, #34507e 100%); }
 .sky { position: absolute; top: 0; left: 0; width: 100%; height: calc(var(--app-h, 100vh) * .46); }
-.landscape { position: absolute; bottom: 0; left: 0; right: 0; height: min(calc(var(--app-h, 100vh) * .58), 580px); background-repeat: repeat-x; background-size: auto 100%; background-position: center bottom; image-rendering: pixelated; }
-.tint { position: absolute; bottom: 0; left: 0; right: 0; height: min(calc(var(--app-h, 100vh) * .58), 580px); mix-blend-mode: multiply; opacity: 0; transition: opacity .6s; }
+.landscape { position: absolute; bottom: 0; left: 0; right: 0; height: min(calc(var(--real-h, 100vh) * .58), 580px); background-repeat: repeat-x; background-size: auto 100%; background-position: center bottom; image-rendering: pixelated; }
+.tint { position: absolute; bottom: 0; left: 0; right: 0; height: min(calc(var(--real-h, 100vh) * .58), 580px); mix-blend-mode: multiply; opacity: 0; transition: opacity .6s; }
 .scenery[data-time=dusk] .tint { background: #f2b48e; opacity: 1; }
 .scenery[data-time=night] .tint { background: #5361a4; opacity: 1; }
 .cloud { animation: drift linear infinite; }
@@ -299,7 +299,7 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 /* =====================================================================
    v3: fit-to-screen layouts, new cards, rules, compact menu
    ===================================================================== */
-.shell { max-width: 1100px; padding: max(12px, env(safe-area-inset-top)) 16px 28px; }
+.shell { max-width: 1100px; padding: max(12px, var(--sat, 0px)) 16px 28px; }
 .game { display: grid; grid-template-areas: "head" "main" "foot"; justify-items: center; align-content: start;
   --bs: min(calc(calc(var(--app-w, 100vw) * 100 / 100) - 32px), 620px, calc(var(--app-h, 100vh) - 364px)); }
 .game > .head { grid-area: head; width: 100%; } .game > .main { grid-area: main; } .game > .foot { grid-area: foot; width: 100%; }
@@ -551,9 +551,9 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
    data-fit is set in main.tsx from the real window size.
    ===================================================================== */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-.shell { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+.shell { padding-left: max(16px, var(--sal, 0px)); padding-right: max(16px, var(--sar, 0px)); }
 
-[data-fit] .shell { padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 14px max(10px, env(safe-area-inset-left)); }
+[data-fit] .shell { padding: max(6px, var(--sat, 0px)) max(10px, var(--sar, 0px)) 14px max(10px, var(--sal, 0px)); }
 [data-fit] .btn { font-size: 15px; padding: 4px 12px; border-width: 2px; box-shadow: inset 0 2px 0 rgba(255,255,255,.28), 0 3px 0 var(--wood-dd), 0 5px 8px rgba(0,0,0,.2); min-height: 34px; }
 [data-fit] .btn.ghost, [data-fit] .btn.help { font-size: 12px; padding: 2px 8px; min-height: 28px; }
 [data-fit] .btn.big { font-size: 18px; padding: 6px 22px; }
@@ -644,7 +644,7 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 /* single-column games: head becomes one slim row */
 [data-fit="land"] .game:not(.split) > .head { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 8px; }
 [data-fit="land"] .game:not(.split) > .head > * { margin-top: 0; margin-bottom: 0; }
-[data-fit="land"] .pnboard { --cw: clamp(30px, min(calc((calc(var(--app-w, 100vw) * 100 / 100) - 290px) / 8), calc(((var(--app-h, 100vh) - 152px) / 2 - 34px) * 0.714)), 90px); grid-template-columns: 1fr auto 1fr; grid-template-areas: "p1 mid p2" "choice choice choice"; align-items: center; column-gap: 4px; }
+[data-fit="land"] .pnboard { --cw: clamp(30px, min(calc((calc(var(--app-w, 100vw) * 100 / 100) - 430px) / 8), calc(((var(--app-h, 100vh) - 152px) / 2 - 34px) * 0.714)), 90px); grid-template-columns: 1fr auto 1fr; grid-template-areas: "p1 mid p2" "choice choice choice"; align-items: center; column-gap: 4px; }
 [data-fit="land"] .pnboard .p1 { justify-self: end; } [data-fit="land"] .pnboard .p2 { justify-self: start; }
 [data-fit="land"] .piles { gap: 4px; } [data-fit="land"] .choice2 { flex-direction: row; gap: 6px; min-height: 0; } [data-fit="land"] .opt span { display: none; } [data-fit="land"] .discardbtn { font-size: 12px; padding: 3px 8px; }
 [data-fit="land"] .playnine .foot { display: flex; justify-content: center; gap: 10px; align-items: center; } [data-fit="land"] .playnine .foot .row { margin: 0; }
@@ -787,7 +787,7 @@ html, body { overscroll-behavior-y: contain; }
 /* =====================================================================
    v5: auto-fit safety net + scorecard
    ===================================================================== */
-html[data-fitted], html[data-fitted] body { overflow: hidden; height: var(--app-h, 100vh); }
+html[data-fitted], html[data-fitted] body { overflow: hidden; height: var(--real-h, 100vh); }
 .shell { transform-origin: top center; }
 
 .holestrip { padding: 6px 10px 8px; }
@@ -811,7 +811,7 @@ html[data-fitted], html[data-fitted] body { overflow: hidden; height: var(--app-
 [data-fit] .pnboard .choice, [data-fit] .choice2 { height: 38px; min-height: 38px; }
 
 /* farm critters on the grass (extra layer; the landscape art is unchanged) */
-.farm { position: absolute; bottom: 0; left: 0; right: 0; height: min(calc(var(--app-h, 100vh) * .58), 580px); --k: clamp(2.4px, calc(var(--app-h, 100vh) * .0044), 4.2px); }
+.farm { position: absolute; bottom: 0; left: 0; right: 0; height: min(calc(var(--real-h, 100vh) * .58), 580px); --k: clamp(2.4px, calc(var(--real-h, 100vh) * .0044), 4.2px); }
 .critter { position: absolute; }
 .critter:not(.farmer) { animation: cwalk var(--dur) ease-in-out infinite; }
 .critter .cr-in { display: block; image-rendering: pixelated; transform-origin: bottom center; }
@@ -869,8 +869,8 @@ html[data-fitted], html[data-fitted] body { overscroll-behavior: none; }
 .pit.hot, .mstore.hot { animation: potpulse .35s ease-out; }
 
 /* iOS Safari ignores overflow:hidden on the body, so pin the page itself while a game is open */
-html[data-fitted] body { position: fixed; top: var(--vv-top, 0px); left: 0; right: 0; width: 100%; height: var(--app-h, 100vh); min-height: 0; overflow: hidden; }
-html[data-fitted] { overflow: hidden; height: var(--app-h, 100vh); }
+html[data-fitted] body { position: fixed; top: var(--vv-top, 0px); left: 0; right: 0; width: 100%; height: var(--real-h, 100vh); min-height: 0; overflow: hidden; }
+html[data-fitted] { overflow: hidden; height: var(--real-h, 100vh); }
 
 /* If iPad Safari leaves the layout viewport nudged up (--vv-top = how far), shift fixed layers down by the same amount
    so nothing hides under the toolbar and no empty strip shows at the bottom */
@@ -887,7 +887,8 @@ html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
 
 /* Play Nine: flying cards */
 .ghostlayer { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
-.ghostcard { position: fixed; will-change: transform; filter: drop-shadow(0 10px 8px rgba(0, 0, 0, .35)); }
+.ghostcard { position: fixed; left: 0; top: 0; will-change: transform; backface-visibility: hidden; contain: layout style; } /* no filter: it forces a repaint every frame on iOS */
+.ghostcard .pcard::after { filter: none; inset: 8px -2px -8px; opacity: .8; }
 .ghostcard .pcard { pointer-events: none; }
 
 /* =====================================================================
@@ -1007,7 +1008,7 @@ html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
 
 /* The scenery may be taller than what is visible (iPad Safari: lvh > innerHeight). Keep the landscape and animals
    sitting on the VISIBLE bottom, and carry the ground colour on below them. */
-.landscape, .tint, .farm { bottom: max(0px, calc(100% - var(--app-h, 100%))); }
+.landscape, .tint, .farm { bottom: max(0px, calc(100% - var(--real-h, 100%))); }
 .landscape::after { content: ''; position: absolute; top: 100%; left: 0; right: 0; height: 40vh; background: #3f8a34; }
 
 /* ---------- prettier race boards ---------- */
@@ -1118,4 +1119,4 @@ html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
 
 /* wide screens: 4 menu columns so all 11 games fit without scrolling the menu */
 @media (min-width: 1150px) and (orientation: landscape) { .shell:has(.menu) { max-width: 1320px; } .menu { grid-template-columns: repeat(4, 1fr); } }
-[data-fit] .shell { padding-bottom: max(14px, env(safe-area-inset-bottom)); }
+[data-fit] .shell { padding-bottom: max(14px, var(--sab, 0px)); }
