@@ -6,6 +6,7 @@ import Checkers from './games/Checkers';
 import Connect4 from './games/Connect4';
 import Backgammon from './games/Backgammon';
 import Dominoes from './games/Dominoes';
+import Mancala from './games/Mancala';
 import { Scenery, Piece, Disc, ConnectDisc, DieArt, FlagArt, BoardIcon, DominoArt, TreeIcon } from './art';
 import { isMuted, setMuted, sfx } from './lib/sfx';
 import { cycleTime, useTime } from './lib/theme';
@@ -19,6 +20,7 @@ const GAMES = [
   { id: 'yahtzee', name: 'Yahtzee', icon: <DieArt px={7} />, blurb: 'Roll, hold, score. 13 rounds.', C: Yahtzee },
   { id: 'playnine', name: 'Play Nine', icon: <FlagArt px={6} />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
   { id: 'backgammon', name: 'Backgammon', icon: <BoardIcon px={5} />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
+  { id: 'mancala', name: 'Mancala', icon: <span style={{ display: 'flex' }}><ConnectDisc px={3} side={0} /><ConnectDisc px={3} /></span>, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
   { id: 'dominoes', name: 'Dominoes', icon: <DominoArt px={5} />, blurb: 'Match the ends. First to 100.', C: Dominoes },
 ] as const;
 

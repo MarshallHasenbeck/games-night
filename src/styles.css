@@ -431,3 +431,22 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 }
 
 @media (min-width: 1000px) and (min-height: 900px) { .dtile { width: 96px; height: 50px; } }
+
+/* ---------- mancala ---------- */
+.mancala { --mw: min(calc(100vw - 32px), 1000px, calc((var(--app-h, 100vh) - 300px) * 3.3)); }
+.mboard { display: grid; grid-template-columns: 1.05fr 6fr 1.05fr; gap: 10px; width: var(--mw); margin: 8px auto; padding: 14px; border-radius: 60px / 50px;
+  background: linear-gradient(#b27a3c, var(--wood) 50%, #7a4a22); border: 6px solid var(--wood-dd); box-shadow: inset 0 3px 0 rgba(255,255,255,.3), inset 0 -6px 0 rgba(0,0,0,.25), 0 16px 28px rgba(0,0,0,.4); }
+.mrows { display: grid; grid-template-rows: 1fr 1fr; gap: 12px; }
+.mrow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.pit, .mstore { position: relative; border: 0; padding: 0; background: radial-gradient(circle at 50% 30%, #3a1f0c, #24120a 70%); box-shadow: inset 0 8px 14px rgba(0,0,0,.7), 0 2px 0 rgba(255,255,255,.22); }
+.pit { aspect-ratio: 1; border-radius: 50%; cursor: default; }
+.mstore { border-radius: 999px / 70px; min-height: 100%; }
+.pit.src { cursor: pointer; box-shadow: inset 0 8px 14px rgba(0,0,0,.7), 0 0 0 4px var(--sun), 0 0 18px #f2b632aa; animation: pitglow 1.3s ease-in-out infinite; }
+@keyframes pitglow { 50% { box-shadow: inset 0 8px 14px rgba(0,0,0,.7), 0 0 0 4px #ffe48a, 0 0 30px #ffd45ecc; } }
+.pit.hot, .mstore.hot { animation: potpulse .3s ease-out; }
+@keyframes potpulse { 40% { filter: brightness(1.8); transform: scale(1.06); } }
+.stone { position: absolute; width: 17%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.85), var(--c) 50%, rgba(0,0,0,.35)); box-shadow: 0 2px 3px rgba(0,0,0,.6); }
+.mstore .stone { width: 34%; }
+.pcount { position: absolute; right: -2px; top: -4px; min-width: 26px; padding: 0 6px; text-align: center; background: var(--parch); color: var(--brown); border: 3px solid var(--wood-dd); border-radius: 12px; font: 700 17px/1.3 var(--font); z-index: 2; }
+.bigcount { position: absolute; left: 50%; bottom: 6%; transform: translateX(-50%); min-width: 60%; text-align: center; padding: 1px 4px; background: var(--parch); color: var(--brown); border: 3px solid var(--wood-dd); border-radius: 12px; font: 700 28px/1.2 var(--font); z-index: 2; }
+@media (max-width: 640px) { .mboard { gap: 5px; padding: 8px; } .mrow { gap: 5px; } .mrows { gap: 6px; } .pcount { min-width: 20px; font-size: 13px; padding: 0 3px; } .bigcount { font-size: 18px; } }

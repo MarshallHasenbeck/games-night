@@ -158,4 +158,30 @@ export const RULES: Record<string, Rules> = {
       ] },
     ],
   },
+  mancala: {
+    title: 'Mancala',
+    goal: 'Collect more stones in your store than your opponent by the time one side runs out.',
+    sections: [
+      { h: 'Setup', items: [
+        'The board has 6 pits on each side, each starting with 4 stones. The big pit at the end is a store.',
+        'Your pits are the bottom row (P1) or the top row (P2/CPU). Your store is on YOUR right: the right end for P1, the left end for P2.',
+      ] },
+      { h: 'Your turn', items: [
+        'Tap one of your pits that has stones. All its stones are picked up and dropped one at a time into the next pits, counter-clockwise (bottom row left to right, then along the top right to left).',
+        'Drop one in your own store as you pass it - but skip your opponent\'s store.',
+        'Your last stone decides what happens next:',
+        'EXTRA TURN: it lands in your own store - go again!',
+        'CAPTURE: it lands in an empty pit on YOUR side and the pit directly opposite has stones - you take them all, plus your last stone, into your store.',
+        'Otherwise your turn ends.',
+      ] },
+      { h: 'Ending the game', items: [
+        'The game ends when all six pits on one side are empty. The other player puts all their remaining stones into their own store.',
+        'Whoever has more stones in their store wins. Equal stones is a draw.',
+      ] },
+      { h: 'Tips', items: [
+        'Count your pits: a pit with exactly the right number of stones to reach your store gives a free extra turn.',
+        'Keep stones in the pits near your store for later extra turns, and watch for empty pits you can capture with.',
+      ] },
+    ],
+  },
 };
