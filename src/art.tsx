@@ -390,3 +390,13 @@ export function Boat({ len, id, sunk, vert }: { len: number; id: number; sunk?: 
 export const BoatIcon = ({ h = 40 }: { h?: number }) => (
   <span style={{ display: 'inline-block', width: h * 3.2, height: h, filter: 'drop-shadow(0 3px 0 rgba(0,0,0,.25))' }}><Boat len={3} id={0} /></span>
 );
+
+/* ================= pond critters ================= */
+const DUCK = ['...oooo.....', '..ohhyyo....', '..oyykyyoo..', '..oyyyyyBBo.', 'ooyyyyyyoo..', 'oyyyyyyyyo..', '.oyyyyyyyo..', '..ooooooo...'];
+export const DuckArt = ({ px = 3 }: { px?: number }) => (
+  <PixelArt rows={DUCK} palette={{ o: '#3a2410', y: '#ffd84a', h: '#fff4a8', k: '#3a2410', B: '#ff8a3d' }} px={px} />
+);
+const FISH = ['..ooo....', '.offfoo.o', 'offkfffoo', '.offfoo.o', '..ooo....'];
+export const FishArt = ({ px = 3 }: { px?: number }) => (
+  <PixelArt rows={FISH} palette={{ o: '#7a3a2a', f: '#ff9a5a', k: '#3a2410' }} px={px} />
+);

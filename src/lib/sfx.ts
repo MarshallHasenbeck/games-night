@@ -36,3 +36,24 @@ export const sfx2 = {
   hit: () => seq([180, 120], 0.06, 0.1),
   draw: () => seq([440, 392], 0.05, 0.06),
 };
+
+function noiseBurst(dur: number, f0: number, f1: number, vol: number) {
+  const AC = window.AudioContext || (window as any).webkitAudioContext;
+  if (!AC || muted) return;
+  ctx ??= new AC();
+  if (ctx.state === 'suspended') void ctx.resume();
+  const len = Math.floor(ctx.sampleRate * dur);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const src = ctx.createBufferSource(); src.buffer = buf;
+  const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 0.8;
+  const t = ctx.currentTime;
+  f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur);
+  const g = ctx.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  src.connect(f).connect(g).connect(ctx.destination); src.start(t);
+}
+export const sfx3 = {
+  splash: () => { noiseBurst(0.38, 2600, 420, 0.16); if (!muted) tone(260, 0.03, 0.12, 'sine', 0.05); },
+  quack: () => { if (muted) return; tone(540, 0, 0.07, 'sawtooth', 0.045); tone(420, 0.09, 0.1, 'sawtooth', 0.045); },
+};

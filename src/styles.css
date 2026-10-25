@@ -517,3 +517,25 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 }
 @media (min-width: 1000px) { .battleship { --ew: min(calc(100vw - 48px), 620px, calc((var(--app-h, 100vh) - 505px) / 1.58)); } }
 @media (orientation: landscape) and (min-width: 1000px) { .battleship { --ew: min(calc(var(--app-h, 100vh) - 375px), 640px, 38vw); } .setup { --ew: min(calc(var(--app-h, 100vh) - 330px), 600px, 42vw); } }
+
+/* ---------- battleship critters ---------- */
+.pond .critters { grid-area: 2 / 2; position: relative; z-index: 0; pointer-events: none; }
+.duck { position: absolute; line-height: 0; filter: drop-shadow(0 3px 0 rgba(0, 80, 120, .3)); animation: paddle 38s linear infinite, duckbob 1.6s ease-in-out infinite; }
+.duck svg { width: clamp(22px, 6.5vw, 40px); height: auto; display: block; }
+.duck::after { content: ''; position: absolute; left: -35%; bottom: -3px; width: 60%; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .65); }
+.duck.d1 { top: 6%; } .duck.d2 { top: 52%; animation-duration: 52s, 1.9s; animation-delay: -20s, -.6s; }
+.pondwrap.small .duck { top: 40%; animation-duration: 44s, 1.6s; } .pondwrap.small .duck svg { width: clamp(14px, 3.6vw, 24px); }
+@keyframes paddle { 0% { left: 2%; transform: scaleX(1); } 48% { left: 86%; transform: scaleX(1); } 50% { left: 86%; transform: scaleX(-1); } 98% { left: 2%; transform: scaleX(-1); } 100% { left: 2%; transform: scaleX(1); } }
+@keyframes duckbob { 50% { margin-top: -3px; } }
+.pond::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(circle 3px at 6.5% 93%, #ff9ec0 0 100%, transparent 105%),
+    radial-gradient(ellipse 15px 9px at 6% 94%, #62c46f 0 72%, transparent 76%),
+    radial-gradient(circle 3px at 93% 8%, #fff4a8 0 100%, transparent 105%),
+    radial-gradient(ellipse 14px 8px at 93% 9%, #62c46f 0 72%, transparent 76%),
+    radial-gradient(ellipse 11px 7px at 90% 90%, #6fcf7a 0 72%, transparent 76%),
+    radial-gradient(ellipse 11px 7px at 10% 10%, #6fcf7a 0 72%, transparent 76%); }
+.fish { position: absolute; left: 50%; top: 50%; z-index: 4; line-height: 0; pointer-events: none; animation: fishjump 1.1s ease-out both; }
+.fish svg { width: clamp(20px, 3.8vw, 36px); height: auto; transform: translate(-50%, -50%); display: block; }
+@keyframes fishjump { 0% { transform: translate(-70%, 40%) rotate(-50deg) scale(.4); opacity: 0; } 25% { transform: translate(-20%, -110%) rotate(-25deg) scale(1); opacity: 1; } 55% { transform: translate(40%, -70%) rotate(35deg) scale(1); opacity: 1; } 100% { transform: translate(90%, 70%) rotate(80deg) scale(.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .duck, .fish { animation: none; } }

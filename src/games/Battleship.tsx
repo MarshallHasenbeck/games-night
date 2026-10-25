@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Boat } from '../art';
-import { sfx, sfx2 } from '../lib/sfx';
+import { Boat, DuckArt, FishArt } from '../art';
+import { sfx, sfx2, sfx3 } from '../lib/sfx';
 import {
   N, FLEET, newFleet, randomFleet, canPlace, cells, fire, shipAt, isSunk, allSunk, cpuShot, type Fleet, type Ship,
 } from '../lib/battleship';
@@ -13,9 +13,9 @@ const LET = 'ABCDEFGHIJ';
 type Phase = 'setup' | 'play' | 'over';
 
 /** One 10×10 pond. `reveal` shows every boat; otherwise only sunk ones. */
-function Pond({ fleet, reveal, onCell, target, small, preview, label, shake }: {
+function Pond({ fleet, reveal, onCell, target, small, preview, label, shake, lastShot }: {
   fleet: Fleet; reveal: boolean; onCell?: (r: number, c: number) => void; target?: [number, number] | null; small?: boolean;
-  preview?: { ship: Ship; ok: boolean } | null; label: string; shake?: boolean;
+  preview?: { ship: Ship; ok: boolean } | null; label: string; shake?: boolean; lastShot?: [number, number, number] | null;
 }) {
   return (
     <div className={`pondwrap ${small ? 'small' : ''}`}>
@@ -23,6 +23,10 @@ function Pond({ fleet, reveal, onCell, target, small, preview, label, shake }: {
       <div className={`pond ${shake ? 'shake' : ''}`}>
         <div className="cols">{Array.from({ length: N }, (_, c) => <i key={c}>{c + 1}</i>)}</div>
         <div className="rowsl">{Array.from({ length: N }, (_, r) => <i key={r}>{LET[r]}</i>)}</div>
+        <div className="critters" aria-hidden>
+          <span className="duck d1"><DuckArt px={3} /></span>
+          {!small && <span className="duck d2"><DuckArt px={3} /></span>}
+        </div>
         <div className="ships">
           {fleet.ships.map((s) => {
             const sunk = isSunk(fleet, s);
@@ -47,6 +51,7 @@ function Pond({ fleet, reveal, onCell, target, small, preview, label, shake }: {
               <button key={i} className={`bbc ${sh ?? ''} ${isT ? 'target' : ''}`} onClick={onCell ? () => onCell(r, c) : undefined} disabled={!onCell} aria-label={`${LET[r]}${c + 1}`}>
                 {sh === 'h' && <span className="boom"><i /><i /></span>}
                 {sh === 'm' && <span className="ripple" />}
+                {sh === 'm' && lastShot && lastShot[0] === r && lastShot[1] === c && <span key={lastShot[2]} className="fish"><FishArt px={3} /></span>}
                 {isT && <span className="cross" />}
               </button>
             );
@@ -73,6 +78,8 @@ export default function Battleship() {
   const [curtain, setCurtain] = useState<null | { to: 0 | 1; text: string; btn: string }>(null);
   const [winner, setWinner] = useState<0 | 1 | null>(null);
   const [lastHit, setLastHit] = useState(0);
+  const [lastShot, setLastShot] = useState<[number, number, number] | null>(null);
+  const shotN = useRef(0);
   const recorded = useRef(false);
   const names = ['P1', opp.cpu ? 'CPU' : 'P2'];
 
@@ -141,10 +148,11 @@ export default function Battleship() {
     setBusy(true); setTarget(null);
     const nf: [Fleet, Fleet] = shooter === 0 ? [fleets[0], res.fleet] : [res.fleet, fleets[1]];
     setFleets(nf);
-    if (res.hit) { sfx2.hit(); setLastHit((n) => n + 1); } else sfx.move();
+    shotN.current++; setLastShot([r, c, shotN.current]);
+    if (res.hit) { sfx2.hit(); setLastHit((n) => n + 1); } else sfx3.splash();
     const who = names[shooter];
     setMsg(res.sunk ? `${who} SUNK THE ${FLEET[res.sunk.id].name.toUpperCase()}!` : res.hit ? `BOOM! ${who} HIT A BOAT!` : `SPLASH! ${who} MISSED.`);
-    if (res.sunk) setTimeout(sfx.score, 250);
+    if (res.sunk) { setTimeout(sfx.score, 250); setTimeout(sfx3.quack, 650); }
     if (allSunk(res.fleet)) { setWinner(shooter); setPhase('over'); setBusy(false); return true; }
     await sleep(res.sunk ? 1700 : 1300);
     if (!opp.cpu) {
@@ -175,7 +183,7 @@ export default function Battleship() {
 
   const reset = () => {
     setPhase('setup'); setFleets([newFleet(), newFleet()]); setPlacing(0); setDraft([]); setSel(0); setVert(false); setTurn(0);
-    setTarget(null); setMsg(''); setBusy(false); setWinner(null);
+    setTarget(null); setMsg(''); setBusy(false); setWinner(null); setLastShot(null);
     setCurtain(opp.cpu ? null : { to: 0, text: 'P2, LOOK AWAY!', btn: "I'M P1 - PLACE MY BOATS" });
   };
 
@@ -224,8 +232,8 @@ export default function Battleship() {
         </div>
       ) : (
         <div className="main boards" key={lastHit}>
-          <Pond fleet={enemyFleet} reveal={false} label={`${names[enemy]}'S POND - AIM HERE`} onCell={tap} target={target} />
-          <Pond fleet={myFleet} reveal small label={`YOUR BOATS`} />
+          <Pond fleet={enemyFleet} reveal={false} label={`${names[enemy]}'S POND - AIM HERE`} onCell={tap} target={target} lastShot={lastShot} />
+          <Pond fleet={myFleet} reveal small label={`YOUR BOATS`} lastShot={lastShot} />
         </div>
       )}
 
