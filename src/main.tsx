@@ -45,8 +45,12 @@ const setAppHeight = () => {
     st.setProperty('--app-w', `${vw}px`); st.setProperty('--app-h', `${vh}px`); // layouts use the virtual size
     st.setProperty('--stage-s', String(s));
     // safe areas in virtual px (the shell is scaled by s, so env() would come out too small)
-    st.setProperty('--sat', `${parseFloat(ins.paddingTop) / s}px`); st.setProperty('--sar', `${parseFloat(ins.paddingRight) / s}px`);
-    st.setProperty('--sab', `${parseFloat(ins.paddingBottom) / s}px`); st.setProperty('--sal', `${parseFloat(ins.paddingLeft) / s}px`);
+    // Chrome on iPhone already keeps the page clear of the notch in landscape (the page is narrower than the screen) but still reports
+    // the notch as a safe area, so honouring it would pad the left edge a second time and push the board off the right
+    const screenW = w > h ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+    const sideBaked = w < screenW - 1;
+    st.setProperty('--sat', `${parseFloat(ins.paddingTop) / s}px`); st.setProperty('--sar', sideBaked ? '0px' : `${parseFloat(ins.paddingRight) / s}px`);
+    st.setProperty('--sab', `${parseFloat(ins.paddingBottom) / s}px`); st.setProperty('--sal', sideBaked ? '0px' : `${parseFloat(ins.paddingLeft) / s}px`);
     onResized();
   }
   const top = `${Math.max(0, Math.round(vv?.offsetTop ?? 0))}px`;
