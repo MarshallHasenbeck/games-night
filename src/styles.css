@@ -874,7 +874,8 @@ html[data-fitted] { overflow: hidden; height: var(--app-h, 100vh); }
 
 /* If iPad Safari leaves the layout viewport nudged up (--vv-top = how far), shift fixed layers down by the same amount
    so nothing hides under the toolbar and no empty strip shows at the bottom */
-html, body { background-color: #3f8a34; }
+html { background-color: #3f8a34; }
+body { background: transparent; } /* a painted body would cover the z-index:-1 scenery */
 .scenery { top: var(--vv-top, 0px); bottom: calc(0px - var(--vv-top, 0px)); }
 .celebrate, .handoff, .rules-overlay { top: var(--vv-top, 0px); bottom: calc(0px - var(--vv-top, 0px)); }
 html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
