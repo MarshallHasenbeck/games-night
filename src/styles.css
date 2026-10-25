@@ -1115,3 +1115,6 @@ html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
 [data-fit="phone"] .slcards { gap: 8px; } [data-fit="phone"] .slpile em { font-size: 10px; }
 [data-fit="phone"] .scard { width: 58px; } [data-fit="phone"] .scard b { font-size: 30cqw; } [data-fit="phone"] .scard small { display: none; }
 [data-fit="phone"] .game.acorn > .foot, [data-fit="phone"] .game.slide > .foot { margin-top: 0; }
+
+/* wide screens: 4 menu columns so all 11 games fit without scrolling the menu */
+@media (min-width: 1150px) and (orientation: landscape) { .shell:has(.menu) { max-width: 1320px; } .menu { grid-template-columns: repeat(4, 1fr); } }

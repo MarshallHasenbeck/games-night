@@ -24,7 +24,7 @@ const GAMES = [
   { id: 'yahtzee', name: 'Yahtzee', icon: <DieArt px={7} />, blurb: 'Roll, hold, score. 13 rounds.', C: Yahtzee },
   { id: 'playnine', name: 'Play Nine', icon: <FlagArt px={6} />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
   { id: 'backgammon', name: 'Backgammon', icon: <BoardIcon px={5} />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
-  { id: 'mancala', name: 'Mancala', icon: <span style={{ display: 'flex' }}><ConnectDisc px={3} side={0} /><ConnectDisc px={3} /></span>, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
+  { id: 'mancala', name: 'Mancala', icon: <span style={{ display: 'flex' }}><ConnectDisc px={2} side={0} /><ConnectDisc px={2} /></span>, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
   { id: 'battleship', name: 'Battleship', icon: <span style={{ display: 'block', width: 70, height: 26 }}><Boat len={3} id={3} /></span>, blurb: 'Hunt the cute little boats. Pass-the-iPad secret!', C: Battleship },
   { id: 'acorn', name: 'Acorn Pop', icon: <span style={{ display: 'block', width: 45, height: 50 }}><AcornPiece color={0} /></span>, blurb: 'Pop the dice, race your acorns home. 2-4 players!', C: AcornPop },
   { id: 'slide', name: 'Slide & Swap', icon: <span style={{ display: 'block', width: 45, height: 45 }}><MushroomPiece color={1} /></span>, blurb: 'Draw cards, slide, bump, swap. A friendly race!', C: SlideSwap },
@@ -59,7 +59,8 @@ export default function App() {
     sfx.click();
     setId(next);
     location.hash = next ?? '';
-    window.scrollTo(0, 0);
+    // the menu can be scrolled; make sure a game (or the menu) never opens part-way down (iPad Safari keeps stale offsets)
+    [0, 60, 200, 500].forEach((ms) => setTimeout(() => { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; }, ms));
   };
   const game = GAMES.find((g) => g.id === id);
   const [rulesOpen, setRulesOpen] = useState(false);

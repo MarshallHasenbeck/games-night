@@ -34,7 +34,7 @@ const fitGame = () => {
   if (!shell) return;
   shell.style.transform = ''; shell.style.height = '';
   if (!shell.querySelector('.game')) { delete root.dataset.fitted; return; }
-  window.scrollTo(0, 0); // Safari restores the old scroll position on refresh, which hid the top of the table
+  window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; // Safari restores the old scroll position on refresh, which hid the top of the table
   const avail = Math.min(window.innerHeight, window.visualViewport?.height ?? Infinity), need = shell.offsetHeight;
   if (need > avail + 1) {
     const s = Math.max(0.55, avail / need);
