@@ -28,18 +28,22 @@ const fitGame = () => {
   if (!shell) return;
   shell.style.transform = ''; shell.style.height = '';
   if (!shell.querySelector('.game')) { delete root.dataset.fitted; return; }
-  const avail = window.innerHeight, need = shell.offsetHeight;
+  window.scrollTo(0, 0); // Safari restores the old scroll position on refresh, which hid the top of the table
+  const avail = Math.min(window.innerHeight, window.visualViewport?.height ?? Infinity), need = shell.offsetHeight;
   if (need > avail + 1) {
     const s = Math.max(0.55, avail / need);
     shell.style.transformOrigin = 'top center';
     shell.style.transform = `scale(${s})`;
     shell.style.height = `${avail / s}px`; // keeps the page itself exactly one screen tall
     root.dataset.fitted = '1';
-  } else delete root.dataset.fitted;
+  } else root.dataset.fitted = '1'; // game screens never scroll
 };
 const queueFit = () => { if (!fitQueued) { fitQueued = true; requestAnimationFrame(fitGame); } };
 // re-fit when a different game screen appears (not on every tap, so the table never twitches mid-game)
 new MutationObserver(() => { if (document.querySelector('.game') !== fittedGame) queueFit(); }).observe(document.getElementById('root')!, { childList: true, subtree: true });
 window.addEventListener('resize', queueFit);
+window.visualViewport?.addEventListener('resize', queueFit);
+window.addEventListener('pageshow', queueFit);
+try { history.scrollRestoration = 'manual'; } catch { /* ignore */ }
 window.addEventListener('orientationchange', () => setTimeout(queueFit, 300));
 document.fonts?.ready.then(queueFit);

@@ -100,7 +100,7 @@ export default function PlayNine() {
     cpuTurn ? 'CPU IS PLAYING...'
     : r.phase === 'setup' ? `${n}: FLIP ANY 2 CARDS (${2 - r.setupFlips[r.turn]} TO GO)`
     : r.phase === 'draw' ? `${n} · STEP 1: DRAW A CARD OR TAKE THE DISCARD`
-    : r.phase === 'place' ? (!fromDeck ? `${n} · STEP 2: TAP ANY CARD TO SWAP IT IN - OR TAP DISCARD TO PUT IT BACK`
+    : r.phase === 'place' ? (!fromDeck ? `${n} · TAP A CARD TO SWAP IT IN, OR TAP DISCARD TO PUT BACK`
         : useIt ? `${n} · STEP 2: TAP ANY CARD TO PLACE YOUR CARD THERE`
         : lastOne ? `${n} · TAP YOUR LAST CARD TO FLIP IT (ENDS ROUND) OR SKIP`
         : `${n} · STEP 2: TAP A FACE-DOWN CARD TO FLIP IT`)

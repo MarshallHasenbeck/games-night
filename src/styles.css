@@ -824,3 +824,8 @@ html[data-fitted], html[data-fitted] body { overflow: hidden; height: var(--app-
 @keyframes peck { 0%, 60%, 100% { rotate: 0deg; } 75% { rotate: 14deg; } }
 @keyframes sway { 0%, 100% { rotate: -1deg; } 50% { rotate: 1.5deg; } }
 @media (prefers-reduced-motion: reduce) { .critter, .critter .cr-in { animation: none !important; } }
+
+/* prompt never wraps on tablets/desktop (a 2nd line would push the table down); phones reserve 2 lines already */
+.hint.prompt { width: min(100%, 900px); }
+html:not([data-fit]) .hint.prompt { white-space: nowrap; }
+html[data-fitted], html[data-fitted] body { overscroll-behavior: none; }
