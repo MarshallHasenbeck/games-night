@@ -2,11 +2,15 @@ import { useState } from 'react';
 import Chess from './games/Chess';
 import Yahtzee from './games/Yahtzee';
 import PlayNine from './games/PlayNine';
+import Checkers from './games/Checkers';
+import Connect4 from './games/Connect4';
 import Sprite from './Sprite';
 import { isMuted, setMuted, sfx } from './lib/sfx';
 
 const GAMES = [
   { id: 'chess', name: 'Chess', icon: <Sprite name="n" fill="#ffd84a" outline="#14122b" size={64} />, blurb: 'Classic kings & pawns. Legal moves glow.', C: Chess },
+  { id: 'checkers', name: 'Checkers', icon: <Sprite name="kdisc" fill="#e0457b" outline="#14122b" size={64} />, blurb: 'Jump, crown, conquer. Captures forced.', C: Checkers },
+  { id: 'connect4', name: 'Connect 4', icon: <Sprite name="disc" fill="#4aa8ff" outline="#14122b" size={64} />, blurb: 'Drop discs. Four in a row wins.', C: Connect4 },
   { id: 'yahtzee', name: 'Yahtzee', icon: <Sprite name="die" fill="#ff5c8a" outline="#14122b" size={64} />, blurb: 'Roll, hold, score. 13 rounds.', C: Yahtzee },
   { id: 'playnine', name: 'Play Nine', icon: <Sprite name="flag" fill="#5ce07a" outline="#14122b" size={64} />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
 ] as const;

@@ -1,6 +1,6 @@
 # Game Night
 
-Two-player, one-screen 8-bit board games: **Chess**, **Yahtzee**, and **Play Nine** (card golf).
+Two-player, one-screen 8-bit board games: **Chess**, **Checkers**, **Connect 4**, **Yahtzee**, and **Play Nine** (card golf).
 Pass-and-play — the app rolls, deals and scores. Built with Vite + React + TypeScript; chess rules via `chess.js`.
 
 ```
