@@ -313,6 +313,58 @@ export function Sky({ time }: { time: Resolved }) {
   );
 }
 
+
+/* ================= farm critters (a separate layer over the grass; the landscape itself is untouched) ================= */
+type Sprite = { rows: string[]; pal: Record<string, string> };
+const SPRITES: Record<string, Sprite> = {
+  cow: { pal: { w: '#fff4d6', k: '#3a3a44', p: '#f2a0a8', h: '#e8d8a0' }, rows: [
+    '...........h.h.', '.wwwwkkwwwwwwww', '.wkkwwkkwwwwwkw', '.wkkwwwwwwwwwww', '.wwwwwwwwwwwppp',
+    '.wwwwkkwwwwwppp', '.wwwwwwwww.....', '..w.w.....w.w..', '..k.k.....k.k..'] },
+  sheep: { pal: { c: '#f6f1e4', d: '#5a463a', k: '#1f1710' }, rows: [
+    '..cccccc......', '.cccccccc.dd..', 'cccccccccdddd.', 'cccccccccdkdd.', 'cccccccccc.dd.',
+    '.cccccccccc...', '..d.d...d.d...', '..d.d...d.d...'] },
+  pig: { pal: { p: '#f4a8b8', q: '#d97a92', k: '#3a2410' }, rows: [
+    '...........p.p', '.pppppppppppp.', 'ppppppppppppkp', '.pppppppppppqq', '.pppppppppppqq',
+    '..pppppppppp..', '..p.p....p.p..', '..q.q....q.q..'] },
+  hen: { pal: { w: '#fff4d6', r: '#d4475a', y: '#f2b632', k: '#3a2410' }, rows: [
+    '.....rr..', '....wkwy.', 'w..wwwww.', '.wwwwwww.', '..wwwww..', '...y.y...'] },
+  farmer: { pal: { y: '#e8c060', Y: '#c9973a', s: '#f1c49a', k: '#3a2410', r: '#c8423f', b: '#3a6fb0', n: '#6a4020', g: '#9c6a38', m: '#b8bcc4' }, rows: [
+    '...yyyy....m', '..yyyyyy...m', '.YYYYYYYY..g', '...ssss....g', '...skks....g', '...ssss....g', '..rrrrrr...g',
+    '.srrbbrrss.g', '..rbbbbr...g', '..bbbbbb...g', '..bbbbbb...g', '..bb..bb...g', '..bb..bb...g', '..nn..nn...g', '.nnn..nnn..g'] },
+};
+/** pixel rows -> data URL with an automatic dark outline so each critter reads at a glance */
+function spriteUrl({ rows, pal }: Sprite) {
+  const w = rows[0].length, h = rows.length, cv = document.createElement('canvas');
+  cv.width = w + 2; cv.height = h + 2;
+  const ctx = cv.getContext('2d')!;
+  const on = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && rows[y][x] !== '.';
+  ctx.fillStyle = '#2f2418';
+  for (let y = -1; y <= h; y++) for (let x = -1; x <= w; x++)
+    if (!on(x, y) && (on(x - 1, y) || on(x + 1, y) || on(x, y - 1) || on(x, y + 1))) ctx.fillRect(x + 1, y + 1, 1, 1);
+  rows.forEach((row, y) => [...row].forEach((ch, x) => { if (ch !== '.') { ctx.fillStyle = pal[ch]; ctx.fillRect(x + 1, y + 1, 1, 1); } }));
+  return { url: cv.toDataURL('image/png'), w: w + 2 };
+}
+/* [kind, left %, bottom % of the landscape box, walk distance px, seconds] - kept off the pond (x 60-80%) */
+const CRITTERS: [string, number, number, number, number][] = [
+  ['cow', 6, 9, 46, 38], ['sheep', 15, 4, 40, 30], ['hen', 24, 11, 22, 14], ['farmer', 30, 5, 0, 0],
+  ['pig', 84, 7, 36, 34], ['hen', 91, 3, 18, 12], ['sheep', 95, 10, 30, 36], ['cow', 50, 2, 50, 44], ['hen', 43, 9, 20, 16],
+];
+function Critters() {
+  const urls = useMemo(() => Object.fromEntries(Object.entries(SPRITES).map(([k, v]) => [k, spriteUrl(v)])), []);
+  return (
+    <div className="critters">
+      {CRITTERS.map(([kind, left, bottom, dist, dur], i) => {
+        const { url, w } = urls[kind];
+        return (
+          <div key={i} className={`critter ${kind}`} style={{ left: `${left}%`, bottom: `${bottom}%`, ['--walk' as string]: `${dist}px`, ['--dur' as string]: `${dur}s`, animationDelay: `-${(i * 7) % dur || 1}s` }}>
+            <img className="cr-in" src={url} alt="" style={{ width: `calc(var(--k) * ${w})`, animationDelay: `-${(i * 7) % dur || 1}s` }} />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function Scenery() {
   const { resolved } = useTime();
   const url = useMemo(makeLandscape, []);
@@ -320,6 +372,7 @@ export function Scenery() {
     <div className="scenery" data-time={resolved} aria-hidden>
       <Sky time={resolved} />
       <div className="landscape" style={{ backgroundImage: `url(${url})` }} />
+      <Critters />
       <div className="tint" />
       {Array.from({ length: 7 }, (_, i) => <i key={`l${i}`} className={`leaf l${i}`} />)}
       {Array.from({ length: 14 }, (_, i) => <i key={`f${i}`} className={`firefly f${i}`} />)}

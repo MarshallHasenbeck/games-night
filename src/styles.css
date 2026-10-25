@@ -803,3 +803,24 @@ html[data-fitted], html[data-fitted] body { overflow: hidden; height: var(--app-
 .hs-row > span.now:not(.hs-name):empty { box-shadow: inset 0 0 0 2px #f2b632aa; background: #f2b63222; }
 .hs-row > b { font-family: var(--num); font-size: 1.15em; border: 2px solid #8a5a2e55; background: #00000010; }
 .hs-row > b.lead { border-color: #3f9a2e; }
+
+/* choice row: fixed height so the tip / SKIP button appearing can never push the table around */
+.pnboard .choice { height: 64px; overflow: visible; }
+.choice2 { height: 64px; min-height: 64px; flex-wrap: nowrap; }
+.choice2 .skipbtn { padding-top: 6px; padding-bottom: 6px; line-height: 1.1; }
+[data-fit] .pnboard .choice, [data-fit] .choice2 { height: 38px; min-height: 38px; }
+
+/* farm critters on the grass (extra layer; the landscape art is unchanged) */
+.critters { position: absolute; bottom: 0; left: 0; right: 0; height: min(58vh, 580px); --k: clamp(2.4px, .44vh, 4.2px); }
+.critter { position: absolute; }
+.critter:not(.farmer) { animation: cwalk var(--dur) ease-in-out infinite; }
+.critter .cr-in { display: block; image-rendering: pixelated; transform-origin: bottom center; }
+.critter:not(.farmer) .cr-in { animation: cflip var(--dur) steps(1, end) infinite, chop 1.1s ease-in-out infinite; }
+.critter.hen .cr-in { animation: cflip var(--dur) steps(1, end) infinite, peck .9s ease-in-out infinite; }
+.critter.farmer .cr-in { animation: sway 4s ease-in-out infinite; }
+@keyframes cwalk { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(var(--walk)); } }
+@keyframes cflip { 0% { scale: 1 1; } 50% { scale: -1 1; } }
+@keyframes chop { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
+@keyframes peck { 0%, 60%, 100% { rotate: 0deg; } 75% { rotate: 14deg; } }
+@keyframes sway { 0%, 100% { rotate: -1deg; } 50% { rotate: 1.5deg; } }
+@media (prefers-reduced-motion: reduce) { .critter, .critter .cr-in { animation: none !important; } }
