@@ -884,3 +884,8 @@ html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
 @supports (height: 100lvh) {
   .scenery { bottom: auto; height: max(100%, 100vh, 100lvh, 100dvh); }
 }
+
+/* Play Nine: flying cards */
+.ghostlayer { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
+.ghostcard { position: fixed; will-change: transform; filter: drop-shadow(0 10px 8px rgba(0, 0, 0, .35)); }
+.ghostcard .pcard { pointer-events: none; }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   HOLES, deal, flipSetup, drawDeck, takeDiscard, swapSlot, flipAfterDiscard, discardAndFlip, skipDrawn,
   visibleScore, finalScore, putBackDiscard, downCount, cpuDecide, applyAction, type Round, type Slot,
@@ -11,12 +11,13 @@ import { recordResult } from '../lib/stats';
 const tone = (v: number) => (v < 0 ? 'ace' : v === 0 ? 'zero' : v <= 4 ? 'low' : v <= 8 ? 'mid' : 'high');
 const TONE_HEX: Record<string, string> = { ace: '#ffffff', zero: '#1f8a3e', low: '#1f5fc0', mid: '#c06a00', high: '#c01f1f' };
 
-function Card({ v, up, onClick, active, small, i, mode }: { v?: number; up: boolean; onClick?: () => void; active?: boolean; small?: boolean; i?: number; mode?: 'swap' | 'flip' }) {
+function Card({ v, up, onClick, active, small, i, mode, slot, hide, sty }: { v?: number; up: boolean; onClick?: () => void; active?: boolean; small?: boolean; i?: number; mode?: 'swap' | 'flip'; slot?: string; hide?: boolean; sty?: CSSProperties }) {
   const t = v === undefined ? '' : tone(v);
   return (
     <button
       className={`pcard ${up ? 'up' : ''} ${t} ${active ? 'active' : ''} ${active && mode ? `m-${mode}` : ''} ${small ? 'small' : ''} ${i !== undefined ? 'dealt' : ''}`}
-      style={i !== undefined ? { ['--i' as string]: i } : undefined}
+      style={{ ...(i !== undefined ? { ['--i' as string]: i } : {}), ...(hide ? { visibility: 'hidden' as const } : {}), ...sty }}
+      data-slot={slot}
       onClick={onClick}
       disabled={!onClick}
     >
@@ -39,6 +40,39 @@ function Card({ v, up, onClick, active, small, i, mode }: { v?: number; up: bool
   );
 }
 
+
+/* ---------- flying cards (deal from the deck, place, swap, discard) ---------- */
+type Box = { x: number; y: number; w: number; h: number };
+type Flight = { id: number; from: Box; to: Box; v: number; upFrom: boolean; upTo: boolean; hide: string[]; dur: number };
+const boxOf = (key: string): Box | null => {
+  const e = document.querySelector(`[data-slot="${key}"]`);
+  if (!e) return null;
+  const r = e.getBoundingClientRect();
+  return { x: r.left, y: r.top, w: r.width, h: r.height };
+};
+
+function Ghost({ f, done }: { f: Flight; done: () => void }) {
+  const [up, setUp] = useState(f.upFrom);
+  const ref = (el: HTMLDivElement | null) => {
+    if (!el || el.dataset.go) return;
+    el.dataset.go = '1';
+    const dx = f.to.x - f.from.x, dy = f.to.y - f.from.y, lift = Math.max(24, Math.hypot(dx, dy) * 0.18);
+    const k = f.to.w / f.from.w;
+    const an = el.animate([
+      { transform: 'translate(0,0) scale(1) rotate(0deg)' },
+      { transform: `translate(${dx / 2}px,${dy / 2 - lift}px) scale(${(1 + k) / 2 * 1.18}) rotate(${dx > 0 ? 4 : -4}deg)`, offset: 0.5 },
+      { transform: `translate(${dx}px,${dy}px) scale(${k}) rotate(0deg)` },
+    ], { duration: f.dur, easing: 'cubic-bezier(.35,.1,.25,1)' });
+    an.onfinish = an.oncancel = done;
+    if (f.upTo !== f.upFrom) setTimeout(() => setUp(f.upTo), f.dur * 0.18);
+  };
+  return (
+    <div ref={ref} className="ghostcard" style={{ left: f.from.x, top: f.from.y, width: f.from.w, height: f.from.h }}>
+      <Card v={f.v} up={up} small={f.from.w < 100} sty={{ width: '100%', fontSize: f.from.w * 0.4 }} />
+    </div>
+  );
+}
+
 export default function PlayNine() {
   const opp = useOpponent('playnine');
   const [hole, setHole] = useState(1);
@@ -46,6 +80,8 @@ export default function PlayNine() {
   const [totals, setTotals] = useState<[number[], number[]]>([[], []]);
   const [useIt, setUseIt] = useState(true);            // drawn card: true = place it anywhere, false = discard it & flip a card
   const [confirmNew, setConfirmNew] = useState(false);
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const flightId = useRef(0);
   const recorded = useRef(false);
   const names = ['P1', opp.cpu ? 'CPU' : 'P2'];
   const r = round;
@@ -64,11 +100,34 @@ export default function PlayNine() {
 
   useEffect(() => {
     if (!cpuTurn) return;
-    const id = setTimeout(() => { sfx.flip(); setRound((cur) => applyAction(cur, cpuDecide(cur, opp.level))); }, r.phase === 'setup' ? 650 : 950);
+    const id = setTimeout(() => { sfx.flip(); const next = applyAction(round, cpuDecide(round, opp.level)); animate(round, next); setRound(next); }, r.phase === 'setup' ? 650 : 950);
     return () => clearTimeout(id);
   }, [round, cpuTurn, opp.level]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const go = (next: Round) => { sfx.flip(); setUseIt(true); setRound(next); };
+  /** Work out which cards moved between two states and send a ghost card flying along each path. */
+  const animate = (prev: Round, next: Round) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const out: Flight[] = [];
+    const add = (fromKey: string, toKey: string, v: number, upFrom: boolean, upTo: boolean, hide: string[], dur = 520) => {
+      const from = boxOf(fromKey), to = boxOf(toKey);
+      if (from && to) out.push({ id: ++flightId.current, from, to, v, upFrom, upTo, hide, dur });
+    };
+    if (!prev.drawn && next.drawn) {
+      add(next.drawn.from === 'deck' ? 'deck' : 'discard', 'drawn', next.drawn.v, next.drawn.from === 'discard', true, ['drawn']);
+    } else if (prev.drawn && !next.drawn) {
+      const g0 = prev.grids[prev.turn], g1 = next.grids[prev.turn];
+      const i = g0.findIndex((c, k) => c.v !== g1[k].v || c.up !== g1[k].up);
+      const key = `${prev.turn}-${i}`;
+      if (i >= 0 && g0[i].v !== g1[i].v) {            // swapped in: the drawn card lands, the old card goes to the discard pile
+        add('drawn', key, prev.drawn.v, true, true, [key]);
+        add(key, 'discard', g0[i].v, g0[i].up, true, ['discard'], 480);
+      } else add('drawn', 'discard', prev.drawn.v, true, true, ['discard']);   // discarded (flip, put back or skip)
+    }
+    if (out.length) setFlights((f) => [...f, ...out]);
+  };
+  const hidden = new Set(flights.flatMap((f) => f.hide));
+  const landed = (id: number) => setFlights((f) => f.filter((x) => x.id !== id));
+  const go = (next: Round) => { sfx.flip(); setUseIt(true); animate(r, next); setRound(next); };
   useEffect(() => { setUseIt(true); }, [round.drawn, round.phase, round.turn]);
   const finishRound = () => {
     const next: [number[], number[]] = [[...totals[0], finalScore(r.grids[0])], [...totals[1], finalScore(r.grids[1])]];
@@ -134,7 +193,7 @@ export default function PlayNine() {
       <div className="cells" key={`${hole}-${p}`}>
         {r.grids[p].map((s, i) => {
           const click = clickSlot(p, i);
-          return <Card key={i} v={s.v} up={s.up} onClick={click} active={!!click} mode={click ? tapMode(s) ?? undefined : undefined} i={i + p * 8} />;
+          return <Card key={i} v={s.v} up={s.up} onClick={click} active={!!click} mode={click ? tapMode(s) ?? undefined : undefined} i={i + p * 8} slot={`${p}-${i}`} hide={hidden.has(`${p}-${i}`)} />;
         })}
       </div>
     </div>
@@ -156,18 +215,18 @@ export default function PlayNine() {
           {live ? (
             <div className="piles">
               <div className="pile">
-                <Card up={false} small onClick={can('draw') ? () => go(drawDeck(r)) : undefined} active={can('draw')} />
+                <Card up={false} small slot="deck" onClick={can('draw') ? () => go(drawDeck(r)) : undefined} active={can('draw')} />
                 <span>{can('draw') ? 'DRAW NEW' : `DECK ${r.deck.length}`}</span>
               </div>
               <div className="pile">
                 {r.drawn
-                  ? <Card v={r.drawn.v} up small onClick={undefined} active={false} />
-                  : <span className="slot" />}
+                  ? <Card v={r.drawn.v} up small slot="drawn" hide={hidden.has('drawn')} onClick={undefined} active={false} />
+                  : <span className="slot" data-slot="drawn" />}
                 <span>{r.drawn ? (can('place') && fromDeck ? 'YOUR CARD' : 'YOUR CARD') : ''}</span>
               </div>
               <div className="pile">
                 <Card
-                  v={r.discard.at(-1)} up small
+                  v={r.discard.at(-1)} up small slot="discard" hide={hidden.has('discard')}
                   onClick={can('draw') ? () => go(takeDiscard(r)) : can('place') && !fromDeck ? () => go(putBackDiscard(r)) : undefined}
                   active={can('draw') || (can('place') && !fromDeck)}
                 />
@@ -200,6 +259,7 @@ export default function PlayNine() {
         <HoleStrip totals={totals} names={names} hole={hole} />
         <button className="btn ghost newgame" onClick={() => setConfirmNew(true)}>↺ NEW GAME</button>
       </div>
+      {flights.length > 0 && <Overlay><div className="ghostlayer">{flights.map((f) => <Ghost key={f.id} f={f} done={() => landed(f.id)} />)}</div></Overlay>}
       {confirmNew && (
         <Overlay><div className="celebrate" role="dialog">
           <div className="banner">
