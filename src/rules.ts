@@ -97,6 +97,7 @@ export const RULES: Record<string, Rules> = {
         'STEP 1 - Get a card: tap the DECK to draw a new card, OR tap the DISCARD pile to take the face-up card.',
         'STEP 2 - Use it: tap any card in YOUR grid to SWAP. Your old card goes to the discard pile and the new one takes its place, face up.',
         'Don\'t want the card you drew from the deck? Press DISCARD & FLIP. You throw it away, then tap one of your face-down cards to flip it over.',
+        'Only ONE face-down card left? You may SKIP: draw from the deck, discard it, and leave your last card face down. Flipping that last card ends your round, so waiting for a better moment can pay off.',
         'If you took the discard, you must swap it into your grid. Tapped it by mistake? Press PUT IT BACK before you do anything else and choose again.',
       ] },
       { h: 'Scoring', items: [

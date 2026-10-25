@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   HOLES, deal, flipSetup, drawDeck, takeDiscard, swapSlot, discardDrawn, flipAfterDiscard,
-  visibleScore, finalScore, putBackDiscard, cpuDecide, applyAction, type Round, type Slot,
+  visibleScore, finalScore, putBackDiscard, skipFlip, downCount, cpuDecide, applyAction, type Round, type Slot,
 } from '../lib/playnine';
 import { sfx } from '../lib/sfx';
 import { CardBack, FlagArt, Leaf } from '../art';
@@ -91,6 +91,7 @@ export default function PlayNine() {
 
   const can = (phase: Round['phase']) => r.phase === phase && !cpuTurn;
   const fromDeck = r.drawn?.from === 'deck';
+  const lastOne = downCount(r.grids[r.turn]) === 1;
   const prompt =
     cpuTurn ? 'CPU IS PLAYING...'
     : r.phase === 'setup' ? `${names[r.turn]}: FLIP ANY 2 OF YOUR CARDS (${2 - r.setupFlips[r.turn]} TO GO)`
@@ -98,7 +99,9 @@ export default function PlayNine() {
     : r.phase === 'place' ? (fromDeck
         ? `${names[r.turn]} · STEP 2: USE THE CARD (SWAP IT INTO YOUR GRID) OR DISCARD IT & FLIP`
         : `${names[r.turn]} · STEP 2: USE THE CARD YOU TOOK (SWAP IT INTO YOUR GRID) OR PUT IT BACK`)
-    : r.phase === 'flip' ? `${names[r.turn]} · STEP 3: TAP ONE OF YOUR FACE-DOWN CARDS TO FLIP IT`
+    : r.phase === 'flip' ? (lastOne
+        ? `${names[r.turn]} · STEP 3: FLIP YOUR LAST CARD (ENDS YOUR ROUND) OR SKIP AND KEEP IT HIDDEN`
+        : `${names[r.turn]} · STEP 3: TAP ONE OF YOUR FACE-DOWN CARDS TO FLIP IT`)
     : 'HOLE COMPLETE!';
 
   const clickSlot = (p: number, i: number): (() => void) | undefined => {
@@ -152,12 +155,19 @@ export default function PlayNine() {
               <span>{can('draw') ? 'TAKE THIS' : 'DISCARD'}</span>
             </div>
           </div>
+          {can('flip') && lastOne && (
+            <div className="choice2">
+              <div className="opt"><b>FLIP IT</b><span>tap your last face-down card - ends your round</span></div>
+              <span className="or">OR</span>
+              <button className="btn primary discardbtn" onClick={() => go(skipFlip(r))}>SKIP - KEEP IT FACE DOWN</button>
+            </div>
+          )}
           {can('place') && (
             <div className="choice2">
               <div className="opt"><b>USE IT</b><span>tap a card in your grid to swap</span></div>
               <span className="or">OR</span>
               {fromDeck
-                ? <button className="btn primary discardbtn" onClick={() => go(discardDrawn(r))}>DISCARD IT &amp; FLIP A CARD</button>
+                ? <button className="btn primary discardbtn" onClick={() => go(discardDrawn(r))}>{lastOne ? 'DISCARD IT' : 'DISCARD IT & FLIP A CARD'}</button>
                 : <button className="btn discardbtn" onClick={() => go(putBackDiscard(r))}>↩ PUT IT BACK</button>}
             </div>
           )}

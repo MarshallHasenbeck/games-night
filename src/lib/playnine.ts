@@ -139,6 +139,13 @@ export function swapSlot(r0: Round, i: number): Round {
   return endTurn(r);
 }
 
+/** With exactly one face-down card left you may skip: keep it face down and end your turn. */
+export const downCount = (g: Slot[]) => g.filter((x) => !x.up).length;
+export function skipFlip(r0: Round): Round {
+  if (r0.phase !== 'flip' || downCount(r0.grids[r0.turn]) !== 1) return r0;
+  return endTurn(clone(r0));
+}
+
 /** Changed your mind after taking the discard: return it and choose again (nothing has changed yet). */
 export function putBackDiscard(r0: Round): Round {
   if (r0.phase !== 'place' || r0.drawn?.from !== 'discard') return r0;
@@ -172,7 +179,7 @@ export function flipAfterDiscard(r0: Round, i: number): Round {
 /* ---------- computer player ---------- */
 export type Action =
   | { t: 'flipSetup'; i: number } | { t: 'drawDeck' } | { t: 'takeDiscard' }
-  | { t: 'swap'; i: number } | { t: 'discard' } | { t: 'flipAfter'; i: number };
+  | { t: 'swap'; i: number } | { t: 'discard' } | { t: 'flipAfter'; i: number } | { t: 'skip' };
 
 const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 const downSlots = (g: Slot[]) => g.map((s, i) => (s.up ? -1 : i)).filter((i) => i >= 0);
@@ -195,7 +202,16 @@ export function cpuDecide(r: Round, level: 1 | 2 | 3 = 2): Action {
     const good = v <= 2 || pairSlot(g, v) >= 0 || (w >= 0 && g[w].v >= v + 5);
     return !rnd && good ? { t: 'takeDiscard' } : { t: 'drawDeck' };
   }
-  if (r.phase === 'flip') return { t: 'flipAfter', i: pick(downSlots(g)) };
+  if (r.phase === 'flip') {
+    const down = downSlots(g);
+    if (down.length === 1) {
+      // last hidden card: flipping ends my round, so only do it when I expect to be ahead (average unseen card ~4.5)
+      const opp = r.grids[r.turn === 0 ? 1 : 0];
+      const mine = visibleScore(g) + 4.5, theirs = visibleScore(opp) + downCount(opp) * 4.5;
+      if (!(mine + 1 <= theirs) && Math.random() < 0.75) return { t: 'skip' };
+    }
+    return { t: 'flipAfter', i: pick(down) };
+  }
   const c = r.drawn!.v;
   const pair = pairSlot(g, c);
   if (pair >= 0 && !rnd) return { t: 'swap', i: pair };
@@ -218,5 +234,6 @@ export function applyAction(r: Round, a: Action): Round {
     case 'swap': return swapSlot(r, a.i);
     case 'discard': return discardDrawn(r);
     case 'flipAfter': return flipAfterDiscard(r, a.i);
+    case 'skip': return skipFlip(r);
   }
 }
