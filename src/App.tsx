@@ -4,15 +4,15 @@ import Yahtzee from './games/Yahtzee';
 import PlayNine from './games/PlayNine';
 import Checkers from './games/Checkers';
 import Connect4 from './games/Connect4';
-import Sprite from './Sprite';
+import Sprite, { Forest, Pine } from './Sprite';
 import { isMuted, setMuted, sfx } from './lib/sfx';
 
 const GAMES = [
-  { id: 'chess', name: 'Chess', icon: <Sprite name="n" fill="#ffd84a" outline="#14122b" size={64} />, blurb: 'Classic kings & pawns. Legal moves glow.', C: Chess },
-  { id: 'checkers', name: 'Checkers', icon: <Sprite name="kdisc" fill="#e0457b" outline="#14122b" size={64} />, blurb: 'Jump, crown, conquer. Captures forced.', C: Checkers },
-  { id: 'connect4', name: 'Connect 4', icon: <Sprite name="disc" fill="#4aa8ff" outline="#14122b" size={64} />, blurb: 'Drop discs. Four in a row wins.', C: Connect4 },
-  { id: 'yahtzee', name: 'Yahtzee', icon: <Sprite name="die" fill="#ff5c8a" outline="#14122b" size={64} />, blurb: 'Roll, hold, score. 13 rounds.', C: Yahtzee },
-  { id: 'playnine', name: 'Play Nine', icon: <Sprite name="flag" fill="#5ce07a" outline="#14122b" size={64} />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
+  { id: 'chess', name: 'Chess', icon: <Sprite name="n" fill="#f2b632" outline="#2f1a0b" size={64} />, blurb: 'Classic kings & pawns. Legal moves glow.', C: Chess },
+  { id: 'checkers', name: 'Checkers', icon: <Sprite name="kdisc" fill="#d4475a" outline="#2f1a0b" size={64} />, blurb: 'Jump, crown, conquer. Captures forced.', C: Checkers },
+  { id: 'connect4', name: 'Connect 4', icon: <Sprite name="disc" fill="#f2b632" outline="#2f1a0b" size={64} />, blurb: 'Drop discs. Four in a row wins.', C: Connect4 },
+  { id: 'yahtzee', name: 'Yahtzee', icon: <Sprite name="die" fill="#fff4d6" outline="#2f1a0b" size={64} />, blurb: 'Roll, hold, score. 13 rounds.', C: Yahtzee },
+  { id: 'playnine', name: 'Play Nine', icon: <Sprite name="flag" fill="#6fbf4a" outline="#2f1a0b" size={64} />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
 ] as const;
 
 export default function App() {
@@ -28,6 +28,7 @@ export default function App() {
   if (game) {
     return (
       <div className="shell">
+        <Forest />
         <header className="topbar">
           <button className="btn ghost" onClick={() => go(null)}>← Games</button>
           <h1>{game.name}</h1>
@@ -39,8 +40,9 @@ export default function App() {
   }
   return (
     <div className="shell">
-      <h1 className="title">GAME<br />NIGHT</h1>
-      <p className="sub blink">PRESS A GAME TO START</p>
+      <Forest />
+      <div className="hero"><Pine px={6} /><h1 className="title">GAME<br />NIGHT</h1><Pine px={6} /></div>
+      <p className="sub blink">Pick a game, grab a friend</p>
       <div className="menu">
         {GAMES.map((g) => (
           <button key={g.id} className="tile" onClick={() => go(g.id)}>
@@ -50,7 +52,7 @@ export default function App() {
           </button>
         ))}
       </div>
-      <p className="credit">2 PLAYERS · 1 SCREEN · ♥</p>
+      <p className="credit">2 players · 1 screen · pass the iPad</p>
     </div>
   );
 }

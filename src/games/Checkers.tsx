@@ -3,8 +3,8 @@ import Sprite from '../Sprite';
 import { sfx } from '../lib/sfx';
 import { apply, fresh, legalMoves } from '../lib/checkers';
 
-const NAMES = ['PINK', 'CREAM'];
-const FILL = ['#e0457b', '#fff3c4'];
+const NAMES = ['BERRY', 'CREAM'];
+const FILL = ['#d4475a', '#fff4d6'];
 
 export default function Checkers() {
   const [s, setS] = useState(fresh);
@@ -47,7 +47,7 @@ export default function Checkers() {
   return (
     <div className="checkers">
       <div className="status">{status}</div>
-      <div className="captures">CREAM {counts[1]} · PINK {counts[0]}</div>
+      <div className="captures">CREAM {counts[1]} · BERRY {counts[0]}</div>
       <div className="board">
         {rs.map((r) => rs.map((c) => {
           const p = s.board[r][c];
@@ -56,7 +56,7 @@ export default function Checkers() {
           const isSel = sel && sel[0] === r && sel[1] === c;
           return (
             <button key={`${r}${c}`} className={`sq ${dark ? 'dark' : 'light'} ${isSel ? 'sel' : ''}`} onClick={() => click(r, c)} aria-label={`${r},${c}`}>
-              {p && <span className={`piece ${!isSel && movable.has(`${r},${c}`) ? 'bob' : ''}`}><Sprite name={p.k ? 'kdisc' : 'disc'} fill={FILL[p.c]} outline="#14122b" size={100} /></span>}
+              {p && <span className={`piece ${!isSel && movable.has(`${r},${c}`) ? 'bob' : ''}`}><Sprite name={p.k ? 'kdisc' : 'disc'} fill={FILL[p.c]} outline="#2f1a0b" size={100} /></span>}
               {t && <span className="dot" />}
             </button>
           );
@@ -70,7 +70,7 @@ export default function Checkers() {
         <input type="checkbox" checked={autoFlip} onChange={(e) => setAutoFlip(e.target.checked)} />
         Auto-rotate each turn
       </label>
-      <p className="hint">Pink starts at the bottom. Jumps are forced; reach the far row to crown a king.</p>
+      <p className="hint">Berry starts at the bottom. Jumps are forced; reach the far row to crown a king.</p>
     </div>
   );
 }

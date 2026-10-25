@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react';
 /** 8×8 pixel-art sprites drawn as crisp SVG rects. */
 export const SPRITES: Record<string, string[]> = {
   p: ['........', '...##...', '..####..', '...##...', '..####..', '...##...', '.######.', '.######.'],
@@ -27,5 +28,46 @@ export default function Sprite({ name, fill = '#fff', outline = '#000', size = 4
       {edge.map(([x, y]) => <rect key={`o${x},${y}`} x={x} y={y} width="1" height="1" fill={outline} />)}
       {cells.map(([x, y]) => <rect key={`f${x},${y}`} x={x} y={y} width="1" height="1" fill={fill} />)}
     </svg>
+  );
+}
+
+/** Multi-colour pixel art: rows of palette characters ('.' = transparent). */
+export function PixelArt({ rows, palette, px = 4 }: { rows: string[]; palette: Record<string, string>; px?: number }) {
+  const rects: ReactElement[] = [];
+  rows.forEach((row, y) => {
+    let x = 0;
+    while (x < row.length) {
+      const ch = row[x];
+      if (ch === '.') { x++; continue; }
+      let n = 1;
+      while (row[x + n] === ch) n++;
+      rects.push(<rect key={`${x},${y}`} x={x} y={y} width={n} height="1" fill={palette[ch]} />);
+      x += n;
+    }
+  });
+  return (
+    <svg width={rows[0].length * px} height={rows.length * px} viewBox={`0 0 ${rows[0].length} ${rows.length}`} shapeRendering="crispEdges" aria-hidden>
+      {rects}
+    </svg>
+  );
+}
+
+const PINE = ['.....l.....', '....lgg....', '....lggG...', '...lggggG..', '...lgggggG.', '..lgggggggG', '..lggggggGG', '.lggggggggG', '.lgggggggGG', 'lgggggggggG', '....bbB....', '....bbB....', '....bbB....'];
+const MUSH = ['..rrrrr..', '.rrwrrrr.', 'rrrrrwrrr', 'rwrrrrrrr', 'rrrrrrrrr', '..sssss..', '...sss...', '...ssS...'];
+const PAL = { l: '#8fd45a', g: '#3f8f4a', G: '#25643a', b: '#8a5a2e', B: '#5b3716', r: '#d4475a', w: '#fff4d6', s: '#f1dfb0', S: '#cfae72' };
+
+export const Pine = ({ px = 5 }: { px?: number }) => <PixelArt rows={PINE} palette={PAL} px={px} />;
+export const Mushroom = ({ px = 4 }: { px?: number }) => <PixelArt rows={MUSH} palette={PAL} px={px} />;
+
+/** Decorative treeline pinned to the bottom of the page, behind the content. */
+export function Forest() {
+  const trees = [[1, 6], [9, 4], [17, 7], [27, 5], [38, 4], [52, 6], [63, 5], [74, 7], [85, 4], [93, 6]];
+  return (
+    <div className="forest" aria-hidden>
+      {trees.map(([left, px]) => <span key={left} className="tree" style={{ left: `${left}%` }}><Pine px={px} /></span>)}
+      <span className="shroom" style={{ left: '22%' }}><Mushroom px={3} /></span>
+      <span className="shroom" style={{ left: '70%' }}><Mushroom px={4} /></span>
+      <div className="ground" />
+    </div>
   );
 }

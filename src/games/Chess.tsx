@@ -3,9 +3,9 @@ import { Chess as Engine, type Square } from 'chess.js';
 import Sprite from '../Sprite';
 import { sfx } from '../lib/sfx';
 
-const WHITE = '#fff3c4', BLACK = '#e0457b';
+const WHITE = '#fff4d6', BLACK = '#3f8f4a';
 const piece = (color: string, type: string, size = 40) => (
-  <Sprite name={type} fill={color === 'w' ? WHITE : BLACK} outline="#14122b" size={size} />
+  <Sprite name={type} fill={color === 'w' ? WHITE : BLACK} outline="#2f1a0b" size={size} />
 );
 const FILES = 'abcdefgh';
 

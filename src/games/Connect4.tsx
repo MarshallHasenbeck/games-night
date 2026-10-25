@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { sfx } from '../lib/sfx';
 
 const R = 6, C = 7;
-const NAMES = ['PINK', 'GOLD'];
+const NAMES = ['BERRY', 'SUN'];
 type Grid = (0 | 1 | null)[][];
 const empty = (): Grid => Array.from({ length: R }, () => Array(C).fill(null));
 
@@ -53,7 +53,7 @@ export default function Connect4() {
   return (
     <div className="connect4">
       <div className="status">{status}</div>
-      <div className="captures">PINK {score[0]} · GOLD {score[1]}</div>
+      <div className="captures">BERRY {score[0]} · SUN {score[1]}</div>
       <div className="c4board">
         {Array.from({ length: C }, (_, c) => (
           <button key={c} className={`c4col ${over ? '' : `t${turn}`}`} onClick={() => drop(c)} aria-label={`column ${c + 1}`}>
