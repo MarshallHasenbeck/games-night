@@ -874,7 +874,7 @@ html[data-fitted] { overflow: hidden; height: var(--real-h, 100vh); }
 
 /* If iPad Safari leaves the layout viewport nudged up (--vv-top = how far), shift fixed layers down by the same amount
    so nothing hides under the toolbar and no empty strip shows at the bottom */
-html { background-color: #3f8a34; background-image: linear-gradient(#3f9ae0 0%, #6dbdee 30%, #a9dcf2 55%, #7fae6f 72%, #3f8a34 100%); } /* what Chrome paints beside the page (landscape notch strip) matches the sky */
+html { background-color: #101c14; background-image: linear-gradient(#3f9ae0 0%, #6dbdee 30%, #a9dcf2 55%, #7fae6f 72%, #3f8a34 100%); } /* what Chrome paints beside the page (landscape notch strip) matches the sky */
 html[data-time=dusk] { background-image: linear-gradient(#3a3f92 0%, #a2548a 30%, #ee8f5c 55%, #7a8a52 72%, #3f8a34 100%); }
 html[data-time=night] { background-image: linear-gradient(#070b24 0%, #141d4a 35%, #25386a 60%, #2c5a55 76%, #2a5a30 100%); }
 body { background: transparent; } /* a painted body would cover the z-index:-1 scenery */
@@ -1160,3 +1160,7 @@ html .pnboard .slot { width: var(--cw); background: rgba(6, 24, 12, .34); border
 .mrow { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .pit { min-width: 0; }
 .mstore { min-height: 0; align-self: stretch; overflow: hidden; }
+
+/* Mancala stores: an oval that follows the board's rounded ends (the old 999px / 70px radius got scaled down to almost square corners) */
+.mstore { border-radius: 50% / 36%; margin-block: 3px; }
+.mstore .bigcount { bottom: 14%; }
