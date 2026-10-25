@@ -60,14 +60,19 @@ window.addEventListener('scroll', snapTop, { passive: true });
 window.visualViewport?.addEventListener('scroll', snapTop);
 document.addEventListener('focusin', () => requestAnimationFrame(snapTop));
 
-// Add ?debug to the address to see what the browser reports (for chasing iPad Safari layout quirks)
-if (location.search.includes('debug')) {
+// Temporary diagnostics for iPad Safari layout quirks (add ?nodebug to the address to hide)
+if (!location.search.includes('nodebug')) {
   const box = document.createElement('pre');
   box.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:9999;margin:0;padding:6px 8px;background:#000c;color:#9f9;font:11px/1.3 monospace;border-radius:6px;pointer-events:none;white-space:pre';
   document.body.appendChild(box);
   const upd = () => {
     const vv = window.visualViewport, sh = document.querySelector('.shell')?.getBoundingClientRect(), bd = document.body.getBoundingClientRect();
+    const u = (v: string) => { const d = document.createElement('div'); d.style.cssText = `position:fixed;left:0;top:0;width:0;height:${v};visibility:hidden`; document.body.appendChild(d); const h = Math.round(d.getBoundingClientRect().height); d.remove(); return h; };
+    const sc = document.querySelector('.scenery')?.getBoundingClientRect();
+    const cs = getComputedStyle(document.documentElement);
     box.textContent = [
+      `vh ${u('100vh')} svh ${u('100svh')} lvh ${u('100lvh')} dvh ${u('100dvh')}  clientH ${document.documentElement.clientHeight}`,
+      `scenery top ${Math.round(sc?.top ?? 0)} bottom ${Math.round(sc?.bottom ?? 0)}  vvtop ${cs.getPropertyValue('--vv-top')}`,
       `inner ${innerWidth}x${innerHeight}  outer ${outerWidth}x${outerHeight}  screen ${screen.width}x${screen.height}  dpr ${devicePixelRatio}`,
       `vv ${Math.round(vv?.width ?? 0)}x${Math.round(vv?.height ?? 0)} off ${Math.round(vv?.offsetLeft ?? 0)},${Math.round(vv?.offsetTop ?? 0)} page ${Math.round(vv?.pageLeft ?? 0)},${Math.round(vv?.pageTop ?? 0)} scale ${vv?.scale}`,
       `scrollY ${Math.round(scrollY)}  docH ${document.documentElement.scrollHeight}  appH ${getComputedStyle(document.documentElement).getPropertyValue('--app-h')}`,

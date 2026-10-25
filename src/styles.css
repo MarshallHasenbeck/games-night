@@ -878,3 +878,8 @@ html, body { background-color: #3f8a34; }
 .scenery { top: var(--vv-top, 0px); bottom: calc(0px - var(--vv-top, 0px)); }
 .celebrate, .handoff, .rules-overlay { top: var(--vv-top, 0px); bottom: calc(0px - var(--vv-top, 0px)); }
 html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
+
+/* make sure the background reaches the physical bottom even if the layout viewport reports short */
+@supports (height: 100lvh) {
+  .scenery { bottom: auto; height: max(100%, 100vh, 100lvh, 100dvh); }
+}
