@@ -9,7 +9,8 @@ const setAppHeight = () => {
   const el = document.documentElement, w = window.innerWidth, h = window.innerHeight;
   el.style.setProperty('--app-h', `${h}px`);
   // 'land' = phone held sideways (short), 'phone' = narrow portrait; anything bigger keeps the roomy iPad layouts
-  el.dataset.fit = w > h && h < 560 ? 'land' : w < 600 ? 'phone' : '';
+  const fit = w > h && h < 560 ? 'land' : w < 600 ? 'phone' : '';
+  if (fit) el.dataset.fit = fit; else delete el.dataset.fit; // an empty data-fit would still match [data-fit] in CSS
 };
 setAppHeight();
 window.addEventListener('resize', setAppHeight);

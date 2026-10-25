@@ -663,3 +663,22 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 /* no accidental pull-to-refresh / rubber-band while playing */
 html, body { overscroll-behavior-y: contain; }
+
+
+/* =====================================================================
+   Play Nine: fuller screen (wide table + live 9-hole scorecard)
+   ===================================================================== */
+.game.playnine { width: min(calc(100vw - 32px), 1500px); margin-left: calc((100% - min(calc(100vw - 32px), 1500px)) / 2); }
+.holestrip { width: min(100%, 760px); margin: 8px auto; background: linear-gradient(#fbeab9, var(--parch)); color: var(--brown); border: 3px solid var(--wood); outline: 3px solid var(--wood-dd); border-radius: 12px; padding: 4px 8px; box-shadow: var(--shadow); }
+.hs-row { display: grid; grid-template-columns: 46px repeat(9, 1fr) 56px; align-items: center; text-align: center; font: 600 18px/1.5 var(--font); }
+.hs-row > span, .hs-row > b { border-radius: 6px; padding: 0 2px; min-height: 28px; display: grid; place-items: center; }
+.hs-head { font-size: 14px; color: #7a4a1a; } .hs-head > span.now { background: var(--sun); color: var(--brown); font-weight: 700; }
+.hs-name { font-weight: 700; text-align: left; justify-self: start; } .hs-row > b { font-weight: 700; background: #00000012; } .hs-row > b.lead { background: #6fbf4a55; color: #1f6a10; }
+.hs-row > span.done { color: var(--brown); } .hs-row > span.now:not(.hs-name) { background: #f2b63244; }
+@media (orientation: landscape) and (min-width: 1000px) {
+  .pnboard { --cw: clamp(52px, min(calc((min(100vw, 1500px) - 520px) / 8), calc(((var(--app-h, 100vh) - 360px) / 2 - 56px) * 0.714)), 150px); }
+}
+@media (min-width: 1000px) and (orientation: portrait) {
+  .pnboard { --cw: clamp(46px, calc(((var(--app-h, 100vh) - 700px) / 2 - 74px) / 2 * 0.714), 150px); }
+}
+[data-fit] .holestrip { display: none; }

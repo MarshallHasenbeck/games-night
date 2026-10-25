@@ -178,10 +178,27 @@ export default function PlayNine() {
         {r.phase === 'roundOver' && (
           <button className="btn primary" onClick={finishRound}>{hole < HOLES ? 'NEXT HOLE' : 'FINAL SCORE'}</button>
         )}
-        <Scoreboard totals={totals} names={names} />
+        <HoleStrip totals={totals} names={names} hole={hole} />
         <div className="row"><button className="btn" onClick={reset}>NEW GAME</button></div>
-        <p className="hint">Low score wins. Matching columns = 0. Flag = -5. Stuck? Tap ? RULES.</p>
       </div>
+    </div>
+  );
+}
+
+function HoleStrip({ totals, names, hole }: { totals: [number[], number[]]; names: string[]; hole: number }) {
+  const sum = (a: number[]) => a.reduce((x, y) => x + y, 0);
+  const t = [sum(totals[0]), sum(totals[1])];
+  const done = totals[0].length;
+  return (
+    <div className="holestrip" aria-label="Scorecard">
+      <div className="hs-row hs-head"><span />{Array.from({ length: HOLES }, (_, i) => <span key={i} className={i + 1 === hole ? 'now' : ''}>{i + 1}</span>)}<b>TOT</b></div>
+      {[0, 1].map((p) => (
+        <div className="hs-row" key={p}>
+          <span className="hs-name">{names[p]}</span>
+          {Array.from({ length: HOLES }, (_, i) => <span key={i} className={`${i + 1 === hole ? 'now' : ''} ${i < done ? 'done' : ''}`}>{i < done ? totals[p][i] : ''}</span>)}
+          <b className={done && t[p] < t[p === 0 ? 1 : 0] ? 'lead' : ''}>{done ? t[p] : 0}</b>
+        </div>
+      ))}
     </div>
   );
 }
