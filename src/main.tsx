@@ -4,10 +4,23 @@ import './styles.css';
 
 createRoot(document.getElementById('root')!).render(<App />);
 
+// What the page really has to lay out in. window.innerWidth/innerHeight (and vw/vh) can be left stale by iOS after rotating,
+// but an element sized 100% of the fixed viewport is always the true layout size, and ResizeObserver reports real changes.
+const probe = document.createElement('div');
+probe.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;visibility:hidden;pointer-events:none;z-index:-1';
+document.body.appendChild(probe);
+const view = () => {
+  const r = probe.getBoundingClientRect(), pw = Math.round(r.width), ph = Math.round(r.height), iw = window.innerWidth, ih = window.innerHeight;
+  if (!pw || !ph) return { w: iw, h: ih };
+  // normally innerHeight is the visible height (a bit shorter than the fixed box when toolbars show); after a rotation it can be stale
+  const fresh = iw > ih === pw > ph && Math.abs(iw - pw) < 40;
+  return { w: pw, h: fresh ? Math.min(ph, ih) : ph };
+};
+
 // Real visible height in px: works on every Safari, including the iPad address-bar / home-screen cases
 const setAppHeight = () => {
-  const el = document.documentElement, vv = window.visualViewport, w = window.innerWidth, h = Math.round(Math.min(window.innerHeight, vv?.height ?? Infinity));
-  const wpx = `${document.documentElement.clientWidth || w}px`;
+  const el = document.documentElement, vv = window.visualViewport, { w, h } = view();
+  const wpx = `${w}px`;
   if (el.style.getPropertyValue('--app-w') !== wpx) el.style.setProperty('--app-w', wpx); // iOS leaves vw units stale after rotating
   const top = `${Math.max(0, Math.round(vv?.offsetTop ?? 0))}px`;
   if (el.style.getPropertyValue('--app-h') !== `${h}px`) el.style.setProperty('--app-h', `${h}px`);
@@ -20,6 +33,7 @@ setAppHeight();
 setInterval(setAppHeight, 500); // iPad Safari can leave the viewport nudged (e.g. after the keyboard closes) without firing an event
 document.addEventListener('focusout', () => setTimeout(setAppHeight, 300));
 window.addEventListener('resize', setAppHeight);
+new ResizeObserver(setAppHeight).observe(probe);
 window.visualViewport?.addEventListener('resize', setAppHeight);
 window.visualViewport?.addEventListener('scroll', setAppHeight);
 window.addEventListener('orientationchange', () => [0, 120, 300, 700].forEach((ms) => setTimeout(setAppHeight, ms)));
@@ -39,7 +53,7 @@ const fitGame = () => {
   shell.style.transform = ''; shell.style.height = '';
   if (!shell.querySelector('.game')) { delete root.dataset.fitted; return; }
   window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; // Safari restores the old scroll position on refresh, which hid the top of the table
-  const avail = Math.min(window.innerHeight, window.visualViewport?.height ?? Infinity), need = shell.offsetHeight;
+  const avail = view().h, need = shell.offsetHeight;
   if (need > avail + 1) {
     const s = Math.max(0.55, avail / need);
     shell.style.transformOrigin = 'top center';
@@ -77,7 +91,7 @@ if (location.search.includes('debug')) {
     box.textContent = [
       `vh ${u('100vh')} svh ${u('100svh')} lvh ${u('100lvh')} dvh ${u('100dvh')}  clientH ${document.documentElement.clientHeight}`,
       `scenery top ${Math.round(sc?.top ?? 0)} bottom ${Math.round(sc?.bottom ?? 0)}  vvtop ${cs.getPropertyValue('--vv-top')}`,
-      `inner ${innerWidth}x${innerHeight}  outer ${outerWidth}x${outerHeight}  screen ${screen.width}x${screen.height}  dpr ${devicePixelRatio}`,
+      `build ${__BUILD__}  probe ${view().w}x${view().h}\n      inner ${innerWidth}x${innerHeight}  outer ${outerWidth}x${outerHeight}  screen ${screen.width}x${screen.height}  dpr ${devicePixelRatio}`,
       `vv ${Math.round(vv?.width ?? 0)}x${Math.round(vv?.height ?? 0)} off ${Math.round(vv?.offsetLeft ?? 0)},${Math.round(vv?.offsetTop ?? 0)} page ${Math.round(vv?.pageLeft ?? 0)},${Math.round(vv?.pageTop ?? 0)} scale ${vv?.scale}`,
       `scrollY ${Math.round(scrollY)}  docH ${document.documentElement.scrollHeight}  appH ${getComputedStyle(document.documentElement).getPropertyValue('--app-h')}`,
       `shell top ${Math.round(sh?.top ?? 0)} bottom ${Math.round(sh?.bottom ?? 0)}  body top ${Math.round(bd.top)} bottom ${Math.round(bd.bottom)}`,
