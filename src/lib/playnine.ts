@@ -39,19 +39,26 @@ export function deal(starter: 0 | 1): Round {
   return { grids, deck, discard, turn: starter, phase: 'setup', drawn: null, setupFlips: [0, 0], finisher: null };
 }
 
-/** Grid is 2 rows × 4 columns; slot i sits in column i % 4. A matching column scores 0. */
+/**
+ * Grid is 2 rows × 4 columns; slot i sits in column i % 4.
+ * A matching column scores 0, except -5 pairs which keep their -5 each (-10).
+ * Four of a kind: two columns matching with the same number = -10 bonus (-15 for 3, -20 for 4 columns).
+ */
 export function gridScore(g: Slot[], onlyUp = true): number {
   let t = 0;
+  const matched: Record<number, number> = {};
   for (let c = 0; c < 4; c++) {
     const a = g[c], b = g[c + 4];
     if (onlyUp && !(a.up && b.up)) {
       t += (a.up ? a.v : 0) + (b.up ? b.v : 0);
     } else if (a.v === b.v) {
-      // pair cancels
+      if (a.v === -5) t += -10;
+      matched[a.v] = (matched[a.v] ?? 0) + 1;
     } else {
       t += a.v + b.v;
     }
   }
+  for (const n of Object.values(matched)) if (n >= 2) t -= 5 * n;
   return t;
 }
 /** Score of cards that are visible (a column only cancels if both are face up). */

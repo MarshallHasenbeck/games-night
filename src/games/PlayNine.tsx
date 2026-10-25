@@ -5,7 +5,7 @@ import {
 } from '../lib/playnine';
 import { sfx } from '../lib/sfx';
 import { CardBack, FlagArt, Leaf } from '../art';
-import { Celebrate, ModeBar, useOpponent } from '../ui';
+import { Celebrate, ModeBar, Overlay, useOpponent } from '../ui';
 import { recordResult } from '../lib/stats';
 
 const tone = (v: number) => (v < 0 ? 'ace' : v === 0 ? 'zero' : v <= 4 ? 'low' : v <= 8 ? 'mid' : 'high');
@@ -201,7 +201,7 @@ export default function PlayNine() {
         <button className="btn ghost newgame" onClick={() => setConfirmNew(true)}>↺ NEW GAME</button>
       </div>
       {confirmNew && (
-        <div className="celebrate" role="dialog">
+        <Overlay><div className="celebrate" role="dialog">
           <div className="banner">
             <h2>START A NEW GAME?</h2>
             <p>This ends the game you're playing.</p>
@@ -210,7 +210,7 @@ export default function PlayNine() {
               <button className="btn" onClick={reset}>YES, START OVER</button>
             </div>
           </div>
-        </div>
+        </div></Overlay>
       )}
     </div>
   );
@@ -226,7 +226,7 @@ function HoleStrip({ totals, names, hole }: { totals: [number[], number[]]; name
       {[0, 1].map((p) => (
         <div className="hs-row" key={p}>
           <span className="hs-name">{names[p]}</span>
-          {Array.from({ length: HOLES }, (_, i) => <span key={i} className={`${i + 1 === hole ? 'now' : ''} ${i < done ? 'done' : ''}`}>{i < done ? totals[p][i] : ''}</span>)}
+          {Array.from({ length: HOLES }, (_, i) => <span key={i} className={`${i + 1 === hole ? 'now' : ''} ${i < done ? 'done' : ''} ${i < done && totals[p][i] < 0 ? 'neg' : ''}`}>{i < done ? totals[p][i] : ''}</span>)}
           <b className={done && t[p] < t[p === 0 ? 1 : 0] ? 'lead' : ''}>{done ? t[p] : 0}</b>
         </div>
       ))}

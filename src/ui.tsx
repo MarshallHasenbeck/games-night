@@ -1,5 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { sfx } from './lib/sfx';
+
+/** Full-screen popups render on <body> so the auto-fit scaling of the game can't displace them. */
+export const Overlay = ({ children }: { children: ReactNode }) => createPortal(children, document.body);
 
 /* ---------- opponent selection (2 players vs computer) ---------- */
 export type Opp = { cpu: boolean; level: 1 | 2 | 3; setCpu: (v: boolean) => void; setLevel: (v: 1 | 2 | 3) => void };
@@ -42,7 +46,7 @@ export function Celebrate({ title, sub, onAgain }: { title: string; sub?: string
   })), []);
   if (!open) return <button className="btn reopen" onClick={() => setOpen(true)}>RESULT</button>;
   return (
-    <div className="celebrate" role="dialog">
+    <Overlay><div className="celebrate" role="dialog">
       <div className="confetti" aria-hidden>
         {bits.map((b, i) => (
           <i key={i} style={{ left: `${b.left}%`, width: b.size, height: b.size, background: b.color, animationDelay: `${b.delay}s`, animationDuration: `${b.dur}s`, borderRadius: b.round ? '50%' : 2, ['--sway' as string]: `${b.sway}px` }} />
@@ -57,7 +61,7 @@ export function Celebrate({ title, sub, onAgain }: { title: string; sub?: string
           <button className="btn" onClick={() => setOpen(false)}>VIEW BOARD</button>
         </div>
       </div>
-    </div>
+    </div></Overlay>
   );
 }
 

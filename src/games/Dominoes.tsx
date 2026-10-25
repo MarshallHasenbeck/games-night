@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { sfx } from '../lib/sfx';
 import { newRound, ends, sidesFor, playable, play, draw, pass, mustDraw, mustPass, cpuPlay, pips, TARGET, type DState, type Side, type Tile as DTile } from '../lib/dominoes';
-import { Celebrate, ModeBar, useOpponent } from '../ui';
+import { Celebrate, ModeBar, Overlay, useOpponent } from '../ui';
 import { recordResult } from '../lib/stats';
 
 const PIPS: Record<number, number[]> = { 0: [], 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
@@ -152,13 +152,13 @@ export default function Dominoes() {
       )}
       <p className="hint">Match the open ends. First to {TARGET} points wins; the round winner scores the pips left in the other hand.</p>
       {showHandoff && (
-        <div className="handoff">
+        <Overlay><div className="handoff">
           <div className="banner">
             <h2>PASS TO {names[cur]}</h2>
             <p>Hand the screen over, then tap when ready.</p>
             <button className="btn primary" onClick={() => setHandoff(false)}>I'M {names[cur]} - SHOW MY TILES</button>
           </div>
-        </div>
+        </div></Overlay>
       )}
       {gameOver && <Celebrate title={`${names[gameWinner]} WINS!`} sub={`${scores[0]} to ${scores[1]}`} onAgain={reset} />}
     </div>

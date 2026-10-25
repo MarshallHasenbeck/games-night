@@ -4,7 +4,7 @@ import { sfx, sfx2, sfx3 } from '../lib/sfx';
 import {
   N, FLEET, newFleet, randomFleet, canPlace, cells, fire, shipAt, isSunk, allSunk, cpuShot, type Fleet, type Ship,
 } from '../lib/battleship';
-import { Celebrate, ModeBar, useOpponent } from '../ui';
+import { Celebrate, ModeBar, Overlay, useOpponent } from '../ui';
 import { recordResult } from '../lib/stats';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -248,14 +248,14 @@ export default function Battleship() {
       </div>
 
       {curtain && (
-        <div className="handoff">
+        <Overlay><div className="handoff">
           <div className="banner">
             <div className="curtainboat"><Boat len={4} id={curtain.to === 0 ? 0 : 3} /></div>
             <h2>{curtain.text}</h2>
             <p>{phase === 'setup' ? 'No peeking at the other pond!' : 'Hand over the iPad. Your boats stay secret.'}</p>
             <button className="btn primary" onClick={() => setCurtain(null)}>{curtain.btn}</button>
           </div>
-        </div>
+        </div></Overlay>
       )}
       {phase === 'over' && winner !== null && (
         <Celebrate title={`${names[winner]} WINS!`} sub={opp.cpu ? (winner === 0 ? 'You sank the whole fleet!' : 'The CPU sank your fleet') : 'All boats sunk!'} onAgain={reset} />

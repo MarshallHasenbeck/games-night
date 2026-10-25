@@ -103,6 +103,8 @@ export const RULES: Record<string, Rules> = {
       { h: 'Scoring', items: [
         'Each card is worth its number. The flag card is -5 (great!). A 0 card is worth 0.',
         'Matching pair: two cards with the same number in the same column both score 0 - even high ones!',
+        'Exception: two flag cards (-5) in a column do NOT cancel - they keep their points, so the pair scores -10!',
+        'Four of a kind: two columns matching with the SAME number earns a -10 bonus (three columns -15, four columns -20).',
         'A hole ends when someone has all 8 cards face up. The other player gets one last turn, then every card is revealed and scored.',
         'After 9 holes, the lowest total wins.',
       ] },

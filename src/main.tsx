@@ -15,3 +15,31 @@ const setAppHeight = () => {
 setAppHeight();
 window.addEventListener('resize', setAppHeight);
 window.addEventListener('orientationchange', () => setTimeout(setAppHeight, 250));
+
+// Never scroll on a game screen: if the table is taller than the visible area, shrink it to fit (rarely needed -
+// the layouts are already sized to the viewport; this is the safety net for odd Safari toolbar heights).
+let fitQueued = false;
+let fittedGame: Element | null = null;
+const fitGame = () => {
+  fitQueued = false;
+  fittedGame = document.querySelector('.game');
+  const shell = document.querySelector<HTMLElement>('.shell');
+  const root = document.documentElement;
+  if (!shell) return;
+  shell.style.transform = ''; shell.style.height = '';
+  if (!shell.querySelector('.game')) { delete root.dataset.fitted; return; }
+  const avail = window.innerHeight, need = shell.offsetHeight;
+  if (need > avail + 1) {
+    const s = Math.max(0.55, avail / need);
+    shell.style.transformOrigin = 'top center';
+    shell.style.transform = `scale(${s})`;
+    shell.style.height = `${avail / s}px`; // keeps the page itself exactly one screen tall
+    root.dataset.fitted = '1';
+  } else delete root.dataset.fitted;
+};
+const queueFit = () => { if (!fitQueued) { fitQueued = true; requestAnimationFrame(fitGame); } };
+// re-fit when a different game screen appears (not on every tap, so the table never twitches mid-game)
+new MutationObserver(() => { if (document.querySelector('.game') !== fittedGame) queueFit(); }).observe(document.getElementById('root')!, { childList: true, subtree: true });
+window.addEventListener('resize', queueFit);
+window.addEventListener('orientationchange', () => setTimeout(queueFit, 300));
+document.fonts?.ready.then(queueFit);
