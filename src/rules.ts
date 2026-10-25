@@ -97,7 +97,7 @@ export const RULES: Record<string, Rules> = {
         'STEP 1 - Get a card: tap the DECK to draw a new card, OR tap the DISCARD pile to take the face-up card.',
         'STEP 2 - Use it: tap any card in YOUR grid to SWAP. Your old card goes to the discard pile and the new one takes its place, face up.',
         'Don\'t want the card you drew from the deck? Press DISCARD & FLIP. You throw it away, then tap one of your face-down cards to flip it over.',
-        'If you took the discard, you must swap it into your grid - you cannot throw it back.',
+        'If you took the discard, you must swap it into your grid. Tapped it by mistake? Press PUT IT BACK before you do anything else and choose again.',
       ] },
       { h: 'Scoring', items: [
         'Each card is worth its number. The flag card is -5 (great!). A 0 card is worth 0.',

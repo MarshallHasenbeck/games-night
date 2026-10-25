@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   HOLES, deal, flipSetup, drawDeck, takeDiscard, swapSlot, discardDrawn, flipAfterDiscard,
-  visibleScore, finalScore, cpuDecide, applyAction, type Round, type Slot,
+  visibleScore, finalScore, putBackDiscard, cpuDecide, applyAction, type Round, type Slot,
 } from '../lib/playnine';
 import { sfx } from '../lib/sfx';
 import { CardBack, FlagArt, Leaf } from '../art';
@@ -97,7 +97,7 @@ export default function PlayNine() {
     : r.phase === 'draw' ? `${names[r.turn]} · STEP 1: TAP THE DECK TO DRAW, OR TAP THE DISCARD TO TAKE IT`
     : r.phase === 'place' ? (fromDeck
         ? `${names[r.turn]} · STEP 2: TAP A CARD IN YOUR GRID TO SWAP IT, OR PRESS DISCARD & FLIP`
-        : `${names[r.turn]} · STEP 2: TAP A CARD IN YOUR GRID TO SWAP (YOU KEEP THE CARD YOU TOOK)`)
+        : `${names[r.turn]} · STEP 2: TAP A CARD IN YOUR GRID TO SWAP - OR PRESS PUT IT BACK`)
     : r.phase === 'flip' ? `${names[r.turn]} · STEP 3: TAP ONE OF YOUR FACE-DOWN CARDS TO FLIP IT`
     : 'HOLE COMPLETE!';
 
@@ -154,6 +154,9 @@ export default function PlayNine() {
           </div>
           {can('place') && fromDeck && (
             <button className="btn primary discardbtn" onClick={() => go(discardDrawn(r))}>DISCARD &amp; FLIP A CARD</button>
+          )}
+          {can('place') && !fromDeck && (
+            <button className="btn discardbtn" onClick={() => go(putBackDiscard(r))}>↩ PUT IT BACK</button>
           )}
         </div>
         <div className="area p2">{grid(1)}</div>

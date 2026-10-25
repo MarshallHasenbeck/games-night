@@ -139,6 +139,16 @@ export function swapSlot(r0: Round, i: number): Round {
   return endTurn(r);
 }
 
+/** Changed your mind after taking the discard: return it and choose again (nothing has changed yet). */
+export function putBackDiscard(r0: Round): Round {
+  if (r0.phase !== 'place' || r0.drawn?.from !== 'discard') return r0;
+  const r = clone(r0);
+  r.discard.push(r.drawn!.v);
+  r.drawn = null;
+  r.phase = 'draw';
+  return r;
+}
+
 /** Only legal when the card came from the deck: discard it, then flip a face-down card. */
 export function discardDrawn(r0: Round): Round {
   if (r0.phase !== 'place' || r0.drawn?.from !== 'deck') return r0;
