@@ -1099,3 +1099,19 @@ html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
 @keyframes flyB { 0% { transform: translate(40vw, 35vh); } 33% { transform: translate(8vw, 28vh); } 66% { transform: translate(35vw, 6vh); } 100% { transform: translate(40vw, 35vh); } }
 @keyframes flyC { 0% { transform: translate(20vw, 8vh); } 30% { transform: translate(44vw, 14vh); } 60% { transform: translate(28vw, 38vh); } 100% { transform: translate(20vw, 8vh); } }
 @media (prefers-reduced-motion: reduce) { .bfly, .bflap { animation: none; } }
+
+/* iPhone: give the race boards the width of the screen */
+[data-fit="phone"] .acorn, [data-fit="phone"] .slide { --bs: min(calc(100vw - 14px), calc(var(--app-h, 100vh) - 330px)); }
+[data-fit="phone"] .game.acorn > .foot .hint, [data-fit="phone"] .game.slide > .foot .hint { display: none; }
+[data-fit="phone"] .seatbar { gap: 4px 6px; }
+[data-fit="phone"] .seatbar .seg button { padding: 1px 8px; font-size: 13px; }
+[data-fit="phone"] .seatchip { padding: 0 7px; font-size: 12px; border-width: 2px; } [data-fit="phone"] .seatchip b { font-size: 10px; padding: 0 4px; }
+[data-fit="phone"] .game.acorn .status.turnbar, [data-fit="phone"] .game.slide .status.turnbar { font-size: 18px; padding: 1px 14px; }
+[data-fit="phone"] .game.acorn .captures, [data-fit="phone"] .game.slide .captures { font-size: 11px; min-height: 18px; margin: 2px auto; padding: 0 8px; }
+[data-fit="phone"] .apmain, [data-fit="phone"] .slmain { gap: 4px; }
+[data-fit="phone"] .appanel, [data-fit="phone"] .slpanel { gap: 10px; flex-wrap: nowrap; }
+[data-fit="phone"] .dome { width: 62px; border-width: 4px; } [data-fit="phone"] .popper em { font-size: 11px; }
+[data-fit="phone"] .apscore { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; } [data-fit="phone"] .apchip { font-size: 11px; padding: 0 6px; gap: 5px; border-width: 2px; } [data-fit="phone"] .apchip b { display: none; }
+[data-fit="phone"] .slcards { gap: 8px; } [data-fit="phone"] .slpile em { font-size: 10px; }
+[data-fit="phone"] .scard { width: 58px; } [data-fit="phone"] .scard b { font-size: 30cqw; } [data-fit="phone"] .scard small { display: none; }
+[data-fit="phone"] .game.acorn > .foot, [data-fit="phone"] .game.slide > .foot { margin-top: 0; }
