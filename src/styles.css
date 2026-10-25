@@ -344,7 +344,7 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 .dtile { width: 70px; height: 38px; }
 
 /* ---------- play nine: cards ---------- */
-.pnboard { --cw: clamp(46px, calc(((var(--app-h, 100vh) - 585px) / 2 - 74px) / 2 * 0.714), 100px);
+.pnboard { --cw: clamp(46px, calc(((var(--app-h, 100vh) - 645px) / 2 - 74px) / 2 * 0.714), 100px);
   display: grid; grid-template-areas: "p1" "mid" "p2"; justify-items: center; gap: 4px; width: 100%; }
 .pnboard .p1 { grid-area: p1; } .pnboard .pnmid { grid-area: mid; } .pnboard .p2 { grid-area: p2; }
 .pgrid { width: calc(4 * var(--cw) + 66px); max-width: 100%; margin: 4px auto; }
@@ -416,7 +416,7 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
   .shell { max-width: 1260px; }
   .game { --bs: min(calc(100vw - 48px), 800px, calc(var(--app-h, 100vh) - 364px)); }
   .connect4 { --bs: min(calc(100vw - 48px), 720px, calc((var(--app-h, 100vh) - 340px) * 1.1667)); }
-  .pnboard { --cw: clamp(46px, calc(((var(--app-h, 100vh) - 585px) / 2 - 74px) / 2 * 0.714), 130px); }
+  .pnboard { --cw: clamp(46px, calc(((var(--app-h, 100vh) - 645px) / 2 - 74px) / 2 * 0.714), 130px); }
   .bgboard { --rowh: clamp(96px, calc((var(--app-h, 100vh) - 410px) / 2), 300px); }
   .bgwrap { max-width: min(1000px, 100%); }
   .yahtzee .die { width: 92px; height: 92px; }
@@ -539,3 +539,9 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 .fish svg { width: clamp(20px, 3.8vw, 36px); height: auto; transform: translate(-50%, -50%); display: block; }
 @keyframes fishjump { 0% { transform: translate(-70%, 40%) rotate(-50deg) scale(.4); opacity: 0; } 25% { transform: translate(-20%, -110%) rotate(-25deg) scale(1); opacity: 1; } 55% { transform: translate(40%, -70%) rotate(35deg) scale(1); opacity: 1; } 100% { transform: translate(90%, 70%) rotate(80deg) scale(.6); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .duck, .fish { animation: none; } }
+
+/* play nine: explicit "use it OR discard it" choice */
+.choice2 { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.opt { background: linear-gradient(#fbeab9, var(--parch)); color: var(--brown); border: 3px solid var(--wood); border-radius: 12px; padding: 2px 12px; text-align: center; line-height: 1.1; box-shadow: var(--shadow); }
+.opt b { display: block; font: 700 19px var(--font); } .opt span { font-size: 14px; }
+.or { font: 700 16px var(--font); color: var(--cream); text-shadow: 0 2px 0 var(--wood-dd); }

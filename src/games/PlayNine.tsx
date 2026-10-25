@@ -96,8 +96,8 @@ export default function PlayNine() {
     : r.phase === 'setup' ? `${names[r.turn]}: FLIP ANY 2 OF YOUR CARDS (${2 - r.setupFlips[r.turn]} TO GO)`
     : r.phase === 'draw' ? `${names[r.turn]} · STEP 1: TAP THE DECK TO DRAW, OR TAP THE DISCARD TO TAKE IT`
     : r.phase === 'place' ? (fromDeck
-        ? `${names[r.turn]} · STEP 2: TAP A CARD IN YOUR GRID TO SWAP IT, OR PRESS DISCARD & FLIP`
-        : `${names[r.turn]} · STEP 2: TAP A CARD IN YOUR GRID TO SWAP - OR PRESS PUT IT BACK`)
+        ? `${names[r.turn]} · STEP 2: USE THE CARD (SWAP IT INTO YOUR GRID) OR DISCARD IT & FLIP`
+        : `${names[r.turn]} · STEP 2: USE THE CARD YOU TOOK (SWAP IT INTO YOUR GRID) OR PUT IT BACK`)
     : r.phase === 'flip' ? `${names[r.turn]} · STEP 3: TAP ONE OF YOUR FACE-DOWN CARDS TO FLIP IT`
     : 'HOLE COMPLETE!';
 
@@ -152,11 +152,14 @@ export default function PlayNine() {
               <span>{can('draw') ? 'TAKE THIS' : 'DISCARD'}</span>
             </div>
           </div>
-          {can('place') && fromDeck && (
-            <button className="btn primary discardbtn" onClick={() => go(discardDrawn(r))}>DISCARD &amp; FLIP A CARD</button>
-          )}
-          {can('place') && !fromDeck && (
-            <button className="btn discardbtn" onClick={() => go(putBackDiscard(r))}>↩ PUT IT BACK</button>
+          {can('place') && (
+            <div className="choice2">
+              <div className="opt"><b>USE IT</b><span>tap a card in your grid to swap</span></div>
+              <span className="or">OR</span>
+              {fromDeck
+                ? <button className="btn primary discardbtn" onClick={() => go(discardDrawn(r))}>DISCARD IT &amp; FLIP A CARD</button>
+                : <button className="btn discardbtn" onClick={() => go(putBackDiscard(r))}>↩ PUT IT BACK</button>}
+            </div>
           )}
         </div>
         <div className="area p2">{grid(1)}</div>
