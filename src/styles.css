@@ -10,7 +10,7 @@
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body {
-  margin: 0; color: var(--cream); font: 500 20px/1.25 var(--font); min-height: 100vh; min-height: 100dvh; background: #1f3d2b;
+  margin: 0; color: var(--cream); font: 500 20px/1.25 var(--font); min-height: 100vh; min-height: var(--app-h, 100vh); background: #1f3d2b;
   touch-action: manipulation; -webkit-user-select: none; user-select: none; overflow-x: hidden;
 }
 button { font-family: inherit; color: inherit; touch-action: manipulation; }
@@ -301,16 +301,16 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
    ===================================================================== */
 .shell { max-width: 1100px; padding: max(12px, env(safe-area-inset-top)) 16px 28px; }
 .game { display: grid; grid-template-areas: "head" "main" "foot"; justify-items: center; align-content: start;
-  --bs: min(calc(100vw - 32px), 620px, calc(100dvh - 340px)); }
+  --bs: min(calc(100vw - 32px), 620px, calc(var(--app-h, 100vh) - 364px)); }
 .game > .head { grid-area: head; width: 100%; } .game > .main { grid-area: main; } .game > .foot { grid-area: foot; width: 100%; }
 .game .status { margin: 6px auto; }
 .game .row { margin: 10px 0; }
 .board { width: var(--bs); max-width: none; margin: 6px auto; }
-.connect4 { --bs: min(calc(100vw - 32px), 560px, calc((100dvh - 340px) * 1.1667)); }
+.connect4 { --bs: min(calc(100vw - 32px), 560px, calc((var(--app-h, 100vh) - 340px) * 1.1667)); }
 .c4board { width: var(--bs); max-width: none; margin: 6px auto; }
 @media (orientation: landscape) and (min-width: 900px) {
-  .game.split { grid-template-columns: auto minmax(280px, 1fr); grid-template-areas: "main head" "main foot"; column-gap: 36px; align-items: start; justify-items: stretch; --bs: min(calc(100dvh - 110px), 640px, 56vw); }
-  .game.split.connect4 { --bs: min(calc((100dvh - 120px) * 1.1667), 580px, 56vw); }
+  .game.split { grid-template-columns: auto minmax(280px, 1fr); grid-template-areas: "main head" "main foot"; column-gap: 36px; align-items: start; justify-items: stretch; --bs: min(calc(var(--app-h, 100vh) - 110px), 640px, 56vw); }
+  .game.split.connect4 { --bs: min(calc((var(--app-h, 100vh) - 120px) * 1.1667), 580px, 56vw); }
   .game.split > .head { align-self: end; } .game.split > .foot { align-self: start; }
   .game.split > .main { justify-self: start; align-self: center; }
   .game.split.rev { grid-template-columns: minmax(320px, 1fr) minmax(420px, 1fr); grid-template-areas: "head main" "foot main"; }
@@ -332,7 +332,7 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 .dice { margin: 8px 0 4px; } .dice + .row { margin-top: 30px; }
 
 /* backgammon */
-.bgboard { --rowh: clamp(96px, calc((100dvh - 410px) / 2), 232px); }
+.bgboard { --rowh: clamp(96px, calc((var(--app-h, 100vh) - 410px) / 2), 232px); }
 .bgrow { height: var(--rowh); }
 .chk { width: min(86%, calc(var(--rowh) / 5.3)); }
 .bgwrap { max-width: min(780px, 100%); }
@@ -344,7 +344,7 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 .dtile { width: 70px; height: 38px; }
 
 /* ---------- play nine: cards ---------- */
-.pnboard { --cw: clamp(46px, calc(((100dvh - 585px) / 2 - 74px) / 2 * 0.714), 100px);
+.pnboard { --cw: clamp(46px, calc(((var(--app-h, 100vh) - 585px) / 2 - 74px) / 2 * 0.714), 100px);
   display: grid; grid-template-areas: "p1" "mid" "p2"; justify-items: center; gap: 4px; width: 100%; }
 .pnboard .p1 { grid-area: p1; } .pnboard .pnmid { grid-area: mid; } .pnboard .p2 { grid-area: p2; }
 .pgrid { width: calc(4 * var(--cw) + 66px); max-width: 100%; margin: 4px auto; }
@@ -366,7 +366,7 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 .pcard.ace .face.front { background: linear-gradient(#4fc06e, #249048); box-shadow: inset 0 0 0 2px #1f7a3c, inset 0 0 0 4px #7edc98; color: #fff; }
 .pcard.ace .face.front b { text-shadow: 0 2px 0 rgba(0,0,0,.3); }
 @media (orientation: landscape) and (min-width: 900px) {
-  .pnboard { --cw: clamp(52px, min(calc((min(100vw, 1100px) - 470px) / 8), calc(((100dvh - 330px) / 2 - 56px) * 0.714)), 100px);
+  .pnboard { --cw: clamp(52px, min(calc((min(100vw, 1100px) - 470px) / 8), calc(((var(--app-h, 100vh) - 330px) / 2 - 56px) * 0.714)), 100px);
     grid-template-columns: 1fr auto 1fr; grid-template-areas: "p1 mid p2"; align-items: center; column-gap: 8px; }
   .pnboard .p1 { justify-self: end; } .pnboard .p2 { justify-self: start; }
   .pnmid { padding: 0 6px; } .piles { gap: 10px; }
@@ -387,7 +387,7 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 
 /* ---------- menu: compact multi-column ---------- */
 .tile-icon svg { max-width: 66px; max-height: 66px; }
-@media (min-width: 760px) { .menu { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 620px) { .menu { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1050px) {
   .menu { grid-template-columns: repeat(3, 1fr); }
   .tile { grid-template-columns: 76px 1fr; column-gap: 12px; } .tile-icon { height: 70px; }
@@ -396,4 +396,17 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 @media (orientation: landscape) and (max-height: 860px) {
   .hero { margin: 0; } .title { font-size: 46px; line-height: 1; } .title br { display: none; } .hero img { height: 80px; width: auto; }
   .sub { margin: 6px 0 12px; } .menu { gap: 10px; } .tile { padding: 6px 10px; } .board-card { margin-top: 14px; }
+}
+
+/* phones: let the top bar wrap instead of spilling off-screen */
+@media (max-width: 640px) {
+  .topbar { grid-template-columns: 1fr auto; grid-template-areas: "back toggles" "title title"; row-gap: 4px; }
+  .topbar > .btn { grid-area: back; } .topbar > h1 { grid-area: title; text-align: center; font-size: 26px; } .topbar > .toggles { grid-area: toggles; }
+  .btn.ghost { padding: 3px 9px; font-size: 14px; }
+  .title { font-size: 40px; } .tile { grid-template-columns: 72px 1fr; column-gap: 12px; } .tile-icon { height: 70px; }
+  .status { font-size: 18px; padding: 3px 14px; } .hint.prompt { font-size: 16px; } .modebar { gap: 6px; }
+  .seg button { padding: 4px 10px; font-size: 15px; } .seg.small button { padding: 4px 7px; font-size: 13px; }
+  .dice { gap: 6px; } .die { width: 15vw; height: 15vw; }
+  .score th, .score td { font-size: 17px; padding: 2px 6px; }
+  .bgoff { width: 44px; } .tray { font-size: 16px; } .rules { padding: 12px; } .rules li { font-size: 17px; }
 }
