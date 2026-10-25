@@ -11,11 +11,11 @@ import { recordResult } from '../lib/stats';
 const tone = (v: number) => (v < 0 ? 'ace' : v === 0 ? 'zero' : v <= 4 ? 'low' : v <= 8 ? 'mid' : 'high');
 const TONE_HEX: Record<string, string> = { ace: '#ffffff', zero: '#1f8a3e', low: '#1f5fc0', mid: '#c06a00', high: '#c01f1f' };
 
-function Card({ v, up, onClick, active, small, i, mode, slot, hide, sty }: { v?: number; up: boolean; onClick?: () => void; active?: boolean; small?: boolean; i?: number; mode?: 'swap' | 'flip'; slot?: string; hide?: boolean; sty?: CSSProperties }) {
+function Card({ v, up, onClick, active, small, i, mode, slot, hide, sty, cls }: { cls?: string; v?: number; up: boolean; onClick?: () => void; active?: boolean; small?: boolean; i?: number; mode?: 'swap' | 'flip'; slot?: string; hide?: boolean; sty?: CSSProperties }) {
   const t = v === undefined ? '' : tone(v);
   return (
     <button
-      className={`pcard ${up ? 'up' : ''} ${t} ${active ? 'active' : ''} ${active && mode ? `m-${mode}` : ''} ${small ? 'small' : ''} ${i !== undefined ? 'dealt' : ''}`}
+      className={`pcard ${cls ?? ''} ${up ? 'up' : ''} ${t} ${active ? 'active' : ''} ${active && mode ? `m-${mode}` : ''} ${small ? 'small' : ''} ${i !== undefined ? 'dealt' : ''}`}
       style={{ ...(i !== undefined ? { ['--i' as string]: i } : {}), ...(hide ? { visibility: 'hidden' as const } : {}), ...sty }}
       data-slot={slot}
       onClick={onClick}
@@ -194,7 +194,7 @@ export default function PlayNine() {
       <div className="cells" key={`${hole}-${p}`}>
         {r.grids[p].map((s, i) => {
           const click = clickSlot(p, i);
-          return <Card key={i} v={s.v} up={s.up} onClick={click} active={!!click} mode={click ? tapMode(s) ?? undefined : undefined} i={i + p * 8} slot={`${p}-${i}`} hide={hidden.has(`${p}-${i}`)} />;
+          return <span className="well" key={i}><Card v={s.v} up={s.up} onClick={click} active={!!click} mode={click ? tapMode(s) ?? undefined : undefined} i={i + p * 8} slot={`${p}-${i}`} hide={hidden.has(`${p}-${i}`)} /></span>;
         })}
       </div>
     </div>
@@ -216,18 +216,18 @@ export default function PlayNine() {
           {live ? (
             <div className="piles">
               <div className="pile">
-                <Card up={false} small slot="deck" onClick={can('draw') ? () => go(drawDeck(r)) : undefined} active={can('draw')} />
+                <Card up={false} cls="deck" slot="deck" onClick={can('draw') ? () => go(drawDeck(r)) : undefined} active={can('draw')} />
                 <span>{can('draw') ? 'DRAW NEW' : `DECK ${r.deck.length}`}</span>
               </div>
               <div className="pile">
                 {r.drawn
-                  ? <Card v={r.drawn.v} up small slot="drawn" hide={hidden.has('drawn')} onClick={undefined} active={false} />
+                  ? <Card v={r.drawn.v} up slot="drawn" hide={hidden.has('drawn')} onClick={undefined} active={false} />
                   : <span className="slot" data-slot="drawn" />}
                 <span>{r.drawn ? (can('place') && fromDeck ? 'YOUR CARD' : 'YOUR CARD') : ''}</span>
               </div>
               <div className="pile">
                 <Card
-                  v={r.discard.at(-1)} up small slot="discard" hide={hidden.has('discard')}
+                  v={r.discard.at(-1)} up slot="discard" hide={hidden.has('discard')}
                   onClick={can('draw') ? () => go(takeDiscard(r)) : can('place') && !fromDeck ? () => go(putBackDiscard(r)) : undefined}
                   active={can('draw') || (can('place') && !fromDeck)}
                 />

@@ -1120,3 +1120,33 @@ html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
 /* wide screens: 4 menu columns so all 11 games fit without scrolling the menu */
 @media (min-width: 1150px) and (orientation: landscape) { .shell:has(.menu) { max-width: 1320px; } .menu { grid-template-columns: repeat(4, 1fr); } }
 [data-fit] .shell { padding-bottom: max(14px, var(--sab, 0px)); }
+
+
+/* =====================================================================
+   Play Nine v2: felt mats, recessed card wells, full-size piles, stacked deck, calmer hint
+   (last block on purpose - later rules win)
+   ===================================================================== */
+.pnboard .well { position: relative; display: block; width: var(--cw); }
+.pnboard .well::before { content: ''; position: absolute; inset: -4px; border-radius: 11px; background: rgba(6, 24, 12, .4); box-shadow: inset 0 3px 5px rgba(0, 0, 0, .55), 0 1px 0 rgba(255, 255, 255, .08); }
+.pnboard .pgrid {
+  background: repeating-conic-gradient(#ffffff08 0 25%, #0000 0 50%) 0 0 / 8px 8px, radial-gradient(ellipse at 50% 28%, #439a5c 0%, #2d7044 50%, #1b492c 100%);
+  border-color: var(--wood); outline-color: var(--wood-dd);
+  box-shadow: inset 0 0 0 2px #17402a, inset 0 0 28px rgba(0, 0, 0, .5), 0 5px 0 rgba(0, 0, 0, .22), var(--shadow);
+}
+.pnboard .pgrid.turn {
+  border-color: var(--wood);
+  box-shadow: inset 0 0 0 2px #17402a, inset 0 0 28px rgba(0, 0, 0, .45), 0 0 0 3px color-mix(in srgb, var(--pcol, #f2b632) 70%, transparent), 0 0 22px color-mix(in srgb, var(--pcol, #f2b632) 45%, transparent), var(--shadow);
+  animation: gridglow2 2.2s ease-in-out infinite;
+}
+@keyframes gridglow2 { 50% { box-shadow: inset 0 0 0 2px #17402a, inset 0 0 28px rgba(0, 0, 0, .45), 0 0 0 3px color-mix(in srgb, var(--pcol, #f2b632) 90%, transparent), 0 0 34px color-mix(in srgb, var(--pcol, #f2b632) 65%, transparent), var(--shadow); } }
+.pnboard.live .pgrid:not(.turn) { opacity: .72; filter: saturate(.7) brightness(.92); }
+
+/* deck, drawn card and discard are the same size as the grid cards */
+html .pnboard .pcard.small { width: var(--cw); font-size: calc(var(--cw) * 0.4); }
+html .pnboard .slot { width: var(--cw); background: rgba(6, 24, 12, .34); border-color: color-mix(in srgb, var(--sun) 75%, transparent); box-shadow: inset 0 3px 5px rgba(0, 0, 0, .45); }
+.pnmid { min-height: calc(var(--cw) * 1.4 + 38px); }
+.pcard.deck .face.back { box-shadow: -3px 3px 0 -1px #2b2470, -3px 3px 0 0 #b8832f, -6px 6px 0 -1px #2b2470, -6px 6px 0 0 #b8832f; }
+.pcard.deck.active .face.back { box-shadow: none; }
+
+/* the hint is just a line of text now, not a big brown bar */
+.game.playnine .hint.prompt { background: none; border: 0; box-shadow: none; color: #fff3c4; padding: 0 8px; margin: 2px auto; text-shadow: 0 2px 0 rgba(0, 0, 0, .65), 0 0 8px rgba(0, 0, 0, .55); }
