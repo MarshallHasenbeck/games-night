@@ -186,8 +186,7 @@ export default function PlayNine() {
         <div className="area choice">
           {can('place') && fromDeck ? (
             <div className="choice2">
-              <button className={`btn ${useIt ? 'primary' : ''}`} onClick={() => { sfx.click(); setUseIt(true); }}>USE IT</button>
-              <button className={`btn ${useIt ? '' : 'primary'}`} onClick={() => { sfx.click(); setUseIt(false); }}>DISCARD IT &amp; FLIP</button>
+              <button className={`btn ${useIt ? '' : 'primary'}`} onClick={() => { sfx.click(); setUseIt(!useIt); }}>{useIt ? 'DISCARD IT & FLIP' : '✕ CANCEL DISCARD'}</button>
               {lastOne && <button className="btn skipbtn" onClick={() => go(skipDrawn(r))}>SKIP</button>}
             </div>
           ) : can('place') ? (

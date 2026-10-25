@@ -95,7 +95,7 @@ export const RULES: Record<string, Rules> = {
       ] },
       { h: 'On your turn', items: [
         'STEP 1 - Get a card: tap the DECK to draw a new card, OR tap the DISCARD pile to take the face-up card.',
-                'Drew from the deck? Pick: USE IT (tap any card in your grid - face up or face down - to put it there) or DISCARD IT & FLIP (tap a face-down card to flip it). You can switch between the two buttons until you tap a card.',
+                'Drew from the deck? Tap any card in your grid (face up or face down) to put it there. Do not want it? Tap DISCARD IT & FLIP, then tap one of your face-down cards to flip it. Changed your mind? Tap CANCEL DISCARD.',
         'STEP 2 (took the discard): you must use it - tap any card in your grid to swap it in. Tapped it by mistake? Tap the DISCARD pile again to put it back.',
         'Only ONE face-down card left? A SKIP button appears: draw, then skip to discard it and leave your last card face down. Flipping that last card ends your round, so waiting for a better moment can pay off.',
       ] },
