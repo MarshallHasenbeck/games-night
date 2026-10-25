@@ -1,8 +1,11 @@
 # Game Night — forest edition
 
-Seven two-player, one-screen games in a cozy 16-bit forest: **Chess**, **Checkers**, **Connect 4**, **Yahtzee**,
-**Play Nine** (card golf), **Backgammon**, and **Dominoes**. Pass-and-play on one device, or play **vs CPU**
-(Easy / Medium / Hard) in every game. The app rolls, deals, and scores for you.
+Eleven pass-and-play games for one screen in a cozy pixel-art forest: **Chess**, **Checkers**, **Connect 4**, **Yahtzee**,
+**Play Nine** (card golf), **Backgammon**, **Mancala**, **Battleship**, **Dominoes**, plus the 2-4 player race games
+**Acorn Pop** (dice) and **Slide & Swap** (cards). Play against a friend on the same device, or **vs CPU**
+(Easy / Medium / Hard). The app rolls, deals, and scores for you.
+
+**Developing it? Start with [`docs/DEV-GUIDE.md`](docs/DEV-GUIDE.md).**
 
 - Animated pieces, tumbling dice, flipping and dealt cards, dropping discs, and confetti wins
 - Day / dusk / night landscape (auto from your clock, or tap the toggle), with falling leaves and fireflies
