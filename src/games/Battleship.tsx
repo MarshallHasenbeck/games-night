@@ -48,7 +48,7 @@ function Pond({ fleet, reveal, onCell, target, small, preview, label, shake, las
             const r = Math.floor(i / N), c = i % N, sh = fleet.shots[r][c];
             const isT = target && target[0] === r && target[1] === c;
             return (
-              <button key={i} className={`bbc ${sh ?? ''} ${isT ? 'target' : ''}`} onClick={onCell ? () => onCell(r, c) : undefined} disabled={!onCell} aria-label={`${LET[r]}${c + 1}`}>
+              <button key={i} className={`bbc ${sh ?? ''} ${isT ? 'target' : ''} ${lastShot && lastShot[0] === r && lastShot[1] === c ? 'last' : ''}`} onClick={onCell ? () => onCell(r, c) : undefined} disabled={!onCell} aria-label={`${LET[r]}${c + 1}`}>
                 {sh === 'h' && <span className="boom"><i /><i /></span>}
                 {sh === 'm' && <span className="ripple" />}
                 {sh === 'm' && lastShot && lastShot[0] === r && lastShot[1] === c && <span key={lastShot[2]} className="fish"><FishArt px={3} /></span>}
@@ -74,6 +74,8 @@ export default function Battleship() {
   const [turn, setTurn] = useState<0 | 1>(0);
   const [target, setTarget] = useState<[number, number] | null>(null);
   const [msg, setMsg] = useState('');
+  const lastShooter = useRef<0 | 1>(0);
+  const [shotBanner, setShotBanner] = useState<{ kind: 'hit' | 'miss' | 'sunk'; text: string; n: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [curtain, setCurtain] = useState<null | { to: 0 | 1; text: string; btn: string }>(null);
   const [winner, setWinner] = useState<0 | 1 | null>(null);
@@ -120,8 +122,10 @@ export default function Battleship() {
     sfx.move();
     const nd = [...others, ship];
     setDraft(nd);
-    setSel(FLEET.find((f) => !nd.some((d) => d.id === f.id))?.id ?? null);
+    // moving a boat that was already down lets go of it; otherwise advance to the next boat
+    setSel(draft.some((d) => d.id === sel) ? null : FLEET.find((f) => !nd.some((d) => d.id === f.id))?.id ?? null);
   };
+  const pickUp = () => { sfx.click(); setDraft(draft.filter((d) => d.id !== sel)); /* stays selected, ready to place elsewhere */ };
   const shuffle = () => { sfx.roll(); setDraft(randomFleet()); setSel(null); };
   const clear = () => { sfx.click(); setDraft([]); setSel(0); };
   const rotate = () => {
@@ -164,8 +168,9 @@ export default function Battleship() {
     setFleets(nf);
     shotN.current++; setLastShot([r, c, shotN.current]);
     if (res.hit) { sfx2.hit(); setLastHit((n) => n + 1); } else sfx3.splash();
-    const who = names[shooter];
+    const who = names[shooter]; lastShooter.current = shooter;
     setMsg(res.sunk ? `${who} SUNK THE ${FLEET[res.sunk.id].name.toUpperCase()}!` : res.hit ? `BOOM! ${who} HIT A BOAT!` : `SPLASH! ${who} MISSED.`);
+    setShotBanner({ kind: res.sunk ? 'sunk' : res.hit ? 'hit' : 'miss', text: res.sunk ? `${FLEET[res.sunk.id].name.toUpperCase()} SUNK!` : res.hit ? 'HIT!' : 'MISS!', n: shotN.current });
     if (res.sunk) { setTimeout(sfx.score, 250); setTimeout(sfx3.quack, 650); }
     if (allSunk(res.fleet)) { setWinner(shooter); setPhase('over'); setBusy(false); return true; }
     await sleep(res.sunk ? 1700 : 1300);
@@ -197,7 +202,7 @@ export default function Battleship() {
 
   const reset = () => {
     setPhase('setup'); setFleets([newFleet(), newFleet()]); setPlacing(0); setDraft([]); setSel(0); setVert(false); setTurn(0);
-    setTarget(null); setMsg(''); setBusy(false); setWinner(null); setLastShot(null);
+    setTarget(null); setMsg(''); setShotBanner(null); setBusy(false); setWinner(null); setLastShot(null);
     setCurtain(opp.cpu ? null : { to: 0, text: 'P2, LOOK AWAY!', btn: "I'M P1 - PLACE MY BOATS" });
   };
 
@@ -236,8 +241,9 @@ export default function Battleship() {
             })}
             <div className="row">
               <button className="btn" onClick={rotate}>ROTATE {vert ? '↕' : '↔'}</button>
+              {draft.some((d) => d.id === sel) && <button className="btn" onClick={pickUp}>REMOVE BOAT</button>}
               <button className="btn" onClick={shuffle}>SHUFFLE</button>
-              <button className="btn" onClick={clear}>CLEAR</button>
+              <button className="btn" onClick={clear}>CLEAR ALL</button>
             </div>
             <button className="btn primary big" disabled={draft.length < FLEET.length} onClick={finishSetup}>
               {draft.length < FLEET.length ? `PLACE ${FLEET.length - draft.length} MORE` : opp.cpu ? 'READY - START!' : placing === 0 ? 'READY - PASS TO P2' : 'READY - BATTLE!'}
@@ -246,6 +252,7 @@ export default function Battleship() {
         </div>
       ) : (
         <div className="main boards" key={lastHit}>
+          {shotBanner && <div key={shotBanner.n} className={`shotbanner ${shotBanner.kind}`} aria-live="polite"><small>{names[lastShooter.current]}</small>{shotBanner.kind === 'miss' ? '💦 ' : '💥 '}{shotBanner.text}</div>}
           <Pond fleet={enemyFleet} reveal={false} label={`${names[enemy]}'S POND - AIM HERE`} onCell={tap} target={target} lastShot={lastShot} />
           <Pond fleet={myFleet} reveal small label={`YOUR BOATS`} lastShot={lastShot} />
         </div>
