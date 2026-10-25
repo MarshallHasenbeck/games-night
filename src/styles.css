@@ -644,9 +644,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 /* single-column games: head becomes one slim row */
 [data-fit="land"] .game:not(.split) > .head { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 8px; }
 [data-fit="land"] .game:not(.split) > .head > * { margin-top: 0; margin-bottom: 0; }
-[data-fit="land"] .pnboard { --cw: clamp(30px, min(calc((100vw - 290px) / 8), calc(((var(--app-h, 100vh) - 120px) / 2 - 34px) * 0.714)), 90px); grid-template-columns: 1fr auto 1fr; grid-template-areas: "p1 mid p2"; align-items: center; column-gap: 4px; }
+[data-fit="land"] .pnboard { --cw: clamp(30px, min(calc((100vw - 290px) / 8), calc(((var(--app-h, 100vh) - 152px) / 2 - 34px) * 0.714)), 90px); grid-template-columns: 1fr auto 1fr; grid-template-areas: "p1 mid p2" "choice choice choice"; align-items: center; column-gap: 4px; }
 [data-fit="land"] .pnboard .p1 { justify-self: end; } [data-fit="land"] .pnboard .p2 { justify-self: start; }
-[data-fit="land"] .piles { gap: 4px; } [data-fit="land"] .choice2 { flex-direction: column; gap: 2px; } [data-fit="land"] .opt span { display: none; } [data-fit="land"] .discardbtn { font-size: 12px; padding: 3px 8px; }
+[data-fit="land"] .piles { gap: 4px; } [data-fit="land"] .choice2 { flex-direction: row; gap: 6px; min-height: 0; } [data-fit="land"] .opt span { display: none; } [data-fit="land"] .discardbtn { font-size: 12px; padding: 3px 8px; }
 [data-fit="land"] .playnine .foot { display: flex; justify-content: center; gap: 10px; align-items: center; } [data-fit="land"] .playnine .foot .row { margin: 0; }
 [data-fit="land"] .backgammon { grid-template-columns: minmax(0, 1fr) 170px; grid-template-areas: "head head" "main foot"; column-gap: 10px; align-items: start; justify-items: stretch; }
 [data-fit="land"] .backgammon > .foot { align-self: center; } [data-fit="land"] .backgammon .dicerow { flex-wrap: wrap; }
@@ -682,3 +682,54 @@ html, body { overscroll-behavior-y: contain; }
   .pnboard { --cw: clamp(46px, calc(((var(--app-h, 100vh) - 700px) / 2 - 74px) / 2 * 0.714), 150px); }
 }
 [data-fit] .holestrip { display: none; }
+
+
+/* =====================================================================
+   Play Nine: STABLE layout (nothing moves when you draw / pick) + bigger cards
+   ===================================================================== */
+.pile > span:empty:not(.slot) { display: block; visibility: hidden; }          /* keep the label's space */
+.pnboard { grid-template-areas: "p1" "mid" "choice" "p2"; row-gap: 4px; }
+.pnboard .choice { grid-area: choice; min-width: 0; justify-self: center; }
+.choice2 { min-height: 58px; }
+.choice2.idle { visibility: hidden; pointer-events: none; }
+.pnmid { min-height: calc(var(--cw) * 0.88 * 1.4 + 38px); }
+.hint.prompt { min-height: 1.7em; font-size: clamp(13px, 2.1vw, 20px); }
+[data-fit] .hint.prompt { min-height: 2.7em; display: grid; place-items: center; }
+@media (min-width: 960px) and (orientation: landscape) {
+  .pnboard { grid-template-columns: 1fr auto 1fr; grid-template-areas: "p1 mid p2" "choice choice choice"; align-items: start; column-gap: 8px;
+    --cw: clamp(52px, min(calc((min(100vw, 1500px) - 32px - 130px - 132px - 24px) / 8), calc((var(--app-h, 100vh) - 470px) / 2.8)), 150px); }
+  .pnboard .p1 { justify-self: end; } .pnboard .p2 { justify-self: start; }
+  .pnboard .pnmid { align-self: center; padding: 0 2px; min-height: 0; }
+  .piles { flex-direction: column; align-items: center; gap: 6px; }
+  .pcard.small { width: calc(var(--cw) * 0.62); font-size: calc(var(--cw) * 0.26); } .slot { width: calc(var(--cw) * 0.62); }
+  .pile > span:last-child { font-size: 13px; padding: 0 6px; min-height: 20px; }
+}
+
+
+/* fixed widths so nothing can nudge the table when text changes */
+.pile { width: max(calc(var(--cw) * 0.9), 96px); }
+.pile > span:last-child { white-space: nowrap; text-align: center; }
+.hint.prompt { width: min(100%, 700px); }
+[data-fit] .hint.prompt { width: 100%; min-height: 2.5em; }
+[data-fit] .choice2 { min-height: 38px; } [data-fit] .opt span { display: none; }
+[data-fit="phone"] .pnboard { --cw: clamp(38px, min(calc((100vw - 96px) / 4), calc((var(--app-h, 100vh) - 395px) / 4.7 * 0.714)), 96px); }
+@media (min-width: 960px) and (orientation: landscape) {
+  .game.playnine > .head { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 12px; }
+  .game.playnine > .head > * { margin-top: 0; margin-bottom: 0; }
+  .game.playnine > .head > .prompt { flex: 0 0 auto; }
+  .game.playnine > .foot { display: flex; justify-content: center; align-items: center; gap: 14px; }
+  .game.playnine > .foot .row { margin: 0; } .game.playnine .holestrip { margin: 0; }
+  .pnboard { --cw: clamp(52px, min(calc((min(100vw, 1500px) - 32px - 150px - 132px - 24px) / 8), calc((var(--app-h, 100vh) - 450px) / 2.8)), 150px); }
+}
+
+
+/* portrait tablets: stacked hands, but a slimmer top/bottom so the cards can grow */
+@media (min-width: 700px) and (orientation: portrait) {
+  .game.playnine > .head { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 12px; }
+  .game.playnine > .head > * { margin-top: 0; margin-bottom: 0; }
+  .game.playnine > .head > .prompt { flex: 0 0 auto; }
+  .game.playnine > .foot { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .game.playnine > .foot .row { margin: 0; } .game.playnine .holestrip { margin: 0; width: min(100%, 640px); }
+  .pnboard { --cw: clamp(46px, calc(((var(--app-h, 100vh) - 560px) / 2 - 74px) / 2 * 0.714), 130px); }
+}
+.pile > span:last-child { height: 28px; line-height: 20px; min-height: 0; box-sizing: border-box; display: block; overflow: hidden; }
