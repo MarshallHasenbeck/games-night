@@ -22,7 +22,7 @@ const view = () => {
 // a game screen gets a *virtual* viewport: the real size divided by a scale S (S = 1 on anything roomy, like an iPad). S only drops
 // when the real screen is smaller than the design minimum, so a layout never sees a cramped size; the shell is then scaled by S to
 // fill the real screen exactly (same aspect, so no bars). The scenery stays real-size behind it (--real-w / --real-h).
-const MIN_PORTRAIT = { w: 390, h: 700 }, MIN_LANDSCAPE = { w: 844, h: 390 };
+const MIN_PORTRAIT = { w: 390, h: 700 }, MIN_LANDSCAPE = { w: 932, h: 390 };
 const stage = { s: 1, vw: 0, vh: 0, w: 0, h: 0 };
 const insetProbe = document.createElement('div');
 insetProbe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
@@ -92,7 +92,7 @@ const fitGame = () => {
   }
   root.dataset.fitted = '1'; // game screens never scroll
 };
-const queueFit = () => { if (!fitQueued) { fitQueued = true; requestAnimationFrame(fitGame); } };
+const queueFit = () => { if (!fitQueued) { fitQueued = true; requestAnimationFrame(fitGame); setTimeout(() => { if (fitQueued) fitGame(); }, 80); } }; // rAF is paused in background tabs, so a timer backs it up
 onResized = () => { queueFit(); setTimeout(queueFit, 150); setTimeout(queueFit, 500); }; // again once the new layout has settled
 // re-fit when a different game screen appears (not on every tap, so the table never twitches mid-game)
 new MutationObserver(() => { if (document.querySelector('.game') !== fittedGame) { setAppHeight(); queueFit(); } }).observe(document.getElementById('root')!, { childList: true, subtree: true });

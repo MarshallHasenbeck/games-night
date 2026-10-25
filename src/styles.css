@@ -874,16 +874,17 @@ html[data-fitted] { overflow: hidden; height: var(--real-h, 100vh); }
 
 /* If iPad Safari leaves the layout viewport nudged up (--vv-top = how far), shift fixed layers down by the same amount
    so nothing hides under the toolbar and no empty strip shows at the bottom */
-html { background-color: #3f8a34; }
+html { background-color: #3f8a34; background-image: linear-gradient(#3f9ae0 0%, #6dbdee 30%, #a9dcf2 55%, #7fae6f 72%, #3f8a34 100%); } /* what Chrome paints beside the page (landscape notch strip) matches the sky */
+html[data-time=dusk] { background-image: linear-gradient(#3a3f92 0%, #a2548a 30%, #ee8f5c 55%, #7a8a52 72%, #3f8a34 100%); }
+html[data-time=night] { background-image: linear-gradient(#070b24 0%, #141d4a 35%, #25386a 60%, #2c5a55 76%, #2a5a30 100%); }
 body { background: transparent; } /* a painted body would cover the z-index:-1 scenery */
 .scenery { top: var(--vv-top, 0px); bottom: calc(0px - var(--vv-top, 0px)); }
 .celebrate, .handoff, .rules-overlay { top: var(--vv-top, 0px); bottom: calc(0px - var(--vv-top, 0px)); }
 html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
 
 /* make sure the background reaches the physical bottom even if the layout viewport reports short */
-@supports (height: 100lvh) {
-  .scenery { bottom: auto; height: max(100%, 100vh, 100lvh, 100dvh); }
-}
+/* the scenery is exactly the visible height (Chrome's bottom toolbar hides anything taller, e.g. 100lvh) */
+.scenery { bottom: auto; height: var(--real-h, 100%); }
 
 /* Play Nine: flying cards */
 .ghostlayer { position: fixed; inset: 0; z-index: 90; pointer-events: none; }
@@ -1150,3 +1151,12 @@ html .pnboard .slot { width: var(--cw); background: rgba(6, 24, 12, .34); border
 
 /* the hint is just a line of text now, not a big brown bar */
 .game.playnine .hint.prompt { background: none; border: 0; box-shadow: none; color: #fff3c4; padding: 0 8px; margin: 2px auto; text-shadow: 0 2px 0 rgba(0, 0, 0, .65), 0 0 8px rgba(0, 0, 0, .55); }
+
+
+/* Mancala: tracks and stores must not size from their contents (pits get height from width, stores asked for min-height:100% - a loop
+   that left the board at a stale landscape size after rotating back) */
+.mboard { grid-template-columns: minmax(0, 1.05fr) minmax(0, 6fr) minmax(0, 1.05fr); max-width: 100%; }
+.mrows { grid-template-rows: auto auto; min-width: 0; }
+.mrow { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.pit { min-width: 0; }
+.mstore { min-height: 0; align-self: stretch; overflow: hidden; }

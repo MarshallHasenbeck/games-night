@@ -1,4 +1,4 @@
-import { useMemo, type ReactElement } from 'react';
+import { useEffect, useMemo, type ReactElement } from 'react';
 import { PixelArt } from './Sprite';
 import { useTime, type Resolved } from './lib/theme';
 
@@ -368,6 +368,7 @@ function Critters() {
 export function Scenery() {
   const { resolved } = useTime();
   const url = useMemo(makeLandscape, []);
+  useEffect(() => { document.documentElement.dataset.time = resolved; }, [resolved]); // the page colour behind the scenery follows the sky
   return (
     <div className="scenery" data-time={resolved} aria-hidden>
       <Sky time={resolved} />
