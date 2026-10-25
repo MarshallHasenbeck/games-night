@@ -1004,3 +1004,8 @@ html:not([data-fitted]) body { padding-top: var(--vv-top, 0px); }
 [data-fit="land"] .slide { --bs: calc(var(--app-h, 100vh) - 60px); }
 [data-fit="land"] .slmain { flex-direction: row; gap: 10px; } [data-fit="land"] .slpanel { flex-direction: column; width: 200px; gap: 6px; } [data-fit="land"] .scard { width: 70px; } [data-fit="land"] .scard small { display: none; }
 .scard .cardart { position: absolute; inset: 0; width: auto; height: auto; background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated; display: block; border-radius: 7px; }
+
+/* The scenery may be taller than what is visible (iPad Safari: lvh > innerHeight). Keep the landscape and animals
+   sitting on the VISIBLE bottom, and carry the ground colour on below them. */
+.landscape, .tint, .farm { bottom: max(0px, calc(100% - var(--app-h, 100%))); }
+.landscape::after { content: ''; position: absolute; top: 100%; left: 0; right: 0; height: 40vh; background: #3f8a34; }
