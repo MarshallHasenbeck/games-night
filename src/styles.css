@@ -861,3 +861,13 @@ html[data-fitted], html[data-fitted] body { overscroll-behavior: none; }
 .pond .rowsl { position: absolute; left: var(--pd); top: calc(var(--pd) + var(--lab)); bottom: var(--pd); width: var(--lab); grid-template-rows: repeat(10, minmax(0, 1fr)); z-index: 2; }
 .pond .grid, .pond .ships, .pond .critters { position: absolute; grid-area: auto; top: calc(var(--pd) + var(--lab)); left: calc(var(--pd) + var(--lab)); right: var(--pd); bottom: var(--pd); }
 .pond .grid { grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-rows: repeat(10, minmax(0, 1fr)); }
+
+/* Mancala: stones hop between pits */
+.mboard { position: relative; }
+.flylayer { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+.flystone { position: absolute; z-index: 6; box-shadow: 0 6px 6px rgba(0,0,0,.35), 0 0 8px rgba(255,255,255,.5); }
+.pit.hot, .mstore.hot { animation: potpulse .35s ease-out; }
+
+/* iOS Safari ignores overflow:hidden on the body, so pin the page itself while a game is open */
+html[data-fitted] body { position: fixed; top: 0; left: 0; right: 0; width: 100%; height: var(--app-h, 100vh); min-height: 0; overflow: hidden; }
+html[data-fitted] { overflow: hidden; height: var(--app-h, 100vh); }
