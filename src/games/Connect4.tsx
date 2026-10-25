@@ -5,10 +5,10 @@ import { bestColumn } from '../cpu/connect4AI';
 import { Celebrate, ModeBar, useOpponent } from '../ui';
 import { recordResult } from '../lib/stats';
 
-const NAMES = ['BERRY', 'SUN'];
 
 export default function Connect4() {
   const opp = useOpponent('connect4');
+  const NAMES = ['P1', opp.cpu ? 'CPU' : 'P2'];
   const [g, setG] = useState<Grid>(empty);
   const [turn, setTurn] = useState<0 | 1>(0);
   const [last, setLast] = useState<[number, number, number] | null>(null);
@@ -52,7 +52,7 @@ export default function Connect4() {
       <div className="head">
         <ModeBar opp={opp} onChange={() => { again(); setScore([0, 0]); }} />
         <div className="status">{status}</div>
-        <div className="captures">BERRY {score[0]} · SUN {score[1]}</div>
+        <div className="captures">{NAMES[0]} {score[0]} · {NAMES[1]} {score[1]}</div>
       </div>
       <div className="main c4board">
         {Array.from({ length: C }, (_, c) => (

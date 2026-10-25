@@ -32,7 +32,7 @@ export const RULES: Record<string, Rules> = {
     goal: 'Capture all of your opponent\'s pieces, or leave them with no legal move.',
     sections: [
       { h: 'How to play', items: [
-        'Berry (bottom) moves first. Tap a piece that is bobbing, then tap a green dot to move there.',
+        'P1 (red, bottom) moves first. Tap a piece that is bobbing, then tap a green dot to move there.',
         'Pieces move one square diagonally forward onto empty dark squares.',
       ] },
       { h: 'Capturing', items: [
@@ -53,7 +53,7 @@ export const RULES: Record<string, Rules> = {
     sections: [
       { h: 'How to play', items: [
         'Take turns tapping a column. Your disc drops to the lowest open spot.',
-        'Berry goes first. Winning discs flash when four connect.',
+        'P1 (red) goes first. Winning discs flash when four connect.',
         'If the board fills with no four-in-a-row, it is a draw.',
       ] },
       { h: 'Tips', items: [
@@ -118,8 +118,8 @@ export const RULES: Record<string, Rules> = {
     goal: 'Move all 15 of your checkers home, then bear them all off the board before your opponent.',
     sections: [
       { h: 'Direction', items: [
-        'Berry moves counter-clockwise: top-right, across the top, down the left, along the bottom to the bottom-right home.',
-        'Cream goes the opposite way and its home is the top-right. The 6 points in your home are the last 6 before your tray.',
+        'P1 (red) moves counter-clockwise: top-right, across the top, down the left, along the bottom to the bottom-right home.',
+        'P2 (cream) goes the opposite way and its home is the top-right. The 6 points in your home are the last 6 before your tray.',
       ] },
       { h: 'Your turn', items: [
         'Tap ROLL. Each die is a separate move: move one checker that many points. Doubles give you four moves.',

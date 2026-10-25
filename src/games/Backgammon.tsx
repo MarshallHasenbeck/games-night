@@ -5,7 +5,6 @@ import { newGame, legalMoves, applyMove, rollDice, endTurn, cpuMove, type BG, ty
 import { Celebrate, ModeBar, useOpponent } from '../ui';
 import { recordResult } from '../lib/stats';
 
-const NAMES = ['BERRY', 'CREAM'];
 const TOP = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
 const BOT = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
 const PIPS: Record<number, number[]> = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
@@ -36,6 +35,7 @@ function Die({ v, used }: { v: number; used?: boolean }) {
 
 export default function Backgammon() {
   const opp = useOpponent('backgammon');
+  const NAMES = ['P1', opp.cpu ? 'CPU' : 'P2'];
   const [s, setS] = useState<BG>(newGame);
   const [sel, setSel] = useState<number | 'bar' | null>(null);
   const [tumble, setTumble] = useState<number[] | null>(null);
@@ -160,7 +160,7 @@ export default function Backgammon() {
         <button className="btn primary" onClick={doRoll} disabled={!needsRoll || cpuTurn || !!tumble}>ROLL</button>
         <button className="btn" onClick={reset}>NEW GAME</button>
       </div>
-      <p className="hint">Berry moves counter-clockwise to the bottom-right home. Hit lone blots, then bear off all 15.</p>
+      <p className="hint">P1 (red) moves counter-clockwise to the bottom-right home. Hit lone blots, then bear off all 15.</p>
       </div>
       {s.winner !== null && <Celebrate title={`${NAMES[s.winner]} WINS!`} sub={opp.cpu ? (s.winner === 0 ? 'You beat the CPU!' : 'The CPU got you this time') : undefined} onAgain={reset} />}
     </div>

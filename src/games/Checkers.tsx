@@ -6,10 +6,10 @@ import { bestCheckersMove } from '../cpu/checkersAI';
 import { Celebrate, ModeBar, useOpponent } from '../ui';
 import { recordResult } from '../lib/stats';
 
-const NAMES = ['BERRY', 'CREAM'];
 
 export default function Checkers() {
   const opp = useOpponent('checkers');
+  const NAMES = ['P1', opp.cpu ? 'CPU' : 'P2'];
   const [s, setS] = useState(fresh);
   const [sel, setSel] = useState<[number, number] | null>(null);
   const [flip, setFlip] = useState(false);
@@ -72,7 +72,7 @@ export default function Checkers() {
       <div className="head">
         <ModeBar opp={opp} />
         <div className="status">{status}</div>
-        <div className="captures">CREAM {counts[1]} · BERRY {counts[0]}</div>
+        <div className="captures">{NAMES[1]} {counts[1]} · {NAMES[0]} {counts[0]}</div>
       </div>
       <div className="main board">
         {rs.map((r) => rs.map((c) => {
@@ -107,7 +107,7 @@ export default function Checkers() {
           Auto-rotate each turn
         </label>
       )}
-      <p className="hint">Berry starts at the bottom. Jumps are forced; reach the far row to crown a king.</p>
+      <p className="hint">P1 (red) starts at the bottom. Jumps are forced; reach the far row to crown a king.</p>
       </div>
       {s.winner !== null && <Celebrate title={`${NAMES[s.winner]} WINS!`} sub={opp.cpu ? (s.winner === 0 ? 'You beat the CPU!' : 'The CPU got you this time') : undefined} onAgain={reset} />}
     </div>
