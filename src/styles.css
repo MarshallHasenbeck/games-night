@@ -410,3 +410,24 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
   .score th, .score td { font-size: 17px; padding: 2px 6px; }
   .bgoff { width: 44px; } .tray { font-size: 16px; } .rules { padding: 12px; } .rules li { font-size: 17px; }
 }
+
+/* ---------- big screens (13" iPad): let boards, cards and dice grow ---------- */
+@media (min-width: 1000px) {
+  .shell { max-width: 1260px; }
+  .game { --bs: min(calc(100vw - 48px), 800px, calc(var(--app-h, 100vh) - 364px)); }
+  .connect4 { --bs: min(calc(100vw - 48px), 720px, calc((var(--app-h, 100vh) - 340px) * 1.1667)); }
+  .pnboard { --cw: clamp(46px, calc(((var(--app-h, 100vh) - 585px) / 2 - 74px) / 2 * 0.714), 130px); }
+  .bgboard { --rowh: clamp(96px, calc((var(--app-h, 100vh) - 410px) / 2), 300px); }
+  .bgwrap { max-width: min(1000px, 100%); }
+  .yahtzee .die { width: 92px; height: 92px; }
+  .die.small { width: 60px; height: 60px; }
+  .status { font-size: 24px; } .tile-name { font-size: 30px; }
+}
+@media (orientation: landscape) and (min-width: 1000px) {
+  .game.split { --bs: min(calc(var(--app-h, 100vh) - 110px), 800px, 56vw); }
+  .game.split.connect4 { --bs: min(calc((var(--app-h, 100vh) - 120px) * 1.1667), 720px, 56vw); }
+  .pnboard { --cw: clamp(52px, min(calc((min(100vw, 1260px) - 470px) / 8), calc(((var(--app-h, 100vh) - 330px) / 2 - 56px) * 0.714)), 130px); }
+  .game.split.rev .die { width: min(9vw, 92px); height: min(9vw, 92px); }
+}
+
+@media (min-width: 1000px) and (min-height: 900px) { .dtile { width: 96px; height: 50px; } }
