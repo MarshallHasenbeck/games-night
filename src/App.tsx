@@ -7,7 +7,8 @@ import Connect4 from './games/Connect4';
 import Backgammon from './games/Backgammon';
 import Dominoes from './games/Dominoes';
 import Mancala from './games/Mancala';
-import { Scenery, Piece, Disc, ConnectDisc, DieArt, FlagArt, BoardIcon, DominoArt, TreeIcon } from './art';
+import Battleship from './games/Battleship';
+import { Scenery, Piece, Disc, ConnectDisc, DieArt, FlagArt, BoardIcon, DominoArt, TreeIcon, Boat } from './art';
 import { isMuted, setMuted, sfx } from './lib/sfx';
 import { cycleTime, useTime } from './lib/theme';
 import { getStats, resetStats } from './lib/stats';
@@ -21,6 +22,7 @@ const GAMES = [
   { id: 'playnine', name: 'Play Nine', icon: <FlagArt px={6} />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
   { id: 'backgammon', name: 'Backgammon', icon: <BoardIcon px={5} />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
   { id: 'mancala', name: 'Mancala', icon: <span style={{ display: 'flex' }}><ConnectDisc px={3} side={0} /><ConnectDisc px={3} /></span>, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
+  { id: 'battleship', name: 'Battleship', icon: <span style={{ display: 'block', width: 70, height: 26 }}><Boat len={3} id={3} /></span>, blurb: 'Hunt the cute little boats. Pass-the-iPad secret!', C: Battleship },
   { id: 'dominoes', name: 'Dominoes', icon: <DominoArt px={5} />, blurb: 'Match the ends. First to 100.', C: Dominoes },
 ] as const;
 

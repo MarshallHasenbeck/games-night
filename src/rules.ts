@@ -184,4 +184,31 @@ export const RULES: Record<string, Rules> = {
       ] },
     ],
   },
+  battleship: {
+    title: 'Battleship',
+    goal: 'Find and sink all 5 of your opponent\'s hidden boats before they sink yours.',
+    sections: [
+      { h: 'Placing your boats', items: [
+        'Each player secretly places 5 boats on their own 10 x 10 pond: lengths 5, 4, 3, 3 and 2.',
+        'Tap a boat in the list, then tap the pond to put it there. SIDEWAYS / UP-DOWN turns it. Tap a placed boat to pick it up again. SHUFFLE places them all at random.',
+        'Boats cannot overlap or hang off the edge, and they can\'t move once the battle starts.',
+        'Playing a friend on one iPad? A "pass the iPad" screen hides your pond - only look at the screen when it is your turn.',
+      ] },
+      { h: 'Taking a shot', items: [
+        'On your turn you see the enemy pond (blue, with a number and letter grid). Tap a square to aim - a crosshair appears. Tap FIRE! (or tap the same square again) to shoot.',
+        'BOOM = you hit a boat. SPLASH = a miss, shown as a ripple.',
+        'When every square of a boat has been hit, it sinks and its smiling boat is revealed. You are told which boat it was.',
+        'Your own pond (YOUR BOATS) shows where the enemy has shot at you.',
+      ] },
+      { h: 'Winning', items: [
+        'Turns alternate after every shot, hit or miss.',
+        'The first player to sink all 5 enemy boats wins.',
+      ] },
+      { h: 'Tips', items: [
+        'Shoot a checkerboard pattern (every other square) to find boats fast - even the smallest boat is 2 long.',
+        'After a hit, shoot the squares next to it to find which way the boat points.',
+        'Playing the CPU? Easy shoots at random, Hard works out the most likely spots.',
+      ] },
+    ],
+  },
 };

@@ -450,3 +450,70 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 .pcount { position: absolute; right: -2px; top: -4px; min-width: 26px; padding: 0 6px; text-align: center; background: var(--parch); color: var(--brown); border: 3px solid var(--wood-dd); border-radius: 12px; font: 700 17px/1.3 var(--font); z-index: 2; }
 .bigcount { position: absolute; left: 50%; bottom: 6%; transform: translateX(-50%); min-width: 60%; text-align: center; padding: 1px 4px; background: var(--parch); color: var(--brown); border: 3px solid var(--wood-dd); border-radius: 12px; font: 700 28px/1.2 var(--font); z-index: 2; }
 @media (max-width: 640px) { .mboard { gap: 5px; padding: 8px; } .mrow { gap: 5px; } .mrows { gap: 6px; } .pcount { min-width: 20px; font-size: 13px; padding: 0 3px; } .bigcount { font-size: 18px; } }
+
+/* =====================================================================
+   battleship: a cute pastel pond
+   ===================================================================== */
+.battleship { --ew: min(calc(100vw - 32px), 560px, calc((var(--app-h, 100vh) - 505px) / 1.58)); }
+.pondwrap { width: var(--ew); }
+.pondwrap.small { width: calc(var(--ew) * 0.58); }
+.pondlabel { width: fit-content; margin: 0 auto 4px; padding: 0 14px; background: linear-gradient(#6a4220, var(--wood-d)); color: var(--cream); border: 3px solid var(--wood-dd); border-radius: 10px; font: 700 17px/1.4 var(--font); box-shadow: var(--shadow); }
+.pondwrap.small .pondlabel { font-size: 14px; }
+.pond { position: relative; display: grid; grid-template-columns: 22px 1fr; grid-template-rows: 22px 1fr; aspect-ratio: 1; padding: 4px; border: 8px solid var(--wood); outline: 3px solid var(--wood-dd); border-radius: 18px;
+  background: linear-gradient(160deg, #a6ecf7, #6cc6ea 55%, #55b4de); box-shadow: inset 0 0 0 3px #fff6, inset 0 -10px 24px rgba(30, 120, 170, .35), 0 14px 26px rgba(0,0,0,.38); overflow: hidden; }
+.pond::before { content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .55;
+  background: radial-gradient(circle at 20% 25%, #fff 0 2px, transparent 3px) 0 0 / 46px 38px, radial-gradient(circle at 70% 70%, #fff 0 2px, transparent 3px) 12px 10px / 58px 46px; animation: shimmer 9s linear infinite; }
+@keyframes shimmer { to { background-position: 46px 38px, 70px 56px; } }
+.pond.shake { animation: wiggle .35s; }
+@keyframes wiggle { 20% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 80% { transform: translateX(-4px); } }
+.pond .cols { grid-area: 1 / 2; display: grid; grid-template-columns: repeat(10, 1fr); }
+.pond .rowsl { grid-area: 2 / 1; display: grid; grid-template-rows: repeat(10, 1fr); }
+.pond .cols i, .pond .rowsl i { display: grid; place-items: center; font: 700 14px var(--font); font-style: normal; color: #1d6a94; }
+.pondwrap.small .pond { grid-template-columns: 14px 1fr; grid-template-rows: 14px 1fr; border-width: 6px; padding: 2px; }
+.pondwrap.small .cols i, .pondwrap.small .rowsl i { font-size: 9px; }
+.pond .grid, .pond .ships { grid-area: 2 / 2; position: relative; }
+.pond .grid { display: grid; grid-template-columns: repeat(10, 1fr); grid-template-rows: repeat(10, 1fr); z-index: 2; }
+.pond .ships { z-index: 1; pointer-events: none; }
+.bbc { position: relative; border: 1px solid rgba(255, 255, 255, .38); background: transparent; padding: 0; cursor: pointer; min-width: 0; min-height: 0; }
+.bbc:disabled { cursor: default; }
+.bbc:not(.h):not(.m):not(:disabled):hover { background: rgba(255, 255, 255, .28); }
+.ship { position: absolute; left: calc(var(--c) * 10%); top: calc(var(--r) * 10% - 1%); width: calc(var(--len) * 10%); height: 11%; transition: transform .4s; }
+.ship.v { top: calc(var(--r) * 10%); width: 11%; height: calc(var(--len) * 10%); }
+.ship .boat { width: 100%; height: 100%; display: block; filter: drop-shadow(0 2px 0 rgba(0, 60, 100, .35)); animation: bobboat 3.2s ease-in-out infinite; }
+.ship:nth-child(2n) .boat { animation-delay: -1.2s; }
+@keyframes bobboat { 50% { transform: translateY(-3%); } }
+.ship.sunk { opacity: .85; transform: rotate(-7deg) translateY(6%); } .ship.sunk .boat { filter: grayscale(.55) brightness(.88); animation: none; }
+.boom { position: absolute; inset: 6%; display: grid; place-items: center; animation: popin .45s cubic-bezier(.2, 1.8, .4, 1) both; }
+.boom i { position: absolute; inset: 0; border-radius: 32%; }
+.boom i:nth-child(1) { background: #ff8a3d; transform: rotate(45deg); box-shadow: 0 0 10px #ff8a3d99; } .boom i:nth-child(2) { background: #ffd54a; inset: 10%; }
+.boom::after { content: '× ×'; position: relative; font: 700 0.9em/1 var(--font); color: #5a2a10; letter-spacing: 1px; font-size: clamp(9px, 1.5vw, 16px); }
+@keyframes popin { from { transform: scale(0) rotate(-40deg); opacity: 0; } }
+.ripple { position: absolute; inset: 20%; border-radius: 50%; border: 3px solid rgba(255, 255, 255, .9); animation: ripin .6s ease-out both; }
+.ripple::after { content: ''; position: absolute; inset: 22%; border-radius: 50%; border: 2px solid rgba(255, 255, 255, .7); }
+@keyframes ripin { from { transform: scale(.2); opacity: 0; } }
+.cross { position: absolute; inset: 8%; border: 3px dashed #ff4d6d; border-radius: 50%; background: radial-gradient(#ff4d6d 0 12%, transparent 14%); animation: spinx 3s linear infinite; }
+@keyframes spinx { to { transform: rotate(360deg); } }
+
+.boards { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.setup { display: grid; justify-items: center; gap: 10px; --ew: min(calc(100vw - 32px), 520px, calc((var(--app-h, 100vh) - 570px))); }
+.tray { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 560px; }
+.tray .hint { width: 100%; margin: 0 0 2px; }
+.tray .row { width: 100%; margin: 4px 0; }
+.shipbtn { display: flex; align-items: center; gap: 8px; background: linear-gradient(#fbeab9, var(--parch)); color: var(--brown); border: 3px solid var(--wood); border-radius: 12px; padding: 3px 10px; font: 700 17px var(--font); cursor: pointer; box-shadow: var(--shadow); }
+.shipbtn.on { outline: 3px solid var(--sun); background: #fff4c8; }
+.shipbtn.done { opacity: .6; }
+.shipbtn .mini { display: block; height: 22px; } .shipbtn .mini .boat { width: 100%; height: 100%; display: block; }
+.shipbtn .st { background: var(--wood); color: var(--cream); border-radius: 8px; padding: 0 7px; font-size: 15px; }
+.btn.big { padding: 10px 34px; font-size: 24px; }
+.curtainboat { width: 220px; height: 56px; margin: 0 auto 6px; animation: floaty 3s ease-in-out infinite; }
+.curtainboat .boat { width: 100%; height: 100%; display: block; }
+@keyframes floaty { 50% { transform: translateY(-8px) rotate(1.5deg); } }
+@media (orientation: landscape) and (min-width: 900px) {
+  .battleship { --ew: min(calc(var(--app-h, 100vh) - 375px), 560px, 38vw); }
+  .boards { flex-direction: row; align-items: flex-start; justify-content: center; gap: 30px; margin-top: 4px; }
+  .pondwrap.small { width: calc(var(--ew) * 0.82); margin-top: 20px; }
+  .pondwrap.small .pond { grid-template-columns: 18px 1fr; grid-template-rows: 18px 1fr; } .pondwrap.small .cols i, .pondwrap.small .rowsl i { font-size: 11px; } .pondwrap.small .pondlabel { font-size: 15px; }
+  .setup { grid-template-columns: auto minmax(300px, 420px); align-items: center; justify-content: center; gap: 30px; --ew: min(calc(var(--app-h, 100vh) - 330px), 520px, 42vw); }
+}
+@media (min-width: 1000px) { .battleship { --ew: min(calc(100vw - 48px), 620px, calc((var(--app-h, 100vh) - 505px) / 1.58)); } }
+@media (orientation: landscape) and (min-width: 1000px) { .battleship { --ew: min(calc(var(--app-h, 100vh) - 375px), 640px, 38vw); } .setup { --ew: min(calc(var(--app-h, 100vh) - 330px), 600px, 42vw); } }

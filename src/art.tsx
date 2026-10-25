@@ -349,3 +349,44 @@ const DOMINO = dominoRows();
 export const DominoArt = ({ px = 5 }: { px?: number }) => (
   <PixelArt rows={DOMINO} palette={{ o: '#3a2410', h: '#fff4d6', s: '#d4b87c', k: '#4a2a10' }} px={px} />
 );
+
+/* ================= cute boats (SVG, 10 units per cell) ================= */
+export const BOAT_COLORS: Record<number, { hull: string; dark: string; flag: string }> = {
+  0: { hull: '#ff9fb8', dark: '#e0708f', flag: '#fff4d6' },
+  1: { hull: '#ffd76b', dark: '#e0a93a', flag: '#ff6b8a' },
+  2: { hull: '#8fdca9', dark: '#55b27a', flag: '#fff4d6' },
+  3: { hull: '#9fd2ff', dark: '#5fa6e6', flag: '#ffd76b' },
+  4: { hull: '#c8aaff', dark: '#9a78e0', flag: '#fff4d6' },
+};
+/** A smiling little pixel boat that spans `len` cells. */
+export function Boat({ len, id, sunk, vert }: { len: number; id: number; sunk?: boolean; vert?: boolean }) {
+  const W = len * 10, col = BOAT_COLORS[id] ?? BOAT_COLORS[0];
+  const O = '#3a2410', DECK = '#fff4d6', WIN = '#8fd0ff';
+  const R = (x: number, y: number, w: number, h: number, f: string, k: string) => <rect key={k} x={x} y={y} width={w} height={h} fill={f} />;
+  const out: ReactElement[] = [];
+  const rows: [number, number][] = [[1, W - 1], [1, W - 1], [2, W - 2], [3, W - 3]];
+  // outline + hull fill (rows y=6..9)
+  rows.forEach(([a, b], i) => { const y = 6 + i; out.push(R(a - 1, y, 1, 1, O, `ol${y}`), R(b, y, 1, 1, O, `or${y}`), R(a, y, b - a, 1, i === 1 ? col.dark : col.hull, `h${y}`)); });
+  out.push(R(3, 10, W - 6, 1, O, 'bot'), R(2, 9, 1, 1, O, 'cl'), R(W - 3, 9, 1, 1, O, 'cr'));
+  // deck rail
+  out.push(R(0, 5, W, 1, O, 'rail'), R(1, 5, W - 2, 1, DECK, 'deck'));
+  // cabins
+  const cabins = len === 2 ? [0] : len === 3 ? [1] : len === 4 ? [1, 2] : [1, 2, 3];
+  cabins.forEach((k) => out.push(R(10 * k + 2, 2, 6, 3, O, `cabo${k}`), R(10 * k + 3, 2, 4, 3, DECK, `cab${k}`), R(10 * k + 4, 3, 2, 1, WIN, `win${k}`)));
+  // flag pole at the stern
+  out.push(R(2, 0, 1, 5, O, 'pole'), R(3, 0, 3, 2, col.flag, 'flag'), R(3, 0, 3, 1, O, 'flagtop'));
+  // cute face on the hull, centred on the middle cell
+  const cx = 10 * Math.floor((len - 1) / 2) + 5;
+  out.push(R(cx - 2, 7, 1, 1, sunk ? '#7a5a3a' : O, 'eyeL'), R(cx + 1, 7, 1, 1, sunk ? '#7a5a3a' : O, 'eyeR'));
+  out.push(R(cx - 3, 8, 1, 1, '#ff7a9a', 'blushL'), R(cx + 2, 8, 1, 1, '#ff7a9a', 'blushR'));
+  if (sunk) out.push(R(cx - 1, 9, 2, 1, O, 'frown'));
+  else out.push(R(cx - 1, 8, 2, 1, O, 'smile'));
+  return (
+    <svg className="boat" viewBox={vert ? `0 0 11 ${W}` : `0 0 ${W} 11`} shapeRendering="crispEdges" preserveAspectRatio="none" aria-hidden>
+      {vert ? <g transform="translate(11 0) rotate(90)">{out}</g> : out}
+    </svg>
+  );
+}
+export const BoatIcon = ({ h = 40 }: { h?: number }) => (
+  <span style={{ display: 'inline-block', width: h * 3.2, height: h, filter: 'drop-shadow(0 3px 0 rgba(0,0,0,.25))' }}><Boat len={3} id={0} /></span>
+);
