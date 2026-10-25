@@ -47,3 +47,9 @@ window.addEventListener('pageshow', queueFit);
 try { history.scrollRestoration = 'manual'; } catch { /* ignore */ }
 window.addEventListener('orientationchange', () => setTimeout(queueFit, 300));
 document.fonts?.ready.then(queueFit);
+
+// A game screen is exactly one screen tall, so anything that nudges the page (restored scroll, focus, rubber-banding) snaps back.
+const snapTop = () => { if (document.documentElement.dataset.fitted && (window.scrollY || window.scrollX)) window.scrollTo(0, 0); };
+window.addEventListener('scroll', snapTop, { passive: true });
+window.visualViewport?.addEventListener('scroll', snapTop);
+document.addEventListener('focusin', () => requestAnimationFrame(snapTop));
