@@ -1,12 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Chess as Engine, type Square } from 'chess.js';
-import Sprite from '../Sprite';
+import { Piece } from '../art';
 import { sfx } from '../lib/sfx';
 
-const WHITE = '#fff4d6', BLACK = '#3f8f4a';
-const piece = (color: string, type: string, size = 40) => (
-  <Sprite name={type} fill={color === 'w' ? WHITE : BLACK} outline="#2f1a0b" size={size} />
-);
+const piece = (color: string, type: string, px = 4) => <Piece side={color as 'w' | 'b'} type={type} px={px} />;
 const FILES = 'abcdefgh';
 
 export default function Chess() {
@@ -63,7 +60,7 @@ export default function Chess() {
     const start: Record<string, number> = { p: 8, n: 2, b: 2, r: 2, q: 1 };
     const have: Record<string, number> = { p: 0, n: 0, b: 0, r: 0, q: 0 };
     board.flat().forEach((s) => s && s.color === color && s.type !== 'k' && have[s.type]++);
-    return Object.entries(start).flatMap(([t, n]) => Array.from({ length: Math.max(0, n - have[t]) }, (_, i) => <span key={t + i}>{piece(color, t, 18)}</span>));
+    return Object.entries(start).flatMap(([t, n]) => Array.from({ length: Math.max(0, n - have[t]) }, (_, i) => <span key={t + i}>{piece(color, t, 2)}</span>));
   };
 
   return (
@@ -86,8 +83,10 @@ export default function Chess() {
             ].filter(Boolean).join(' ');
             return (
               <button key={sq} className={cls} onClick={() => click(sq)} aria-label={sq}>
-                {p && <span className="piece">{piece(p.color, p.type, 100)}</span>}
+                {p && <span className="piece">{piece(p.color, p.type, 4)}</span>}
                 {targets.has(sq) && <span className={p ? 'ring' : 'dot'} />}
+                {c === 0 && <i className="coord rk">{rank}</i>}
+                {r === 7 && <i className="coord fl">{FILES[file]}</i>}
               </button>
             );
           }),

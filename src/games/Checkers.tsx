@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import Sprite from '../Sprite';
+import { Disc } from '../art';
 import { sfx } from '../lib/sfx';
 import { apply, fresh, legalMoves } from '../lib/checkers';
 
 const NAMES = ['BERRY', 'CREAM'];
-const FILL = ['#d4475a', '#fff4d6'];
 
 export default function Checkers() {
   const [s, setS] = useState(fresh);
@@ -56,7 +55,7 @@ export default function Checkers() {
           const isSel = sel && sel[0] === r && sel[1] === c;
           return (
             <button key={`${r}${c}`} className={`sq ${dark ? 'dark' : 'light'} ${isSel ? 'sel' : ''}`} onClick={() => click(r, c)} aria-label={`${r},${c}`}>
-              {p && <span className={`piece ${!isSel && movable.has(`${r},${c}`) ? 'bob' : ''}`}><Sprite name={p.k ? 'kdisc' : 'disc'} fill={FILL[p.c]} outline="#2f1a0b" size={100} /></span>}
+              {p && <span className={`piece ${!isSel && movable.has(`${r},${c}`) ? 'bob' : ''}`}><Disc side={p.c} king={p.k} px={4} /></span>}
               {t && <span className="dot" />}
             </button>
           );

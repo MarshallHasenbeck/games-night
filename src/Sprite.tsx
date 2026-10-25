@@ -58,16 +58,3 @@ const PAL = { l: '#8fd45a', g: '#3f8f4a', G: '#25643a', b: '#8a5a2e', B: '#5b371
 
 export const Pine = ({ px = 5 }: { px?: number }) => <PixelArt rows={PINE} palette={PAL} px={px} />;
 export const Mushroom = ({ px = 4 }: { px?: number }) => <PixelArt rows={MUSH} palette={PAL} px={px} />;
-
-/** Decorative treeline pinned to the bottom of the page, behind the content. */
-export function Forest() {
-  const trees = [[1, 6], [9, 4], [17, 7], [27, 5], [38, 4], [52, 6], [63, 5], [74, 7], [85, 4], [93, 6]];
-  return (
-    <div className="forest" aria-hidden>
-      {trees.map(([left, px]) => <span key={left} className="tree" style={{ left: `${left}%` }}><Pine px={px} /></span>)}
-      <span className="shroom" style={{ left: '22%' }}><Mushroom px={3} /></span>
-      <span className="shroom" style={{ left: '70%' }}><Mushroom px={4} /></span>
-      <div className="ground" />
-    </div>
-  );
-}

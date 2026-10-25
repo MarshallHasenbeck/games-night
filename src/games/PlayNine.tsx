@@ -4,19 +4,25 @@ import {
   visibleScore, finalScore, type Round, type Slot,
 } from '../lib/playnine';
 import { sfx } from '../lib/sfx';
-import Sprite from '../Sprite';
+import { CardBack, FlagArt, Leaf } from '../art';
 
-const label = (v: number) => (v === -5 ? <><Sprite name="flag" fill="#fff" outline="#0c4a2b" size={22} /><br />-5</> : String(v));
 const tone = (v: number) => (v < 0 ? 'ace' : v === 0 ? 'zero' : v <= 4 ? 'low' : v <= 8 ? 'mid' : 'high');
+const TONE_HEX: Record<string, string> = { ace: '#ffffff', zero: '#2f9a4c', low: '#2b6fd6', mid: '#b86f00', high: '#c4302b' };
 
 function Card({ v, up, onClick, active, small }: { v?: number; up: boolean; onClick?: () => void; active?: boolean; small?: boolean }) {
+  const t = up ? tone(v!) : '';
   return (
-    <button
-      className={`pcard ${up ? `up ${tone(v!)}` : 'down'} ${active ? 'active' : ''} ${small ? 'small' : ''}`}
-      onClick={onClick}
-      disabled={!onClick}
-    >
-      {up ? label(v!) : ''}
+    <button className={`pcard ${up ? `up ${t}` : 'down'} ${active ? 'active' : ''} ${small ? 'small' : ''}`} onClick={onClick} disabled={!onClick}>
+      {up ? (
+        <>
+          <span className="cn tl">{v}</span>
+          <span className="cn br">{v}</span>
+          <span className="cmid">
+            {v === -5 ? <FlagArt px={small ? 3 : 4} fill="#fff" /> : <Leaf color={TONE_HEX[t]} px={small ? 2 : 3} />}
+            <b>{v}</b>
+          </span>
+        </>
+      ) : <CardBack />}
     </button>
   );
 }
