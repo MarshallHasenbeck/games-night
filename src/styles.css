@@ -811,7 +811,7 @@ html[data-fitted], html[data-fitted] body { overflow: hidden; height: var(--app-
 [data-fit] .pnboard .choice, [data-fit] .choice2 { height: 38px; min-height: 38px; }
 
 /* farm critters on the grass (extra layer; the landscape art is unchanged) */
-.critters { position: absolute; bottom: 0; left: 0; right: 0; height: min(58vh, 580px); --k: clamp(2.4px, .44vh, 4.2px); }
+.farm { position: absolute; bottom: 0; left: 0; right: 0; height: min(58vh, 580px); --k: clamp(2.4px, .44vh, 4.2px); }
 .critter { position: absolute; }
 .critter:not(.farmer) { animation: cwalk var(--dur) ease-in-out infinite; }
 .critter .cr-in { display: block; image-rendering: pixelated; transform-origin: bottom center; }
@@ -829,3 +829,9 @@ html[data-fitted], html[data-fitted] body { overflow: hidden; height: var(--app-
 .hint.prompt { width: min(100%, 900px); }
 html:not([data-fit]) .hint.prompt { white-space: nowrap; }
 html[data-fitted], html[data-fitted] body { overscroll-behavior: none; }
+
+/* battleship pond: force a true square (Safari came out ~24px short, clipping row J) */
+.pondwrap { container-type: inline-size; }
+.pond { height: 100cqw; width: 100%; }
+.ship.held .boat { filter: drop-shadow(0 0 0 #0000) drop-shadow(0 0 5px #fff6a0) drop-shadow(0 0 2px #f2b632); }
+.ship.held { z-index: 3; }

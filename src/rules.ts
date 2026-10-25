@@ -192,7 +192,7 @@ export const RULES: Record<string, Rules> = {
     sections: [
       { h: 'Placing your boats', items: [
         'Each player secretly places 5 boats on their own 10 x 10 pond: lengths 5, 4, 3, 3 and 2.',
-        'Tap a boat in the list, then tap the pond to put it there. SIDEWAYS / UP-DOWN turns it. Tap a placed boat to pick it up again. SHUFFLE places them all at random.',
+        'Tap a boat in the list, then tap the pond to put it there. ROTATE turns it. Tap a placed boat to select it, then tap a new spot to move it, or ROTATE to spin it in place. SHUFFLE places them all at random.',
         'Boats cannot overlap or hang off the edge, and they can\'t move once the battle starts.',
         'Playing a friend on one iPad? A "pass the iPad" screen hides your pond - only look at the screen when it is your turn.',
       ] },

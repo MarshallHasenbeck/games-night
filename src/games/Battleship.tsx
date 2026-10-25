@@ -13,9 +13,9 @@ const LET = 'ABCDEFGHIJ';
 type Phase = 'setup' | 'play' | 'over';
 
 /** One 10×10 pond. `reveal` shows every boat; otherwise only sunk ones. */
-function Pond({ fleet, reveal, onCell, target, small, preview, label, shake, lastShot }: {
+function Pond({ fleet, reveal, onCell, target, small, preview, label, shake, lastShot, heldId }: {
   fleet: Fleet; reveal: boolean; onCell?: (r: number, c: number) => void; target?: [number, number] | null; small?: boolean;
-  preview?: { ship: Ship; ok: boolean } | null; label: string; shake?: boolean; lastShot?: [number, number, number] | null;
+  preview?: { ship: Ship; ok: boolean } | null; label: string; shake?: boolean; lastShot?: [number, number, number] | null; heldId?: number | null;
 }) {
   return (
     <div className={`pondwrap ${small ? 'small' : ''}`}>
@@ -32,7 +32,7 @@ function Pond({ fleet, reveal, onCell, target, small, preview, label, shake, las
             const sunk = isSunk(fleet, s);
             if (!reveal && !sunk) return null;
             return (
-              <span key={s.id} className={`ship ${s.vert ? 'v' : 'h'} ${sunk ? 'sunk' : ''}`} style={{ ['--r' as string]: s.r, ['--c' as string]: s.c, ['--len' as string]: s.len }}>
+              <span key={s.id} className={`ship ${s.vert ? 'v' : 'h'} ${sunk ? 'sunk' : ''} ${heldId === s.id ? 'held' : ''}`} style={{ ['--r' as string]: s.r, ['--c' as string]: s.c, ['--len' as string]: s.len }}>
                 <Boat len={s.len} id={s.id} sunk={sunk} vert={s.vert} />
               </span>
             );
@@ -105,8 +105,12 @@ export default function Battleship() {
   const nextToPlace = () => FLEET.find((f) => !draft.some((d) => d.id === f.id))?.id ?? null;
   const placeAt = (r: number, c: number) => {
     const picked = shipAt({ ships: draft, shots: fleets[0].shots }, r, c);
-    if (picked && sel === null) { setDraft(draft.filter((d) => d.id !== picked.id)); setSel(picked.id); setVert(picked.vert); sfx.click(); return; }
-    if (sel === null) { if (picked) { setDraft(draft.filter((d) => d.id !== picked.id)); setSel(picked.id); setVert(picked.vert); } return; }
+    // tap a boat that is already on the pond: select it (it stays put) - tap it again to let go
+    if (picked) {
+      if (picked.id === sel) { sfx.click(); setSel(null); return; }
+      sfx.click(); setSel(picked.id); setVert(picked.vert); return;
+    }
+    if (sel === null) return;
     const def = FLEET.find((f) => f.id === sel)!;
     let ship: Ship = { id: def.id, len: def.len, r, c, vert };
     // nudge so it stays on the board
@@ -120,7 +124,17 @@ export default function Battleship() {
   };
   const shuffle = () => { sfx.roll(); setDraft(randomFleet()); setSel(null); };
   const clear = () => { sfx.click(); setDraft([]); setSel(0); };
-  const rotate = () => { sfx.click(); setVert((v) => !v); };
+  const rotate = () => {
+    sfx.click();
+    const held = draft.find((d) => d.id === sel);
+    if (!held) { setVert((v) => !v); return; }
+    // spin a boat that is already on the pond, in place
+    let ship: Ship = { ...held, vert: !held.vert };
+    if (ship.vert) ship = { ...ship, r: Math.min(ship.r, N - ship.len) }; else ship = { ...ship, c: Math.min(ship.c, N - ship.len) };
+    if (!canPlace(ship, draft.filter((d) => d.id !== held.id))) { setBad((b) => b + 1); sfx.capture(); return; }
+    setDraft(draft.map((d) => (d.id === held.id ? ship : d)));
+    setVert(ship.vert);
+  };
 
   const finishSetup = () => {
     sfx.score();
@@ -207,13 +221,13 @@ export default function Battleship() {
 
       {phase === 'setup' ? (
         <div className="main setup">
-          <Pond fleet={myFleet} reveal label={`${names[placing]}'S POND`} onCell={placeAt} shake={bad > 0} key={`s${bad}`} />
+          <Pond fleet={myFleet} reveal label={`${names[placing]}'S POND`} onCell={placeAt} heldId={sel} shake={bad > 0} key={`s${bad}`} />
           <div className="tray">
-            <p className="hint">Tap a boat, then tap the pond to place it. Tap a placed boat to pick it up.</p>
+            <p className="hint">Tap a boat, then tap the pond to place it. Tap a placed boat to select it, then tap a new spot to move it or ROTATE to spin it.</p>
             {FLEET.map((f) => {
               const placed = draft.some((d) => d.id === f.id);
               return (
-                <button key={f.id} className={`shipbtn ${sel === f.id ? 'on' : ''} ${placed ? 'done' : ''}`} onClick={() => { sfx.click(); if (placed) setDraft(draft.filter((d) => d.id !== f.id)); setSel(f.id); }}>
+                <button key={f.id} className={`shipbtn ${sel === f.id ? 'on' : ''} ${placed ? 'done' : ''}`} onClick={() => { sfx.click(); setSel(f.id); const on = draft.find((d) => d.id === f.id); if (on) setVert(on.vert); }}>
                   <span className="mini" style={{ width: f.len * 22 }}><Boat len={f.len} id={f.id} /></span>
                   <span className="nm">{f.name}</span>
                   <span className="st">{placed ? '✓' : `${f.len}`}</span>
@@ -221,7 +235,7 @@ export default function Battleship() {
               );
             })}
             <div className="row">
-              <button className="btn" onClick={rotate}>{vert ? 'UP/DOWN ↕' : 'SIDEWAYS ↔'}</button>
+              <button className="btn" onClick={rotate}>ROTATE {vert ? '↕' : '↔'}</button>
               <button className="btn" onClick={shuffle}>SHUFFLE</button>
               <button className="btn" onClick={clear}>CLEAR</button>
             </div>

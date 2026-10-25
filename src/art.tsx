@@ -352,7 +352,7 @@ const CRITTERS: [string, number, number, number, number][] = [
 function Critters() {
   const urls = useMemo(() => Object.fromEntries(Object.entries(SPRITES).map(([k, v]) => [k, spriteUrl(v)])), []);
   return (
-    <div className="critters">
+    <div className="farm">
       {CRITTERS.map(([kind, left, bottom, dist, dur], i) => {
         const { url, w } = urls[kind];
         return (
