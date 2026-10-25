@@ -851,3 +851,13 @@ html[data-fitted], html[data-fitted] body { overscroll-behavior: none; }
 .shotbanner.miss { background: linear-gradient(#8fd2f2, #3f94c8); color: #fff; }
 @keyframes shotpop { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.5); } 14% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); } 24% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -60%) scale(1); } }
 .captures.hit { background: linear-gradient(#ff8a5a, #c8321e); } .captures.miss { background: linear-gradient(#5aa8d8, #2d6f9a); }
+
+/* Battleship pond v2: every layer is absolutely placed inside the square, so no browser can stretch the rows */
+.pond { --lab: 22px; --pd: 4px; display: block; }
+.pondwrap.small .pond { --lab: 14px; --pd: 2px; }
+@media (orientation: landscape) and (min-width: 900px) { .pondwrap.small .pond { --lab: 18px; --pd: 2px; } }
+[data-fit] .pond { --lab: 16px; --pd: 2px; }
+.pond .cols { position: absolute; top: var(--pd); left: calc(var(--pd) + var(--lab)); right: var(--pd); height: var(--lab); grid-template-columns: repeat(10, minmax(0, 1fr)); z-index: 2; }
+.pond .rowsl { position: absolute; left: var(--pd); top: calc(var(--pd) + var(--lab)); bottom: var(--pd); width: var(--lab); grid-template-rows: repeat(10, minmax(0, 1fr)); z-index: 2; }
+.pond .grid, .pond .ships, .pond .critters { position: absolute; grid-area: auto; top: calc(var(--pd) + var(--lab)); left: calc(var(--pd) + var(--lab)); right: var(--pd); bottom: var(--pd); }
+.pond .grid { grid-template-columns: repeat(10, minmax(0, 1fr)); grid-template-rows: repeat(10, minmax(0, 1fr)); }
