@@ -7,13 +7,16 @@ createRoot(document.getElementById('root')!).render(<App />);
 // Real visible height in px: works on every Safari, including the iPad address-bar / home-screen cases
 const setAppHeight = () => {
   const el = document.documentElement, vv = window.visualViewport, w = window.innerWidth, h = Math.round(Math.min(window.innerHeight, vv?.height ?? Infinity));
-  el.style.setProperty('--app-h', `${h}px`);
-  el.style.setProperty('--vv-top', `${Math.max(0, Math.round(vv?.offsetTop ?? 0))}px`); // pin to what is really visible
+  const top = `${Math.max(0, Math.round(vv?.offsetTop ?? 0))}px`;
+  if (el.style.getPropertyValue('--app-h') !== `${h}px`) el.style.setProperty('--app-h', `${h}px`);
+  if (el.style.getPropertyValue('--vv-top') !== top) el.style.setProperty('--vv-top', top); // pin to what is really visible
   // 'land' = phone held sideways (short), 'phone' = narrow portrait; anything bigger keeps the roomy iPad layouts
   const fit = w > h && h < 560 ? 'land' : w < 600 ? 'phone' : '';
   if (fit) el.dataset.fit = fit; else delete el.dataset.fit; // an empty data-fit would still match [data-fit] in CSS
 };
 setAppHeight();
+setInterval(setAppHeight, 500); // iPad Safari can leave the viewport nudged (e.g. after the keyboard closes) without firing an event
+document.addEventListener('focusout', () => setTimeout(setAppHeight, 300));
 window.addEventListener('resize', setAppHeight);
 window.visualViewport?.addEventListener('resize', setAppHeight);
 window.visualViewport?.addEventListener('scroll', setAppHeight);
