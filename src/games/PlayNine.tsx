@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  HOLES, deal, flipSetup, drawDeck, takeDiscard, swapSlot, discardDrawn, flipAfterDiscard,
-  visibleScore, finalScore, putBackDiscard, skipFlip, downCount, cpuDecide, applyAction, type Round, type Slot,
+  HOLES, deal, flipSetup, drawDeck, takeDiscard, swapSlot, flipAfterDiscard, discardAndFlip, skipDrawn,
+  visibleScore, finalScore, putBackDiscard, downCount, cpuDecide, applyAction, type Round, type Slot,
 } from '../lib/playnine';
 import { sfx } from '../lib/sfx';
 import { CardBack, FlagArt, Leaf } from '../art';
@@ -11,11 +11,11 @@ import { recordResult } from '../lib/stats';
 const tone = (v: number) => (v < 0 ? 'ace' : v === 0 ? 'zero' : v <= 4 ? 'low' : v <= 8 ? 'mid' : 'high');
 const TONE_HEX: Record<string, string> = { ace: '#ffffff', zero: '#1f8a3e', low: '#1f5fc0', mid: '#c06a00', high: '#c01f1f' };
 
-function Card({ v, up, onClick, active, small, i }: { v?: number; up: boolean; onClick?: () => void; active?: boolean; small?: boolean; i?: number }) {
+function Card({ v, up, onClick, active, small, i, mode }: { v?: number; up: boolean; onClick?: () => void; active?: boolean; small?: boolean; i?: number; mode?: 'swap' | 'flip' }) {
   const t = v === undefined ? '' : tone(v);
   return (
     <button
-      className={`pcard ${up ? 'up' : ''} ${t} ${active ? 'active' : ''} ${small ? 'small' : ''} ${i !== undefined ? 'dealt' : ''}`}
+      className={`pcard ${up ? 'up' : ''} ${t} ${active ? 'active' : ''} ${active && mode ? `m-${mode}` : ''} ${small ? 'small' : ''} ${i !== undefined ? 'dealt' : ''}`}
       style={i !== undefined ? { ['--i' as string]: i } : undefined}
       onClick={onClick}
       disabled={!onClick}
@@ -44,6 +44,8 @@ export default function PlayNine() {
   const [hole, setHole] = useState(1);
   const [round, setRound] = useState<Round>(() => deal(0));
   const [totals, setTotals] = useState<[number[], number[]]>([[], []]);
+  const [armed, setArmed] = useState(false);            // 'place it on a face-down card' mode
+  const [confirmNew, setConfirmNew] = useState(false);
   const recorded = useRef(false);
   const names = ['P1', opp.cpu ? 'CPU' : 'P2'];
   const r = round;
@@ -66,14 +68,15 @@ export default function PlayNine() {
     return () => clearTimeout(id);
   }, [round, cpuTurn, opp.level]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const go = (next: Round) => { sfx.flip(); setRound(next); };
+  const go = (next: Round) => { sfx.flip(); setArmed(false); setRound(next); };
+  useEffect(() => { setArmed(false); }, [round.drawn, round.phase, round.turn]);
   const finishRound = () => {
     const next: [number[], number[]] = [[...totals[0], finalScore(r.grids[0])], [...totals[1], finalScore(r.grids[1])]];
     setTotals(next);
     sfx.click();
     if (hole < HOLES) { setHole(hole + 1); setRound(deal(hole % 2 === 0 ? 0 : 1)); } else setHole(HOLES + 1);
   };
-  const reset = () => { setHole(1); setTotals([[], []]); setRound(deal(0)); };
+  const reset = () => { setHole(1); setTotals([[], []]); setRound(deal(0)); setArmed(false); setConfirmNew(false); };
 
   if (over) {
     const [a, b] = [sum(totals[0]), sum(totals[1])];
@@ -92,102 +95,123 @@ export default function PlayNine() {
   const can = (phase: Round['phase']) => r.phase === phase && !cpuTurn;
   const fromDeck = r.drawn?.from === 'deck';
   const lastOne = downCount(r.grids[r.turn]) === 1;
+  const n = names[r.turn];
   const prompt =
     cpuTurn ? 'CPU IS PLAYING...'
-    : r.phase === 'setup' ? `${names[r.turn]}: FLIP ANY 2 CARDS (${2 - r.setupFlips[r.turn]} TO GO)`
-    : r.phase === 'draw' ? `${names[r.turn]} · STEP 1: DRAW A CARD OR TAKE THE DISCARD`
-    : r.phase === 'place' ? (fromDeck
-        ? `${names[r.turn]} · STEP 2: SWAP IT INTO YOUR GRID OR DISCARD & FLIP`
-        : `${names[r.turn]} · STEP 2: SWAP IT INTO YOUR GRID OR PUT IT BACK`)
-    : r.phase === 'flip' ? (lastOne
-        ? `${names[r.turn]} · STEP 3: FLIP YOUR LAST CARD (ENDS ROUND) OR SKIP`
-        : `${names[r.turn]} · STEP 3: FLIP A FACE-DOWN CARD`)
+    : r.phase === 'setup' ? `${n}: FLIP ANY 2 CARDS (${2 - r.setupFlips[r.turn]} TO GO)`
+    : r.phase === 'draw' ? `${n} · STEP 1: DRAW A CARD OR TAKE THE DISCARD`
+    : r.phase === 'place' ? (!fromDeck ? `${n} · STEP 2: TAP ANY CARD TO SWAP IT IN - OR TAP DISCARD TO PUT IT BACK`
+        : armed ? `${n} · TAP ANY CARD TO PUT YOUR CARD THERE`
+        : lastOne ? `${n} · STEP 2: FLIP YOUR LAST CARD (ENDS ROUND) OR SKIP`
+        : `${n} · STEP 2: TAP A FACE-DOWN CARD TO FLIP IT, A FACE-UP ONE TO SWAP`)
+    : r.phase === 'flip' ? `${n} · TAP A FACE-DOWN CARD TO FLIP IT`
     : 'HOLE COMPLETE!';
 
+  // what tapping a card in your grid does right now
+  const tapMode = (s: Slot): 'swap' | 'flip' | null => {
+    if (can('setup')) return s.up ? null : 'flip';
+    if (can('place')) return fromDeck && !armed && !s.up ? 'flip' : 'swap';
+    if (can('flip')) return s.up ? null : 'flip';
+    return null;
+  };
   const clickSlot = (p: number, i: number): (() => void) | undefined => {
     if (p !== r.turn || cpuTurn) return undefined;
     const s: Slot = r.grids[p][i];
-    if (can('setup') && !s.up) return () => go(flipSetup(r, i));
-    if (can('place')) return () => go(swapSlot(r, i));
-    if (can('flip') && !s.up) return () => go(flipAfterDiscard(r, i));
-    return undefined;
+    const m = tapMode(s);
+    if (!m) return undefined;
+    if (can('setup')) return () => go(flipSetup(r, i));
+    if (can('place')) return m === 'flip' ? () => go(discardAndFlip(r, i)) : () => go(swapSlot(r, i));
+    return () => go(flipAfterDiscard(r, i));
   };
 
+  const live = r.phase !== 'roundOver';
   const grid = (p: number) => (
-    <div className={`pgrid ${p === r.turn && r.phase !== 'roundOver' ? 'turn' : ''}`}>
+    <div className={`pgrid pc${p} ${p === r.turn && live ? 'turn' : ''}`}>
       <div className="pname">
         {names[p]} <span>{r.phase === 'roundOver' ? finalScore(r.grids[p]) : visibleScore(r.grids[p])}</span>
         {r.finisher === p && <b> OUT!</b>}
       </div>
       <div className="cells" key={`${hole}-${p}`}>
-        {r.grids[p].map((s, i) => (
-          <Card key={i} v={s.v} up={s.up} onClick={clickSlot(p, i)} active={!!clickSlot(p, i)} i={i + p * 8} />
-        ))}
+        {r.grids[p].map((s, i) => {
+          const click = clickSlot(p, i);
+          return <Card key={i} v={s.v} up={s.up} onClick={click} active={!!click} mode={click ? tapMode(s) ?? undefined : undefined} i={i + p * 8} />;
+        })}
       </div>
     </div>
   );
 
+  const t0 = finalScore(r.grids[0]), t1 = finalScore(r.grids[1]);
   return (
     <div className="game playnine">
       <div className="head">
         <ModeBar opp={opp} onChange={reset} />
-        <div className="status">HOLE {hole} OF {HOLES}</div>
+        <div className={`status turnbar t${r.turn} ${live ? '' : 'done'}`}>
+          {live ? <>▶ {n}'S TURN</> : <>HOLE {hole} COMPLETE</>} <small>HOLE {hole} OF {HOLES}</small>
+        </div>
         <p className="hint prompt">{prompt}</p>
       </div>
-      <div className="main pnboard">
+      <div className={`main pnboard ${live ? 'live' : ''}`}>
         <div className="area p1">{grid(0)}</div>
         <div className="area pnmid">
-          <div className="piles">
-            <div className="pile">
-              <Card up={false} small onClick={can('draw') ? () => go(drawDeck(r)) : undefined} active={can('draw')} />
-              <span>{can('draw') ? 'DRAW NEW' : `DECK ${r.deck.length}`}</span>
+          {live ? (
+            <div className="piles">
+              <div className="pile">
+                <Card up={false} small onClick={can('draw') ? () => go(drawDeck(r)) : undefined} active={can('draw')} />
+                <span>{can('draw') ? 'DRAW NEW' : `DECK ${r.deck.length}`}</span>
+              </div>
+              <div className="pile">
+                {r.drawn
+                  ? <Card v={r.drawn.v} up small onClick={can('place') && fromDeck ? () => { sfx.click(); setArmed((a) => !a); } : undefined} active={can('place') && fromDeck && !armed} />
+                  : <span className="slot" />}
+                <span>{r.drawn ? (can('place') && fromDeck ? (armed ? 'PLACING...' : 'YOUR CARD') : 'YOUR CARD') : ''}</span>
+              </div>
+              <div className="pile">
+                <Card
+                  v={r.discard.at(-1)} up small
+                  onClick={can('draw') ? () => go(takeDiscard(r)) : can('place') && !fromDeck ? () => go(putBackDiscard(r)) : undefined}
+                  active={can('draw') || (can('place') && !fromDeck)}
+                />
+                <span>{can('draw') ? 'TAKE THIS' : can('place') && !fromDeck ? 'PUT BACK' : 'DISCARD'}</span>
+              </div>
             </div>
-            <div className="pile">
-              {r.drawn ? <Card v={r.drawn.v} up small /> : <span className="slot" />}
-              <span>{r.drawn ? 'YOUR CARD' : ''}</span>
+          ) : (
+            <div className="holedone">
+              <b>HOLE {hole} DONE</b>
+              <span>{names[0]} {t0}</span><span>{names[1]} {t1}</span>
+              <button className="btn primary big" onClick={finishRound}>{hole < HOLES ? 'NEXT HOLE ▶' : 'FINAL SCORE ▶'}</button>
             </div>
-            <div className="pile">
-              <Card
-                v={r.discard.at(-1)} up small
-                onClick={can('draw') ? () => go(takeDiscard(r)) : undefined}
-                active={can('draw')}
-              />
-              <span>{can('draw') ? 'TAKE THIS' : 'DISCARD'}</span>
-            </div>
-          </div>
+          )}
         </div>
         <div className="area p2">{grid(1)}</div>
         <div className="area choice">
-          {can('flip') && lastOne ? (
+          {can('place') && fromDeck ? (
             <div className="choice2">
-              <div className="opt"><b>FLIP IT</b><span>tap your last face-down card - ends your round</span></div>
-              <span className="or">OR</span>
-              <button className="btn primary discardbtn" onClick={() => go(skipFlip(r))}>SKIP - KEEP IT FACE DOWN</button>
+              <span className="tip">{armed ? 'Tap YOUR CARD again to cancel.' : 'Want it on a face-down card? Tap YOUR CARD first, then the spot.'}</span>
+              {lastOne && !armed && <button className="btn primary skipbtn" onClick={() => go(skipDrawn(r))}>SKIP - KEEP IT HIDDEN</button>}
             </div>
           ) : can('place') ? (
-            <div className="choice2">
-              <div className="opt"><b>USE IT</b><span>tap a card in your grid to swap</span></div>
-              <span className="or">OR</span>
-              {fromDeck
-                ? <button className="btn primary discardbtn" onClick={() => go(discardDrawn(r))}>{lastOne ? 'DISCARD IT' : 'DISCARD IT & FLIP A CARD'}</button>
-                : <button className="btn discardbtn" onClick={() => go(putBackDiscard(r))}>↩ PUT IT BACK</button>}
-            </div>
+            <div className="choice2"><span className="tip">You took the discard - place it on any card, or put it back.</span></div>
           ) : (
-            <div className="choice2 idle" aria-hidden>
-              <div className="opt"><b>USE IT</b><span>tap a card in your grid to swap</span></div>
-              <span className="or">OR</span>
-              <button className="btn discardbtn" tabIndex={-1}>DISCARD IT &amp; FLIP A CARD</button>
-            </div>
+            <div className="choice2 idle" aria-hidden><span className="tip">Want it on a face-down card? Tap YOUR CARD first, then the spot.</span></div>
           )}
         </div>
       </div>
       <div className="foot">
-        {r.phase === 'roundOver' && (
-          <button className="btn primary" onClick={finishRound}>{hole < HOLES ? 'NEXT HOLE' : 'FINAL SCORE'}</button>
-        )}
         <HoleStrip totals={totals} names={names} hole={hole} />
-        <div className="row"><button className="btn" onClick={reset}>NEW GAME</button></div>
+        <button className="btn ghost newgame" onClick={() => setConfirmNew(true)}>↺ NEW GAME</button>
       </div>
+      {confirmNew && (
+        <div className="celebrate" role="dialog">
+          <div className="banner">
+            <h2>START A NEW GAME?</h2>
+            <p>This ends the game you're playing.</p>
+            <div className="row">
+              <button className="btn primary" onClick={() => setConfirmNew(false)}>KEEP PLAYING</button>
+              <button className="btn" onClick={reset}>YES, START OVER</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

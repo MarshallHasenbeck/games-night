@@ -93,12 +93,12 @@ export const RULES: Record<string, Rules> = {
         'Each player has 8 cards in a 2 x 4 grid, all face down. Flip any 2 of yours to start.',
         'The piles in the middle: the DECK (face down) and the DISCARD pile (top card face up).',
       ] },
-      { h: 'On your turn (3 steps)', items: [
+      { h: 'On your turn', items: [
         'STEP 1 - Get a card: tap the DECK to draw a new card, OR tap the DISCARD pile to take the face-up card.',
-        'STEP 2 - Use it: tap any card in YOUR grid to SWAP. Your old card goes to the discard pile and the new one takes its place, face up.',
-        'Don\'t want the card you drew from the deck? Press DISCARD & FLIP. You throw it away, then tap one of your face-down cards to flip it over.',
-        'Only ONE face-down card left? You may SKIP: draw from the deck, discard it, and leave your last card face down. Flipping that last card ends your round, so waiting for a better moment can pay off.',
-        'If you took the discard, you must swap it into your grid. Tapped it by mistake? Press PUT IT BACK before you do anything else and choose again.',
+        'STEP 2 (drew from the deck): tap one of your FACE-DOWN cards to flip it - your drawn card is discarded. Or tap one of your FACE-UP cards to swap the drawn card in for it.',
+        'Want your drawn card on a face-down spot instead? Tap YOUR CARD first, then tap the spot you want it in.',
+        'STEP 2 (took the discard): you must use it - tap any card in your grid to swap it in. Tapped it by mistake? Tap the DISCARD pile again to put it back.',
+        'Only ONE face-down card left? A SKIP button appears: draw, discard, and leave your last card face down. Flipping that last card ends your round, so waiting for a better moment can pay off.',
       ] },
       { h: 'Scoring', items: [
         'Each card is worth its number. The flag card is -5 (great!). A 0 card is worth 0.',

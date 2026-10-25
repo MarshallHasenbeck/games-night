@@ -146,6 +146,27 @@ export function skipFlip(r0: Round): Round {
   return endTurn(clone(r0));
 }
 
+/** Drew from the deck and don't want it: tap a face-down card to discard the drawn card and flip that one. */
+export function discardAndFlip(r0: Round, i: number): Round {
+  if (r0.phase !== 'place' || r0.drawn?.from !== 'deck') return r0;
+  const r = clone(r0);
+  const slot = r.grids[r.turn][i];
+  if (slot.up) return r0;
+  r.discard.push(r.drawn!.v);
+  r.drawn = null;
+  slot.up = true;
+  return endTurn(r);
+}
+
+/** Only one face-down card left: draw, discard, and leave it hidden (official skip). */
+export function skipDrawn(r0: Round): Round {
+  if (r0.phase !== 'place' || r0.drawn?.from !== 'deck' || downCount(r0.grids[r0.turn]) !== 1) return r0;
+  const r = clone(r0);
+  r.discard.push(r.drawn!.v);
+  r.drawn = null;
+  return endTurn(r);
+}
+
 /** Changed your mind after taking the discard: return it and choose again (nothing has changed yet). */
 export function putBackDiscard(r0: Round): Round {
   if (r0.phase !== 'place' || r0.drawn?.from !== 'discard') return r0;
