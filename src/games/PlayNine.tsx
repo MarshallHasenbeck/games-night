@@ -44,7 +44,7 @@ export default function PlayNine() {
   const [hole, setHole] = useState(1);
   const [round, setRound] = useState<Round>(() => deal(0));
   const [totals, setTotals] = useState<[number[], number[]]>([[], []]);
-  const [armed, setArmed] = useState(false);            // 'place it on a face-down card' mode
+  const [useIt, setUseIt] = useState(true);            // drawn card: true = place it anywhere, false = discard it & flip a card
   const [confirmNew, setConfirmNew] = useState(false);
   const recorded = useRef(false);
   const names = ['P1', opp.cpu ? 'CPU' : 'P2'];
@@ -68,15 +68,15 @@ export default function PlayNine() {
     return () => clearTimeout(id);
   }, [round, cpuTurn, opp.level]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const go = (next: Round) => { sfx.flip(); setArmed(false); setRound(next); };
-  useEffect(() => { setArmed(false); }, [round.drawn, round.phase, round.turn]);
+  const go = (next: Round) => { sfx.flip(); setUseIt(true); setRound(next); };
+  useEffect(() => { setUseIt(true); }, [round.drawn, round.phase, round.turn]);
   const finishRound = () => {
     const next: [number[], number[]] = [[...totals[0], finalScore(r.grids[0])], [...totals[1], finalScore(r.grids[1])]];
     setTotals(next);
     sfx.click();
     if (hole < HOLES) { setHole(hole + 1); setRound(deal(hole % 2 === 0 ? 0 : 1)); } else setHole(HOLES + 1);
   };
-  const reset = () => { setHole(1); setTotals([[], []]); setRound(deal(0)); setArmed(false); setConfirmNew(false); };
+  const reset = () => { setHole(1); setTotals([[], []]); setRound(deal(0)); setUseIt(true); setConfirmNew(false); };
 
   if (over) {
     const [a, b] = [sum(totals[0]), sum(totals[1])];
@@ -101,16 +101,16 @@ export default function PlayNine() {
     : r.phase === 'setup' ? `${n}: FLIP ANY 2 CARDS (${2 - r.setupFlips[r.turn]} TO GO)`
     : r.phase === 'draw' ? `${n} · STEP 1: DRAW A CARD OR TAKE THE DISCARD`
     : r.phase === 'place' ? (!fromDeck ? `${n} · STEP 2: TAP ANY CARD TO SWAP IT IN - OR TAP DISCARD TO PUT IT BACK`
-        : armed ? `${n} · TAP ANY CARD TO PUT YOUR CARD THERE`
-        : lastOne ? `${n} · STEP 2: FLIP YOUR LAST CARD (ENDS ROUND) OR SKIP`
-        : `${n} · STEP 2: TAP A FACE-DOWN CARD TO FLIP IT, A FACE-UP ONE TO SWAP`)
+        : useIt ? `${n} · STEP 2: TAP ANY CARD TO PLACE YOUR CARD THERE`
+        : lastOne ? `${n} · TAP YOUR LAST CARD TO FLIP IT (ENDS ROUND) OR SKIP`
+        : `${n} · STEP 2: TAP A FACE-DOWN CARD TO FLIP IT`)
     : r.phase === 'flip' ? `${n} · TAP A FACE-DOWN CARD TO FLIP IT`
     : 'HOLE COMPLETE!';
 
   // what tapping a card in your grid does right now
   const tapMode = (s: Slot): 'swap' | 'flip' | null => {
     if (can('setup')) return s.up ? null : 'flip';
-    if (can('place')) return fromDeck && !armed && !s.up ? 'flip' : 'swap';
+    if (can('place')) return fromDeck && !useIt ? (s.up ? null : 'flip') : 'swap';
     if (can('flip')) return s.up ? null : 'flip';
     return null;
   };
@@ -161,9 +161,9 @@ export default function PlayNine() {
               </div>
               <div className="pile">
                 {r.drawn
-                  ? <Card v={r.drawn.v} up small onClick={can('place') && fromDeck ? () => { sfx.click(); setArmed((a) => !a); } : undefined} active={can('place') && fromDeck && !armed} />
+                  ? <Card v={r.drawn.v} up small onClick={undefined} active={false} />
                   : <span className="slot" />}
-                <span>{r.drawn ? (can('place') && fromDeck ? (armed ? 'PLACING...' : 'YOUR CARD') : 'YOUR CARD') : ''}</span>
+                <span>{r.drawn ? (can('place') && fromDeck ? 'YOUR CARD' : 'YOUR CARD') : ''}</span>
               </div>
               <div className="pile">
                 <Card
@@ -186,13 +186,14 @@ export default function PlayNine() {
         <div className="area choice">
           {can('place') && fromDeck ? (
             <div className="choice2">
-              <span className="tip">{armed ? 'Tap YOUR CARD again to cancel.' : 'Want it on a face-down card? Tap YOUR CARD first, then the spot.'}</span>
-              {lastOne && !armed && <button className="btn primary skipbtn" onClick={() => go(skipDrawn(r))}>SKIP - KEEP IT HIDDEN</button>}
+              <button className={`btn ${useIt ? 'primary' : ''}`} onClick={() => { sfx.click(); setUseIt(true); }}>USE IT</button>
+              <button className={`btn ${useIt ? '' : 'primary'}`} onClick={() => { sfx.click(); setUseIt(false); }}>DISCARD IT &amp; FLIP</button>
+              {lastOne && <button className="btn skipbtn" onClick={() => go(skipDrawn(r))}>SKIP</button>}
             </div>
           ) : can('place') ? (
             <div className="choice2"><span className="tip">You took the discard - place it on any card, or put it back.</span></div>
           ) : (
-            <div className="choice2 idle" aria-hidden><span className="tip">Want it on a face-down card? Tap YOUR CARD first, then the spot.</span></div>
+            <div className="choice2 idle" aria-hidden><button className="btn">DISCARD IT &amp; FLIP</button></div>
           )}
         </div>
       </div>
