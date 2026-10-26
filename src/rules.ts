@@ -191,7 +191,7 @@ export const RULES: Record<string, Rules> = {
     sections: [
       { h: 'Setup', items: [
         'A double-six set has 28 tiles. Each player gets 7. The rest wait in the draw pile.',
-        'Playing two players on one screen? Your tiles hide behind a "pass the iPad" screen between turns.',
+        'Playing two players on one screen? Your tiles hide behind a "pass the device" screen between turns.',
       ] },
       { h: 'Your turn', items: [
         'Play a tile whose number matches one end of the line. Glowing tiles are playable; dim ones are not.',
@@ -239,7 +239,7 @@ export const RULES: Record<string, Rules> = {
         'Each player secretly places 5 boats on their own 10 x 10 pond: lengths 5, 4, 3, 3 and 2.',
         'Tap a boat in the list, then tap the pond to put it there. ROTATE turns it. Tap a placed boat to select it, then tap a new spot to move it, ROTATE to spin it, or REMOVE BOAT to take just that one off. CLEAR ALL empties the pond. SHUFFLE places them all at random.',
         'Boats cannot overlap or hang off the edge, and they can\'t move once the battle starts.',
-        'Playing a friend on one iPad? A "pass the iPad" screen hides your pond - only look at the screen when it is your turn.',
+        'Playing a friend on one device? A "pass the device" screen hides your pond - only look at the screen when it is your turn.',
       ] },
       { h: 'Taking a shot', items: [
         'On your turn you see the enemy pond (blue, with a number and letter grid). Tap a square to aim - a crosshair appears. Tap FIRE! (or tap the same square again) to shoot.',

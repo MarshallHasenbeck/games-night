@@ -25,7 +25,7 @@ const GAMES = [
   { id: 'playnine', name: 'Play Nine', icon: <FlagArt px={6} />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
   { id: 'backgammon', name: 'Backgammon', icon: <BoardIcon px={5} />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
   { id: 'mancala', name: 'Mancala', icon: <span style={{ display: 'flex' }}><ConnectDisc px={2} side={0} /><ConnectDisc px={2} /></span>, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
-  { id: 'battleship', name: 'Battleship', icon: <span style={{ display: 'block', width: 70, height: 26 }}><Boat len={3} id={3} /></span>, blurb: 'Hunt the cute little boats. Pass-the-iPad secret!', C: Battleship },
+  { id: 'battleship', name: 'Battleship', icon: <span style={{ display: 'block', width: 70, height: 26 }}><Boat len={3} id={3} /></span>, blurb: 'Hunt the cute little boats. Pass-the-device secret!', C: Battleship },
   { id: 'acorn', name: 'Acorn Pop', icon: <span style={{ display: 'block', width: 45, height: 50 }}><AcornPiece color={0} /></span>, blurb: 'Pop the dice, race your acorns home. 2-4 players!', C: AcornPop },
   { id: 'slide', name: 'Slide & Swap', icon: <span style={{ display: 'block', width: 45, height: 45 }}><MushroomPiece color={1} /></span>, blurb: 'Draw cards, slide, bump, swap. A friendly race!', C: SlideSwap },
   { id: 'dominoes', name: 'Dominoes', icon: <DominoArt px={5} />, blurb: 'Match the ends. First to 100.', C: Dominoes },
@@ -112,7 +112,7 @@ export default function App() {
         ))}
       </div>
       <Scoreboard />
-      <p className="credit"><span>2 players · or vs CPU · pass the iPad</span></p>
+      <p className="credit"><span>2 players · or vs CPU · pass the device</span></p>
     </div>
     </>
   );

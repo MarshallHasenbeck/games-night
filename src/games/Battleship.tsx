@@ -273,7 +273,7 @@ export default function Battleship() {
           <div className="banner">
             <div className="curtainboat"><Boat len={4} id={curtain.to === 0 ? 0 : 3} /></div>
             <h2>{curtain.text}</h2>
-            <p>{phase === 'setup' ? 'No peeking at the other pond!' : 'Hand over the iPad. Your boats stay secret.'}</p>
+            <p>{phase === 'setup' ? 'No peeking at the other pond!' : 'Hand over the device. Your boats stay secret.'}</p>
             <button className="btn primary" onClick={() => setCurtain(null)}>{curtain.btn}</button>
           </div>
         </div></Overlay>
