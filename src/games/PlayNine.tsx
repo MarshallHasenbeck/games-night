@@ -205,6 +205,7 @@ export default function PlayNine() {
     <div className="game playnine">
       <div className="head">
         <ModeBar opp={opp} onChange={reset} />
+        <button className="btn ghost newgame-top" onClick={() => setConfirmNew(true)}>↺ NEW GAME</button>
         <div className={`status turnbar t${r.turn} ${live ? '' : 'done'}`}>
           {live ? <>▶ {n}'S TURN</> : <>HOLE {hole} COMPLETE</>} <small>HOLE {hole} OF {HOLES}</small>
         </div>

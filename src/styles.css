@@ -1164,3 +1164,14 @@ html .pnboard .slot { width: var(--cw); background: rgba(6, 24, 12, .34); border
 /* Mancala stores: an oval that follows the board's rounded ends (the old 999px / 70px radius got scaled down to almost square corners) */
 .mstore { border-radius: 50% / 36%; margin-block: 3px; }
 .mstore .bigcount { bottom: 14%; }
+
+/* Play Nine on phones: compact 9-hole scorecard (1-9 in a line, P1 row, P2 row) beside the new-game button */
+[data-fit] .game.playnine > .foot { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: nowrap; }
+[data-fit] .game.playnine .holestrip { display: block; flex: 1; min-width: 0; width: auto; margin: 0; padding: 2px 4px; border-width: 2px; outline-width: 1px; border-radius: 8px; box-shadow: 0 3px 0 rgba(0, 0, 0, .25); }
+[data-fit] .game.playnine .hs-row { grid-template-columns: 22px repeat(9, minmax(0, 1fr)) 30px; font-size: 11px; line-height: 1.2; }
+[data-fit] .game.playnine .hs-row > span, [data-fit] .game.playnine .hs-row > b { min-height: 15px; padding: 0; border-radius: 3px; }
+[data-fit] .game.playnine .hs-head { font-size: 9px; }
+[data-fit] .game.playnine .foot .newgame { display: none; }
+.newgame-top { display: none; }
+[data-fit] .newgame-top { display: block; float: right; margin: 2px 4px 0 0; font-size: 11px; padding: 1px 8px; min-height: 24px; opacity: .9; }
+[data-fit] .game.playnine .holestrip { margin: 0 auto; }
