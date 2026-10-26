@@ -1175,3 +1175,7 @@ html .pnboard .slot { width: var(--cw); background: rgba(6, 24, 12, .34); border
 .newgame-top { display: none; }
 [data-fit] .newgame-top { display: block; float: right; margin: 2px 4px 0 0; font-size: 11px; padding: 1px 8px; min-height: 24px; opacity: .9; }
 [data-fit] .game.playnine .holestrip { margin: 0 auto; }
+
+/* Pop-ups (rules, new game, win, hand-off) keep clear of the notch, clock and battery. They are real-size layers, so they use the real-px safe areas. */
+.celebrate, .handoff, .rules-overlay { box-sizing: border-box; padding: max(14px, var(--rsat, 0px)) max(14px, var(--rsar, 0px)) max(14px, var(--rsab, 0px)) max(14px, var(--rsal, 0px)); }
+html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - max(14px, var(--rsat, 0px)) - max(14px, var(--rsab, 0px))); }

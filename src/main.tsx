@@ -43,6 +43,13 @@ const insetProbe = document.createElement('div');
 insetProbe.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)';
 document.body.appendChild(insetProbe);
 
+// Pin game screens to what is really visible. On the scrollable menu this must stay 0: while the page rubber-bands at the bottom the visual
+// viewport offset changes every frame, and feeding it into the layout made the whole menu judder.
+const updateVVTop = () => {
+  const vv = window.visualViewport, el = document.documentElement;
+  const top = document.querySelector('.game') ? `${Math.max(0, Math.round(vv?.offsetTop ?? 0))}px` : '0px';
+  if (el.style.getPropertyValue('--vv-top') !== top) el.style.setProperty('--vv-top', top);
+};
 let onResized: () => void = () => {};
 let lastKey = '';
 const setAppHeight = () => {
@@ -67,10 +74,12 @@ const setAppHeight = () => {
     const sideBaked = w < screenW - 1;
     st.setProperty('--sat', `${parseFloat(ins.paddingTop) / s}px`); st.setProperty('--sar', sideBaked ? '0px' : `${parseFloat(ins.paddingRight) / s}px`);
     st.setProperty('--sab', `${parseFloat(ins.paddingBottom) / s}px`); st.setProperty('--sal', sideBaked ? '0px' : `${parseFloat(ins.paddingLeft) / s}px`);
+    // the same space in real px, for pop-ups (they are not scaled with the stage)
+    st.setProperty('--rsat', ins.paddingTop); st.setProperty('--rsab', ins.paddingBottom);
+    st.setProperty('--rsar', sideBaked ? '0px' : ins.paddingRight); st.setProperty('--rsal', sideBaked ? '0px' : ins.paddingLeft);
     onResized();
   }
-  const top = `${Math.max(0, Math.round(vv?.offsetTop ?? 0))}px`;
-  if (el.style.getPropertyValue('--vv-top') !== top) el.style.setProperty('--vv-top', top); // pin to what is really visible
+  updateVVTop();
   // 'land' = phone held sideways (short), 'phone' = narrow portrait; anything bigger keeps the roomy iPad layouts
   const fit = vw > vh && vh < 560 ? 'land' : vw < 600 ? 'phone' : '';
   if (fit) { if (el.dataset.fit !== fit) el.dataset.fit = fit; } else delete el.dataset.fit; // an empty data-fit would still match [data-fit] in CSS
@@ -81,7 +90,7 @@ document.addEventListener('focusout', () => setTimeout(setAppHeight, 300));
 window.addEventListener('resize', setAppHeight);
 new ResizeObserver(setAppHeight).observe(probe);
 window.visualViewport?.addEventListener('resize', setAppHeight);
-window.visualViewport?.addEventListener('scroll', setAppHeight);
+window.visualViewport?.addEventListener('scroll', updateVVTop); // cheap: no layout reads while scrolling
 window.addEventListener('orientationchange', () => [0, 120, 300, 700].forEach((ms) => setTimeout(setAppHeight, ms)));
 // viewport-fit=cover is fixed in index.html (switching it on from JS is unreliable on iOS and left a green strip beside the notch after rotating);
 // the layouts pad for the safe areas themselves.
