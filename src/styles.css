@@ -1179,3 +1179,14 @@ html .pnboard .slot { width: var(--cw); background: rgba(6, 24, 12, .34); border
 /* Pop-ups (rules, new game, win, hand-off) keep clear of the notch, clock and battery. They are real-size layers, so they use the real-px safe areas. */
 .celebrate, .handoff, .rules-overlay { box-sizing: border-box; padding: max(14px, var(--rsat, 0px)) max(14px, var(--rsar, 0px)) max(14px, var(--rsab, 0px)) max(14px, var(--rsal, 0px)); }
 html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - max(14px, var(--rsat, 0px)) - max(14px, var(--rsab, 0px))); }
+
+/* Yahtzee dice: the Play Nine card rule for .face (absolute, inset 0, clipped) also hit the dice and pinned the pips to the top-left corner */
+.die .face { position: static; inset: auto; overflow: visible; border-radius: 0; backface-visibility: visible; -webkit-backface-visibility: visible; }
+
+/* Play Nine on wide landscape screens (iPad): the piles stack in a column between the two mats, which is only as tall as the mats,
+   so full-size piles spill over them there. Back to the smaller piles on those screens. */
+@media (min-width: 960px) and (orientation: landscape) {
+  html .pnboard .pile .pcard { width: calc(var(--cw) * 0.62); font-size: calc(var(--cw) * 0.26); }
+  html .pnboard .pile .slot { width: calc(var(--cw) * 0.62); }
+  html .pnboard .pnmid { min-height: 0; }
+}
