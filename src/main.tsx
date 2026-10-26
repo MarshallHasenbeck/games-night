@@ -9,7 +9,22 @@ createRoot(document.getElementById('root')!).render(<App />);
 const probe = document.createElement('div');
 probe.style.cssText = 'position:fixed;left:0;top:0;width:100%;height:100%;visibility:hidden;pointer-events:none;z-index:-1';
 document.body.appendChild(probe);
+// Added to the Home Screen, iOS can start the app with a layout viewport that is a status-bar short (a black bar at the bottom until the
+// first rotation). A Home Screen app owns the whole screen, so trust the screen size when the measured one is only a little smaller.
+const standalone = (navigator as Navigator & { standalone?: boolean }).standalone === true || matchMedia('(display-mode: standalone)').matches;
+const fullScreen = () => {
+  const a = Math.min(screen.width, screen.height), b = Math.max(screen.width, screen.height);
+  return matchMedia('(orientation: portrait)').matches ? { w: a, h: b } : { w: b, h: a };
+};
 const view = () => {
+  const m = measure();
+  if (standalone) {
+    const f = fullScreen();
+    if (Math.abs(m.w - f.w) <= 4 && m.h <= f.h && f.h - m.h <= 100) return f; // a window smaller than that (iPad multitasking) keeps its real size
+  }
+  return m;
+};
+const measure = () => {
   const r = probe.getBoundingClientRect(), pw = Math.round(r.width), ph = Math.round(r.height), iw = window.innerWidth, ih = window.innerHeight;
   if (!pw || !ph) return { w: iw, h: ih };
   // normally innerHeight is the visible height (a bit shorter than the fixed box when toolbars show); after a rotation it can be stale
@@ -37,10 +52,11 @@ const setAppHeight = () => {
   const s = inGame ? Math.min(1, w / min.w, h / min.h) : 1;
   const vw = Math.round(w / s), vh = Math.round(h / s);
   Object.assign(stage, { s, vw, vh, w, h });
-  const key = `${w}x${h}@${s.toFixed(3)}`;
+  const ins = getComputedStyle(insetProbe);
+  const key = `${w}x${h}@${s.toFixed(3)}/${ins.paddingTop}/${ins.paddingLeft}/${ins.paddingRight}/${ins.paddingBottom}`; // notch space can read 0 on a cold start, so it is part of the key
   if (key !== lastKey) {
     lastKey = key;
-    const st = el.style, ins = getComputedStyle(insetProbe);
+    const st = el.style;
     st.setProperty('--real-w', `${w}px`); st.setProperty('--real-h', `${h}px`); // the scenery is always the real size
     st.setProperty('--app-w', `${vw}px`); st.setProperty('--app-h', `${vh}px`); // layouts use the virtual size
     st.setProperty('--stage-s', String(s));
