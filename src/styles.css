@@ -1190,3 +1190,108 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
   html .pnboard .pile .slot { width: calc(var(--cw) * 0.62); }
   html .pnboard .pnmid { min-height: 0; }
 }
+
+/* =====================================================================
+   Palace
+   ===================================================================== */
+.palace { --cw: clamp(44px, min(calc((var(--app-w, 100vw) - 64px) / 4.2), calc((var(--app-h, 100vh) - 430px) / 4.3)), 118px); }
+.game.palace .newgame-top { display: block; float: right; margin: 2px 6px 0 0; font-size: 12px; padding: 1px 8px; min-height: 26px; }
+.status.turnbar.tc { background: linear-gradient(color-mix(in srgb, var(--tc, #d4475a) 70%, #fff), var(--tc, #d4475a)); color: #fff; }
+.palboard { position: relative; display: grid; grid-template-areas: "opps" "mid" "me" "act"; justify-items: center; row-gap: 8px; width: 100%; }
+.palboard .opps { grid-area: opps; display: flex; gap: 8px; justify-content: center; width: 100%; }
+.palboard .pmid { grid-area: mid; }
+.palboard .mymat { grid-area: me; }
+.palboard .pchoice { grid-area: act; min-width: 0; }
+
+/* felt mats, same family as Play Nine */
+.oppmat, .mymat {
+  position: relative; background: repeating-conic-gradient(#ffffff08 0 25%, #0000 0 50%) 0 0 / 8px 8px, radial-gradient(ellipse at 50% 28%, #439a5c 0%, #2d7044 50%, #1b492c 100%);
+  border: 5px solid var(--wood); outline: 2px solid var(--wood-dd); border-radius: 14px; padding: 6px 10px 8px; min-width: 0;
+  box-shadow: inset 0 0 0 2px #17402a, inset 0 0 28px rgba(0, 0, 0, .5), 0 5px 0 rgba(0, 0, 0, .22), var(--shadow);
+  transition: opacity .25s, filter .25s;
+}
+.oppmat { flex: 1 1 0; max-width: 270px; opacity: .78; filter: saturate(.8) brightness(.94); padding: 4px 8px 6px; }
+.oppmat.turn, .mymat.turn { opacity: 1; filter: none; box-shadow: inset 0 0 0 2px #17402a, inset 0 0 28px rgba(0, 0, 0, .45), 0 0 0 3px color-mix(in srgb, var(--pcol, #f2b632) 70%, transparent), 0 0 22px color-mix(in srgb, var(--pcol, #f2b632) 45%, transparent), var(--shadow); animation: gridglow2 2.2s ease-in-out infinite; }
+.oppmat.out { opacity: .45; }
+.oppmat .pname, .mymat .pname { margin-bottom: 4px; font-size: 15px; justify-content: space-between; }
+.oppmat .pname span, .mymat .pname span { color: #fff; padding: 0 8px; border: 3px solid var(--wood-dd); border-radius: 8px; }
+.oppmat .pname b, .mymat .pname b { font: 600 12px var(--font); color: var(--cream); background: #0005; border-radius: 6px; padding: 0 6px; }
+.orow, .myrow { display: flex; gap: 12px; justify-content: center; }
+
+/* a face-down card with its face-up partner lying on top, offset so both can be seen */
+.ostack { position: relative; display: inline-block; padding: 0 6px 6px 0; }
+.ostack .ontop { position: absolute; left: 6px; top: 6px; }
+.ostack.big { padding: 0 calc(var(--cw) * .14) calc(var(--cw) * .16) 0; }
+.ostack.big .ontop { left: calc(var(--cw) * .14); top: calc(var(--cw) * .16); }
+.pcard.pal.psmall { width: calc(var(--cw) * .5); font-size: calc(var(--cw) * .2); }
+.pcard.pal.psmall .cn { font-size: calc(var(--cw) * .17); }
+
+/* card states */
+.pcard.pal { cursor: default; }
+.pcard.pal .face.front { position: absolute; }
+.pcard.pal .sbadge { position: absolute; left: 50%; bottom: 5%; transform: translateX(-50%); font: 700 .3em/1.2 var(--font); letter-spacing: .02em; background: var(--sun); color: var(--brown); border: 2px solid var(--wood-dd); border-radius: 6px; padding: 0 .4em; white-space: nowrap; }
+.pcard.pal.psmall .sbadge { display: none; }
+.pcard.pal.legal { cursor: pointer; outline: 3px solid color-mix(in srgb, var(--sun) 90%, transparent); outline-offset: 2px; border-radius: 10px; }
+.pcard.pal.psel { transform: translateY(calc(var(--cw) * -.16)); outline: 3px solid #6fe3ff; outline-offset: 2px; border-radius: 10px; z-index: 5; }
+.pcard.pal.dim { filter: brightness(.62) saturate(.7); }
+.pcard.pal { transition: transform .18s, filter .18s; }
+.pcard.pal.fresh { animation: palpop .55s cubic-bezier(.2, .9, .3, 1.25) both; }
+@keyframes palpop { 0% { transform: translateY(calc(var(--cw) * -.9)) scale(.5) rotate(-12deg); opacity: 0; } 70% { transform: translateY(0) scale(1.1); opacity: 1; } 100% { transform: none; } }
+.phand { display: flex; justify-content: center; align-items: flex-end; gap: calc(var(--cw) * .12); margin-top: 8px; min-height: calc(var(--cw) * 1.4 + 12px); padding: 6px 10px; border-radius: 12px; background: rgba(6, 24, 12, .34); box-shadow: inset 0 3px 6px rgba(0, 0, 0, .5); }
+.phand.dense { flex-wrap: wrap; gap: 6px 0; padding-left: calc(var(--cw) * .5 + 10px); }
+.phand .pcard.dense { margin-left: calc(var(--cw) * -.5); }
+
+/* draw pile + play pile */
+.pmid { display: flex; gap: 26px; align-items: flex-end; justify-content: center; }
+.pdeck, .ppile { display: grid; justify-items: center; gap: 6px; }
+.pstack { position: relative; }
+.pstack .pcard.pal { width: var(--cw); font-size: calc(var(--cw) * .4); }
+.pstack .pcard .face.back { box-shadow: -3px 3px 0 -1px #2b2470, -3px 3px 0 0 #b8832f, -6px 6px 0 -1px #2b2470, -6px 6px 0 0 #b8832f; }
+.pstack .empty { position: absolute; inset: 0; display: grid; place-items: center; font: 700 12px var(--font); color: var(--cream); background: #0008; border-radius: 9px; }
+.plab { background: linear-gradient(#6a4220, var(--wood-d)); color: var(--cream); border: 3px solid var(--wood-dd); border-radius: 8px; padding: 0 8px; font: 600 13px var(--font); min-height: 22px; line-height: 1.5; white-space: nowrap; }
+.plab.any { color: #b9f0a0; }
+.pilebox { position: relative; width: var(--cw); height: calc(var(--cw) * 1.4); }
+.pplaced { position: absolute; inset: 0; transform: translate(calc(var(--i) * 15px), calc(var(--i) * -4px)) rotate(calc(var(--i) * -4deg)); }
+.pplaced .pcard.pal { width: var(--cw); font-size: calc(var(--cw) * .4); }
+.pslot { display: block; width: var(--cw); height: calc(var(--cw) * 1.4); border: 3px dashed color-mix(in srgb, var(--sun) 75%, transparent); border-radius: 10px; background: rgba(6, 24, 12, .34); box-shadow: inset 0 3px 5px rgba(0, 0, 0, .45); box-sizing: border-box; }
+
+/* effects: burn, reverse, window, four of a kind */
+.pfx { position: absolute; inset: -14px; pointer-events: none; display: grid; place-items: center; z-index: 12; }
+.pfx.burn i { position: absolute; left: 50%; top: 60%; width: 9px; height: 9px; background: #ffb13b; box-shadow: 0 0 8px 3px #ff6a00aa; animation: ember .95s ease-out both; }
+.pfx.burn i:nth-child(3n) { background: #ff6a3b; } .pfx.burn i:nth-child(4n) { background: #ffe48a; width: 6px; height: 6px; }
+@keyframes ember { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
+.pfx.reverse b, .pfx.quad b { font: 700 calc(var(--cw) * 1.1) var(--font); color: #fff4d6; text-shadow: 0 3px 0 #0006, 0 0 14px #6fe3ff; animation: palspin 1.05s cubic-bezier(.2, .8, .3, 1) both; }
+.pfx.quad b { font-size: calc(var(--cw) * .8); color: var(--sun); text-shadow: 0 3px 0 #0006, 0 0 14px #ffb13b; animation: palpopfx .95s ease-out both; }
+@keyframes palspin { 0% { transform: rotate(-200deg) scale(.4); opacity: 0; } 35% { opacity: 1; } 100% { transform: rotate(360deg) scale(1.15); opacity: 0; } }
+@keyframes palpopfx { 0% { transform: scale(.3); opacity: 0; } 30% { transform: scale(1.25); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+.pfx.window b { position: absolute; inset: 14px; border-radius: 10px; background: linear-gradient(105deg, transparent 30%, #ffffffbb 50%, transparent 70%); animation: sheen .85s ease-out both; }
+@keyframes sheen { from { transform: translateX(-70%); opacity: 1; } to { transform: translateX(70%); opacity: 0; } }
+.ptoast { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); z-index: 30; pointer-events: none; white-space: nowrap; background: linear-gradient(#ffe48a, var(--sun)); color: var(--brown); border: 3px solid var(--wood-dd); border-radius: 12px; padding: 2px 16px; font: 700 clamp(14px, 4.4vw, 22px) var(--font); box-shadow: 0 4px 0 rgba(0, 0, 0, .3); animation: toastpop 2.1s both; }
+@keyframes toastpop { 0% { transform: translate(-50%, -30%) scale(.5); opacity: 0; } 10% { transform: translate(-50%, -50%) scale(1.12); opacity: 1; } 16% { transform: translate(-50%, -50%) scale(1); } 85% { opacity: 1; } 100% { transform: translate(-50%, -80%) scale(1); opacity: 0; } }
+.pchoice .row.idle { opacity: .55; }
+.game.palace .hint.prompt { background: none; border: 0; box-shadow: none; color: #fff3c4; padding: 0 8px; margin: 2px auto; text-shadow: 0 2px 0 rgba(0, 0, 0, .65), 0 0 8px rgba(0, 0, 0, .55); min-height: 1.5em; width: min(100%, 700px); }
+.oppmat .pname { flex-wrap: wrap; gap: 2px 4px; font-size: 12px; }
+.oppmat .pname span { padding: 0 5px; border-width: 2px; }
+.oppmat .pname b { font-size: 10px; padding: 0 4px; white-space: nowrap; }
+
+/* Palace, phone held sideways: opponents + piles on the left, your cards on the right */
+[data-fit="land"] .palace { --cw: clamp(34px, min(calc((var(--app-h, 100vh) - 215px) / 2.9), calc((var(--app-w, 100vw) - 190px) / 6.2)), 84px); }
+[data-fit="land"] .game.palace > .head { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 8px; }
+[data-fit="land"] .game.palace > .head > * { margin-top: 0; margin-bottom: 0; }
+[data-fit="land"] .game.palace .hint.prompt { flex-basis: 100%; min-height: 0; font-size: 12px; }
+[data-fit="land"] .game.palace .newgame-top { float: none; }
+[data-fit="land"] .palboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); grid-template-areas: "opps me" "mid me" "act act"; column-gap: 10px; row-gap: 4px; align-items: center; }
+[data-fit="land"] .palboard .opps { flex-direction: column; align-items: center; }
+[data-fit="land"] .palboard .mymat { align-self: stretch; }
+[data-fit="land"] .pmid { gap: 14px; }
+[data-fit="land"] .phand { margin-top: 4px; }
+[data-fit="land"] .pchoice .row { margin: 0; }
+
+/* Palace on wide landscape screens (iPad): same side-by-side table, bigger cards */
+@media (min-width: 900px) and (orientation: landscape) {
+  .palace { --cw: clamp(48px, min(calc((var(--app-h, 100vh) - 300px) / 2.95), calc((var(--app-w, 100vw) - 260px) / 6.2)), 136px); }
+  .palboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); grid-template-areas: "opps me" "mid me" "act act"; column-gap: 28px; row-gap: 8px; align-items: center; max-width: 1100px; margin: 0 auto; }
+  .palboard .opps { flex-direction: column; align-items: center; }
+  .palboard .mymat { align-self: stretch; }
+  .pmid { gap: 36px; }
+}

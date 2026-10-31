@@ -1,6 +1,30 @@
 export type Rules = { title: string; goal: string; sections: { h: string; items: string[] }[] };
 
 export const RULES: Record<string, Rules> = {
+  palace: {
+    title: 'Palace',
+    goal: 'Be the first to get rid of all your cards. When three or more play, the rest keep going until only one is left - that player loses.',
+    sections: [
+      { h: 'Set up', items: [
+        'Everyone gets 2 cards face down, 2 cards face up on top of them, and 3 in hand. The rest is the draw pile.',
+        'Before the game starts you may swap your face-up cards with cards in your hand. Tap a face-up card, then a hand card. Put your best cards face up, then tap READY.',
+        'A random player goes first. With more than one person on a device, a PASS TO screen hides your cards between turns.',
+      ] },
+      { h: 'On your turn', items: [
+        'Play a card that is the same or higher than the top of the pile. Tap a card, then PLAY. Tap more cards of the same number to play them together.',
+        'After you play, you draw back up to 3 cards in hand while the draw pile lasts. If you already hold 3 or more, you do not draw.',
+        'Can\'t play, or don\'t want to? PICK UP the whole pile into your hand.',
+        'Once the draw pile and your hand are gone, play your face-up cards. When those are gone too, play your face-down cards blind - tap one. If it can\'t be played you pick it up along with the pile.',
+      ] },
+      { h: 'Special cards', items: [
+        '2 is wild: play it on anything. Whatever comes next can be anything.',
+        '3 is wild and reverses the order of play. With two players left, reversing means you go again.',
+        '8 is a window: play it on anything, but the next player must play the same or higher than the card UNDER the 8 - or a wild.',
+        '10 burns the whole pile away and you take another turn.',
+        'Four of a kind on top of the pile gives you another turn too (it does not burn).',
+      ] },
+    ],
+  },
   chess: {
     title: 'Chess',
     goal: 'Trap the other player\'s king so it cannot escape capture (checkmate).',

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Chess from './games/Chess';
 import Yahtzee from './games/Yahtzee';
 import PlayNine from './games/PlayNine';
+import Palace from './games/Palace';
 import Checkers from './games/Checkers';
 import Connect4 from './games/Connect4';
 import Backgammon from './games/Backgammon';
@@ -11,7 +12,7 @@ import Battleship from './games/Battleship';
 import AcornPop from './games/AcornPop';
 import SlideSwap from './games/SlideSwap';
 import { AcornPiece, MushroomPiece } from './racers';
-import { Scenery, Piece, Disc, ConnectDisc, DieArt, FlagArt, BoardIcon, DominoArt, TreeIcon, Boat } from './art';
+import { Scenery, Piece, Disc, ConnectDisc, DieArt, FlagArt, BoardIcon, DominoArt, TreeIcon, Boat, Leaf } from './art';
 import { isMuted, setMuted, sfx } from './lib/sfx';
 import { cycleTime, useTime } from './lib/theme';
 import { getStats, resetStats } from './lib/stats';
@@ -23,6 +24,7 @@ const GAMES = [
   { id: 'connect4', name: 'Connect 4', icon: <ConnectDisc px={5} />, blurb: 'Drop discs. Four in a row wins.', C: Connect4 },
   { id: 'yahtzee', name: 'Yahtzee', icon: <DieArt px={7} />, blurb: 'Roll, hold, score. 13 rounds.', C: Yahtzee },
   { id: 'playnine', name: 'Play Nine', icon: <FlagArt px={6} />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
+  { id: 'palace', name: 'Palace', icon: <Leaf color="#c01f1f" px={7} />, blurb: 'Climb the pile, burn it, and get out first. 2-4 players!', C: Palace },
   { id: 'backgammon', name: 'Backgammon', icon: <BoardIcon px={5} />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
   { id: 'mancala', name: 'Mancala', icon: <span style={{ display: 'flex' }}><ConnectDisc px={2} side={0} /><ConnectDisc px={2} /></span>, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
   { id: 'battleship', name: 'Battleship', icon: <span style={{ display: 'block', width: 70, height: 26 }}><Boat len={3} id={3} /></span>, blurb: 'Hunt the cute little boats. Pass-the-device secret!', C: Battleship },

@@ -66,6 +66,7 @@ docs/ROADMAP.md       saved ideas (online play etc.)
 | Dominoes | `lib/dominoes.ts` | in lib | hidden hands + hand-off screen |
 | **Acorn Pop** | `lib/acorn.ts` | in lib | Trouble-style dice race, 2–4 players, per-seat HUMAN/CPU |
 | **Slide & Swap** | `lib/slide.ts` | in lib | Sorry!-style card race, slides, swap, 7-split, 2–4 players |
+| **Palace** | `lib/palace.ts` | `cpuAction` | Marshall's house rules: 2 down/2 up/3 hand, 2 wild, 3 wild+reverse, 8 window, 10 burn, four of a kind = go again; pass-and-play with hand-off screens, 2-4 players. Test: `npx tsx tools/tests/palace-engine.ts` |
 
 ### Adding a new game (checklist)
 1. `src/lib/<game>.ts` — pure state + legal-move functions (+ simple CPU). Write a quick `tools/tests/*.ts` that plays hundreds of random games and asserts invariants.
