@@ -11,7 +11,7 @@ export const RULES: Record<string, Rules> = {
         'A random player goes first. With more than one person on a device, a PASS TO screen hides your cards between turns.',
       ] },
       { h: 'On your turn', items: [
-        'Play a card that is the same or higher than the top of the pile. Tap a card, then PLAY. Tap more cards of the same number to play them together.',
+        'Play a card that is the same or higher than the top of the pile. Just tap the card and it plays. If you hold more than one of that number, you choose to play them all or just one.',
         'After you play, you draw back up to 3 cards in hand while the draw pile lasts. If you already hold 3 or more, you do not draw.',
         'Can\'t play, or don\'t want to? PICK UP the whole pile into your hand.',
         'Once the draw pile and your hand are gone, play your face-up cards. When those are gone too, play your face-down cards blind - tap one. If it can\'t be played you pick it up along with the pile.',

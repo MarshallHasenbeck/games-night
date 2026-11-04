@@ -200,7 +200,7 @@ export default function Palace() {
     const had = new Set(before.players.flatMap((pl) => pl.hand.map((c) => c.id)));
     const nowHand = next.players.flatMap((pl) => pl.hand).filter((c) => !had.has(c.id)).map((c) => c.id);
     if (nowHand.length) { setFreshIds(new Set(nowHand)); setTimeout(() => setFreshIds(new Set()), 700); if (!events.includes('pickup')) sfx2.draw(); }
-    setSel([]);
+    setSel([]); setPicked(null);
     if (out.length) setFlights((f) => [...f, ...out]);
     setS(next);
     if (next.phase === 'over') setTimeout(sfx.win, 500);
@@ -229,18 +229,21 @@ export default function Palace() {
   }, [s.phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ---- tapping ---- */
-  const toggleCard = (c: PCard) => {
+  // One tap plays the card. Only when you hold several of the same rank does it ask: just this one, or all of them.
+  const tapCard = (c: PCard) => {
     if (!myTurn || src === 'down') return;
+    if (!canPlayRank(s.pile, c.r)) { sfx.click(); say(need(s.pile) ? `NEEDS ${RANK_LABEL(need(s.pile))} OR HIGHER` : 'CAN\'T PLAY THAT'); return; }
+    const same = mine[src].filter((x) => x.r === c.r);
+    if (same.length < 2) { doAction({ t: 'play', ids: [c.id] }); return; }
     sfx.click();
-    setSel((cur) => {
-      if (cur.includes(c.id)) return cur.filter((x) => x !== c.id);
-      const first = mine[src].find((x) => x.id === cur[0]);
-      return first && first.r === c.r ? [...cur, c.id] : [c.id];
-    });
+    setSel(same.map((x) => x.id)); // pending choice: the whole set is lit up
+    setPicked(c.id);
   };
-  const selRank = sel.length ? mine[src === 'down' ? 'hand' : src].find((c) => c.id === sel[0])?.r : undefined;
-  const canPlaySel = myTurn && sel.length > 0 && selRank !== undefined && canPlayRank(s.pile, selRank);
-  const doPlay = () => { if (canPlaySel) doAction({ t: 'play', ids: sel }); };
+  const [picked, setPicked] = useState<number | null>(null);
+  const canPlaySel = myTurn && sel.length > 1;
+  const playAll = () => { if (canPlaySel) doAction({ t: 'play', ids: sel }); };
+  const playOne = () => { if (canPlaySel && picked !== null) doAction({ t: 'play', ids: [picked] }); };
+  const cancelSel = () => { setSel([]); setPicked(null); };
   const doPick = () => { if (myTurn && s.pile.length) doAction({ t: 'pickup' }); };
   const doBlind = (idx: number) => { if (myTurn && src === 'down') doAction({ t: 'blind', idx }); };
 
@@ -268,8 +271,8 @@ export default function Palace() {
     : s.phase === 'over' ? 'GAME OVER'
     : cpuTurn ? `${name(s.turn)} IS THINKING...`
     : src === 'down' ? `${name(s.turn)}: TAP A FACE-DOWN CARD TO PLAY IT BLIND`
-    : sel.length ? (canPlaySel ? `PLAY ${sel.length > 1 ? `THESE ${sel.length}` : 'IT'}?` : 'THAT CARD CAN\'T GO ON THE PILE')
-    : `${name(s.turn)}: PLAY ${rule}, OR PICK UP`;
+    : sel.length > 1 ? `YOU HAVE ${sel.length} - PLAY ALL OR JUST ONE?`
+    : `${name(s.turn)}: TAP A CARD TO PLAY ${rule}, OR PICK UP`;
 
   const dense = mine.hand.length > 5;
   const showCount = s.deck.length;
@@ -330,6 +333,17 @@ export default function Palace() {
 
         <div className={`mymat ${myTurn || s.phase === 'swap' ? 'turn' : ''}`} style={{ ['--pcol' as string]: PLAYER_COLORS[me].main }} data-seat={me}>
           <div className="pname"><span style={{ background: PLAYER_COLORS[me].main }}>{name(me)}</span><b>{src === 'hand' ? 'HAND' : src === 'up' ? 'FACE-UP' : 'FACE-DOWN'}</b></div>
+          <div className={`phand ${dense ? 'dense' : ''}`} style={{ ['--hn' as string]: mine.hand.length }}>
+            {mine.hand.map((c) => (
+              <PCardView
+                key={c.id} c={c} up={handVisible} dense={dense} hide={hiddenIds.has(c.id)} fresh={freshIds.has(c.id)}
+                sel={sel.includes(c.id)}
+                legal={myTurn && src === 'hand' && legal.has(c.r)} dim={myTurn && src === 'hand' && !legal.has(c.r)}
+                onClick={!handVisible ? undefined : s.phase === 'swap' ? () => onSwapHand(mine.hand.indexOf(c)) : myTurn && src === 'hand' ? () => tapCard(c) : undefined}
+              />
+            ))}
+            {!mine.hand.length && s.phase !== 'swap' && <span className="hint">no cards in hand</span>}
+          </div>
           <div className="myrow">
             {[0, 1].map((k) => {
               const dn = mine.down[k], up = mine.up[k];
@@ -342,24 +356,13 @@ export default function Palace() {
                         c={up} hide={hiddenIds.has(up.id)}
                         sel={s.phase === 'swap' ? upSel === k : sel.includes(up.id)}
                         legal={myTurn && src === 'up' && legal.has(up.r)} dim={myTurn && src === 'up' && !legal.has(up.r)}
-                        onClick={s.phase === 'swap' ? () => onUpTap(k) : myTurn && src === 'up' ? () => toggleCard(up) : undefined}
+                        onClick={s.phase === 'swap' ? () => onUpTap(k) : myTurn && src === 'up' ? () => tapCard(up) : undefined}
                       />
                     </span>
                   ) : null}
                 </span>
               );
             })}
-          </div>
-          <div className={`phand ${dense ? 'dense' : ''}`} style={{ ['--hn' as string]: mine.hand.length }}>
-            {mine.hand.map((c) => (
-              <PCardView
-                key={c.id} c={c} up={handVisible} dense={dense} hide={hiddenIds.has(c.id)} fresh={freshIds.has(c.id)}
-                sel={sel.includes(c.id)}
-                legal={myTurn && src === 'hand' && legal.has(c.r)} dim={myTurn && src === 'hand' && !legal.has(c.r)}
-                onClick={!handVisible ? undefined : s.phase === 'swap' ? () => onSwapHand(mine.hand.indexOf(c)) : myTurn && src === 'hand' ? () => toggleCard(c) : undefined}
-              />
-            ))}
-            {!mine.hand.length && s.phase !== 'swap' && <span className="hint">no cards in hand</span>}
           </div>
         </div>
 
@@ -368,8 +371,15 @@ export default function Palace() {
             <div className="row"><button className="btn primary" onClick={doReady}>READY ▶</button></div>
           ) : (
             <div className={`row ${myTurn && handVisible ? '' : 'idle'}`}>
-              <button className="btn primary" disabled={!canPlaySel || !handVisible} onClick={doPlay}>PLAY{sel.length > 1 ? ` ${sel.length}` : ''}</button>
-              <button className="btn" disabled={!myTurn || !s.pile.length || !handVisible} onClick={doPick}>PICK UP</button>
+              {canPlaySel && handVisible ? (
+                <>
+                  <button className="btn primary" onClick={playAll}>PLAY ALL {sel.length}</button>
+                  <button className="btn" onClick={playOne}>JUST ONE</button>
+                  <button className="btn ghost" onClick={cancelSel}>CANCEL</button>
+                </>
+              ) : (
+                <button className="btn primary" disabled={!myTurn || !s.pile.length || !handVisible} onClick={doPick}>PICK UP THE PILE</button>
+              )}
             </div>
           )}
         </div>

@@ -1295,3 +1295,8 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
   .palboard .mymat { align-self: stretch; }
   .pmid { gap: 36px; }
 }
+
+/* Palace: hand sits above the face-up / face-down cards */
+.palace .mymat .phand { margin: 0 0 8px; }
+[data-fit="land"] .palace .phand { margin: 0 0 4px; }
+.palace .pchoice .row { gap: 8px; flex-wrap: wrap; justify-content: center; }
