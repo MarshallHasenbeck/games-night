@@ -1300,3 +1300,5 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 .palace .mymat .phand { margin: 0 0 8px; }
 [data-fit="land"] .palace .phand { margin: 0 0 4px; }
 .palace .pchoice .row { gap: 8px; flex-wrap: wrap; justify-content: center; }
+.pcard .pmulti { position: absolute; top: -6px; right: -6px; z-index: 3; background: #f2b632; color: #2a1a05; font: 700 12px var(--font); padding: 1px 5px; border-radius: 8px; border: 2px solid var(--wood-dd); pointer-events: none; }
+.pmultibar { display: flex; gap: 8px; justify-content: center; margin: 0 0 8px; }

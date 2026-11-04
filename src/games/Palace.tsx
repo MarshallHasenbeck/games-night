@@ -13,8 +13,8 @@ const TONE_HEX: Record<string, string> = { low: '#1f5fc0', mid: '#c06a00', high:
 const toneOf = (r: number) => (r <= 6 ? 'low' : r <= 10 ? 'mid' : 'high');
 
 /* ---------- one card (face up, or back) ---------- */
-function PCardView({ c, up = true, dim, legal, sel, onClick, small, hide, fresh, dense }: {
-  c?: PCard; up?: boolean; dim?: boolean; legal?: boolean; sel?: boolean; onClick?: () => void; small?: boolean; hide?: boolean; fresh?: boolean; dense?: boolean;
+function PCardView({ c, up = true, dim, legal, sel, onClick, small, hide, fresh, dense, multi }: {
+  c?: PCard; up?: boolean; dim?: boolean; legal?: boolean; sel?: boolean; onClick?: () => void; small?: boolean; hide?: boolean; fresh?: boolean; dense?: boolean; multi?: number;
 }) {
   const t = c ? toneOf(c.r) : '';
   const label = c ? RANK_LABEL(c.r) : '';
@@ -40,6 +40,7 @@ function PCardView({ c, up = true, dim, legal, sel, onClick, small, hide, fresh,
           )}
         </span>
       </span>
+      {multi ? <i className="pmulti">x{multi}</i> : null}
     </button>
   );
 }
@@ -103,6 +104,8 @@ export default function Palace() {
   const [fx, setFx] = useState<Fx[]>([]);
   const [toast, setToast] = useState<{ k: number; text: string } | null>(null);
   const [confirmNew, setConfirmNew] = useState(false);
+  /** pass-and-play: after your move you stay on your own screen until you press DONE (or UNDO) */
+  const [held, setHeld] = useState<{ from: number; prev: PState } | null>(null);
   const [freshIds, setFreshIds] = useState<Set<number>>(new Set());
   const [spin, setSpin] = useState(0);
   const ids = useRef(0);
@@ -113,16 +116,16 @@ export default function Palace() {
   const hiddenIds = useMemo(() => new Set(flights.flatMap((f) => f.ids)), [flights]);
 
   const reset = () => {
-    setS(newGame(cfg.n)); setSel([]); setUpSel(null); setSwapSeat(0); setShownFor(null); setFlights([]); setFx([]); setToast(null); setConfirmNew(false); setFreshIds(new Set());
+    setS(newGame(cfg.n)); setSel([]); setUpSel(null); setSwapSeat(0); setShownFor(null); setFlights([]); setFx([]); setToast(null); setConfirmNew(false); setFreshIds(new Set()); setHeld(null);
     recorded.current = false;
   };
   // new seat set-up = new game
   useEffect(() => { reset(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [cfg.n, cfg.cpu.slice(0, cfg.n).join()]);
 
   /* who is shown at the bottom, and is their hand visible? */
-  const me = s.phase === 'swap' ? swapSeat : humans.length === 1 ? humans[0] : !isCpu(s.turn) ? s.turn : (shownFor ?? humans[0] ?? 0);
-  const handVisible = s.phase === 'swap' ? (multiHuman ? shownFor === swapSeat : true) : multiHuman ? shownFor === me && me === s.turn && s.phase === 'play' : true;
-  const needHandoff = multiHuman && ((s.phase === 'swap' && !isCpu(swapSeat) && shownFor !== swapSeat && !s.ready[swapSeat]) || (s.phase === 'play' && !isCpu(s.turn) && shownFor !== s.turn));
+  const me = s.phase === 'swap' ? swapSeat : held ? held.from : humans.length === 1 ? humans[0] : !isCpu(s.turn) ? s.turn : (shownFor ?? humans[0] ?? 0);
+  const handVisible = s.phase === 'swap' ? (multiHuman ? shownFor === swapSeat : true) : held ? true : multiHuman ? shownFor === me && me === s.turn && s.phase === 'play' : true;
+  const needHandoff = multiHuman && !held && ((s.phase === 'swap' && !isCpu(swapSeat) && shownFor !== swapSeat && !s.ready[swapSeat]) || (s.phase === 'play' && !isCpu(s.turn) && shownFor !== s.turn));
 
   const cpuTurn = s.phase === 'play' && isCpu(s.turn);
   const myTurn = s.phase === 'play' && !isCpu(s.turn) && s.turn === me && !busy;
@@ -201,6 +204,7 @@ export default function Palace() {
     const nowHand = next.players.flatMap((pl) => pl.hand).filter((c) => !had.has(c.id)).map((c) => c.id);
     if (nowHand.length) { setFreshIds(new Set(nowHand)); setTimeout(() => setFreshIds(new Set()), 700); if (!events.includes('pickup')) sfx2.draw(); }
     setSel([]); setPicked(null);
+    if (multiHuman && !isCpu(p) && next.phase === 'play' && next.turn !== p && !isCpu(next.turn)) setHeld({ from: p, prev: before });
     if (out.length) setFlights((f) => [...f, ...out]);
     setS(next);
     if (next.phase === 'over') setTimeout(sfx.win, 500);
@@ -243,6 +247,7 @@ export default function Palace() {
   const canPlaySel = myTurn && sel.length > 1;
   const playAll = () => { if (canPlaySel) doAction({ t: 'play', ids: sel }); };
   const playOne = () => { if (canPlaySel && picked !== null) doAction({ t: 'play', ids: [picked] }); };
+  const undo = () => { if (!held) return; sfx.click(); setFlights([]); setFx([]); setFreshIds(new Set()); setS(held.prev); sRef.current = held.prev; setHeld(null); setSel([]); setPicked(null); };
   const cancelSel = () => { setSel([]); setPicked(null); };
   const doPick = () => { if (myTurn && s.pile.length) doAction({ t: 'pickup' }); };
   const doBlind = (idx: number) => { if (myTurn && src === 'down') doAction({ t: 'blind', idx }); };
@@ -271,6 +276,7 @@ export default function Palace() {
     : s.phase === 'over' ? 'GAME OVER'
     : cpuTurn ? `${name(s.turn)} IS THINKING...`
     : src === 'down' ? `${name(s.turn)}: TAP A FACE-DOWN CARD TO PLAY IT BLIND`
+    : held ? `PLAYED! PRESS DONE TO PASS TO ${name(s.turn)} (OR UNDO)`
     : sel.length > 1 ? `YOU HAVE ${sel.length} - PLAY ALL OR JUST ONE?`
     : `${name(s.turn)}: TAP A CARD TO PLAY ${rule}, OR PICK UP`;
 
@@ -333,11 +339,18 @@ export default function Palace() {
 
         <div className={`mymat ${myTurn || s.phase === 'swap' ? 'turn' : ''}`} style={{ ['--pcol' as string]: PLAYER_COLORS[me].main }} data-seat={me}>
           <div className="pname"><span style={{ background: PLAYER_COLORS[me].main }}>{name(me)}</span><b>{src === 'hand' ? 'HAND' : src === 'up' ? 'FACE-UP' : 'FACE-DOWN'}</b></div>
+          {canPlaySel && handVisible && (
+            <div className="pmultibar">
+              <button className="btn primary" onClick={playAll}>PLAY ALL {sel.length}</button>
+              <button className="btn" onClick={playOne}>JUST THIS ONE</button>
+              <button className="btn ghost" onClick={cancelSel}>X</button>
+            </div>
+          )}
           <div className={`phand ${dense ? 'dense' : ''}`} style={{ ['--hn' as string]: mine.hand.length }}>
             {mine.hand.map((c) => (
               <PCardView
                 key={c.id} c={c} up={handVisible} dense={dense} hide={hiddenIds.has(c.id)} fresh={freshIds.has(c.id)}
-                sel={sel.includes(c.id)}
+                sel={sel.includes(c.id)} multi={myTurn && src === 'hand' && legal.has(c.r) ? (mine.hand.filter((x) => x.r === c.r).length > 1 ? mine.hand.filter((x) => x.r === c.r).length : 0) : 0}
                 legal={myTurn && src === 'hand' && legal.has(c.r)} dim={myTurn && src === 'hand' && !legal.has(c.r)}
                 onClick={!handVisible ? undefined : s.phase === 'swap' ? () => onSwapHand(mine.hand.indexOf(c)) : myTurn && src === 'hand' ? () => tapCard(c) : undefined}
               />
@@ -371,11 +384,10 @@ export default function Palace() {
             <div className="row"><button className="btn primary" onClick={doReady}>READY ▶</button></div>
           ) : (
             <div className={`row ${myTurn && handVisible ? '' : 'idle'}`}>
-              {canPlaySel && handVisible ? (
+              {held ? (
                 <>
-                  <button className="btn primary" onClick={playAll}>PLAY ALL {sel.length}</button>
-                  <button className="btn" onClick={playOne}>JUST ONE</button>
-                  <button className="btn ghost" onClick={cancelSel}>CANCEL</button>
+                  <button className="btn primary" onClick={() => { sfx.click(); setHeld(null); setShownFor(null); }}>DONE - PASS TO {name(s.turn)}</button>
+                  <button className="btn" onClick={undo}>UNDO</button>
                 </>
               ) : (
                 <button className="btn primary" disabled={!myTurn || !s.pile.length || !handVisible} onClick={doPick}>PICK UP THE PILE</button>
