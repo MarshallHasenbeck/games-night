@@ -1330,6 +1330,7 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 .pgdstatus.t1 .pgdtag, .pgdtag.t1 { background: #3a8fd6; }
 .pgdhud { gap: 14px; }
 .pgdcount { display: inline-flex; align-items: center; gap: 6px; font: 700 20px var(--num); } .pgdcount img { width: 30px; height: auto; }
+.pgdtime { font: 700 18px var(--num); font-variant-numeric: tabular-nums; min-width: 4.2em; text-align: center; }
 .pgdbones { display: inline-flex; gap: 6px; } .pgdbones span { display: block; transition: .3s; filter: drop-shadow(0 2px 0 var(--wood-dd)); }
 .pgdbones span.off { filter: grayscale(1) brightness(.7); opacity: .4; }
 .pgdscore { font: 600 15px var(--font); }

@@ -14,6 +14,8 @@ type GState = {
   given: boolean[];          // rows that started with a pug
   lives: number; hints: number; turn: 0 | 1; passes: number; msg: string;
   over: null | 'win' | 'lose'; pts: number;
+  secs: number;              // seconds spent on this puzzle (counts while the page is visible)
+  best: boolean;             // this solve beat the previous best time for the difficulty
 };
 
 const X_ROWS = ['x...x', '.x.x.', '..x..', '.x.x.', 'x...x'];
@@ -92,8 +94,8 @@ export default function Pugdoku() {
   const diffRef = useRef(diff); diffRef.current = diff;
   const relaxedRef = useRef(relaxed); relaxedRef.current = relaxed;
   /** Puzzles solved + points per difficulty. Just for fun; nothing depends on it, so losing it costs nothing. */
-  const prog = useRef<Record<Diff, { w: number; s: number }>>({
-    easy: { w: 0, s: 0 }, medium: { w: 0, s: 0 }, hard: { w: 0, s: 0 }, ...(read<Record<Diff, { w: number; s: number }>>('gn-pugdoku-stats') ?? {}),
+  const prog = useRef<Record<Diff, { w: number; s: number; b?: number }>>({
+    easy: { w: 0, s: 0 }, medium: { w: 0, s: 0 }, hard: { w: 0, s: 0 }, ...(read<Record<Diff, { w: number; s: number; b?: number }>>('gn-pugdoku-stats') ?? {}),
   });
   const bank = useRef<Bank | null>(null);
   const pool = useRef<Record<number, Puzzle[]>>({});
@@ -134,7 +136,7 @@ export default function Pugdoku() {
     const st = Array.from({ length: n }, () => Array(n).fill(0)) as number[][];
     const given: boolean[] = Array(n).fill(false);
     givenRows.forEach((r) => { st[r][pz.p[r]] = 2; given[r] = true; });
-    return { n, g: pz.g, p: pz.p, pal, st, bad: Array.from({ length: n }, () => Array(n).fill(false)) as boolean[][], given, lives: 3, hints: 2, turn: m === 'coop' ? (prog.current[diffRef.current].w % 2) as 0 | 1 : 0, passes: 0, msg: '', over: null, pts: 0 };
+    return { n, g: pz.g, p: pz.p, pal, st, bad: Array.from({ length: n }, () => Array(n).fill(false)) as boolean[][], given, lives: 3, hints: 2, turn: m === 'coop' ? (prog.current[diffRef.current].w % 2) as 0 | 1 : 0, passes: 0, msg: '', over: null, pts: 0, secs: 0, best: false };
   };
   const givenRowsRef = useRef<number[]>([]);
 
@@ -171,6 +173,12 @@ export default function Pugdoku() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /* ---- timer: counts each second the puzzle is on screen and unfinished ---- */
+  useEffect(() => {
+    const id = setInterval(() => { const g = G.current; if (!g || g.over || document.hidden) return; g.secs += 1; tick(); }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   /* ---- names ---- */
   function openNames() { setDraft([names[0] === 'P1' ? '' : names[0], names[1] === 'P2' ? '' : names[1]]); setNamesOpen(true); }
   const saveNames = () => {
@@ -200,7 +208,9 @@ export default function Pugdoku() {
     if (!won(s)) return;
     s.over = 'win';
     s.pts = s.n * 10 + (relaxedRef.current ? 0 : s.lives * 10);
-    const pr = prog.current[diffRef.current]; pr.s += s.pts; pr.w += 1; saveProg();
+    const pr = prog.current[diffRef.current]; pr.s += s.pts; pr.w += 1;
+    if (pr.b === undefined || s.secs < pr.b) { s.best = pr.b !== undefined; pr.b = s.secs; }
+    saveProg();
     setTimeout(sfx.win, 350);
   };
   const tap = (r: number, c: number) => {
@@ -295,6 +305,7 @@ export default function Pugdoku() {
   const pr = prog.current[diff];
   const status = !s ? 'BUILDING A PUZZLE...' : `${DIFFS[diff].label} · SOLVED ${pr.w} · SCORE ${pr.s}`;
   const again = () => startLevel(mode);
+  const fmt = (t: number) => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
 
   return (
     <div className="game split pgd">
@@ -314,6 +325,7 @@ export default function Pugdoku() {
         </div>
         <div className="captures pgdhud">
           <span className="pgdcount"><img src={pugUrl} alt="" />{pugs}/{s?.n ?? 0}</span>
+          <span className="pgdtime" aria-label="time">TIME {fmt(s?.secs ?? 0)}</span>
           {!relaxed && s && <span className="pgdbones">{[0, 1, 2].map((i) => <span key={i} className={i < s.lives ? '' : 'off'}><PixelArt rows={BONE_ROWS} palette={{ w: '#fff4d6' }} px={3} /></span>)}</span>}
           {mode === 'coop' && <span className="pgdscore">{DIFFS[diff].label} · SOLVED {pr.w}</span>}
         </div>
@@ -348,7 +360,7 @@ export default function Pugdoku() {
         <p className="hint">Tap for ✕, double-tap for a pug. Tap a ✕ again to remove it, or drag across tiles.</p>
       </div>
 
-      {s?.over === 'win' && <PugWin title={mode === 'coop' ? 'SOLVED TOGETHER!' : 'SOLVED!'} sub={`${mode === 'coop' ? `${nm(0)} & ${nm(1)}: ` : ''}+${s.pts} points`} onNext={again} />}
+      {s?.over === 'win' && <PugWin title={mode === 'coop' ? 'SOLVED TOGETHER!' : 'SOLVED!'} sub={`${mode === 'coop' ? `${nm(0)} & ${nm(1)}: ` : ''}+${s.pts} points · ${fmt(s.secs)}${s.best ? ' · NEW BEST!' : ''}`} onNext={again} />}
       {s?.over === 'lose' && (
         <Overlay><div className="celebrate" role="dialog"><div className="banner">
           <h2>OUT OF TREATS!</h2><p>The pug lost patience. Try the same puzzle again?</p>
