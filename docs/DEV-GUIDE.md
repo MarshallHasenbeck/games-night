@@ -52,7 +52,7 @@ tools/                Playwright checks + logic tests (see §7)
 docs/ROADMAP.md       saved ideas (online play etc.)
 ```
 
-### The 11 games
+### The games
 | Game | Logic | CPU | Notes |
 |---|---|---|---|
 | Chess | chess.js | `cpu` in `chessAI` | undo, flip board, auto-rotate |
@@ -66,6 +66,7 @@ docs/ROADMAP.md       saved ideas (online play etc.)
 | Dominoes | `lib/dominoes.ts` | in lib | hidden hands + hand-off screen |
 | **Acorn Pop** | `lib/acorn.ts` | in lib | Trouble-style dice race, 2–4 players, per-seat HUMAN/CPU |
 | **Slide & Swap** | `lib/slide.ts` | in lib | Sorry!-style card race, slides, swap, 7-split, 2–4 players |
+| **Pugdoku** | `lib/pugdoku.ts` (+ `pugdoku-bank.ts`, `pugdoku.worker.ts`) | none (solo or 2-player co-op) | Queens-style logic puzzle: one pug per row/column/colour, none touching. Every puzzle has exactly ONE answer: 789 pre-verified puzzles in `pugdoku-bank.ts` (rotated/flipped/recoloured per play) + fresh ones built in a Web Worker. Co-op pass-and-play with custom names. Art is `src/assets/pug.png` (Marshall's own picture). Test: `npx tsx tools/tests/pugdoku-bank.ts` |
 | **Palace** | `lib/palace.ts` | `cpuAction` | Marshall's house rules: 2 down/2 up/3 hand, 2 wild, 3 wild+reverse, 8 window, 10 burn, four of a kind = go again; pass-and-play with hand-off screens, 2-4 players. Test: `npx tsx tools/tests/palace-engine.ts` |
 
 ### Adding a new game (checklist)

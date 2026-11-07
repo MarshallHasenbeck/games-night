@@ -25,6 +25,31 @@ export const RULES: Record<string, Rules> = {
       ] },
     ],
   },
+  pugdoku: {
+    title: 'Pugdoku',
+    goal: 'Find where every pug is hiding: one pug in every row, every column and every color. Pugs never touch, not even corners.',
+    sections: [
+      { h: 'The rules', items: [
+        'Exactly one pug in each row, each column and each color area.',
+        'No two pugs may touch - not side by side, and not diagonally.',
+        'Every puzzle has exactly one answer, so you can always work it out by thinking. No guessing needed!',
+        'Some puzzles start with a pug already placed (it has a cream ring and stays put). A color with just one tile must hold a pug.',
+      ] },
+      { h: 'Playing', items: [
+        'Tap a tile once to mark it with an X (no pug here). Tap again to place a pug. Tap a pug again to take it back.',
+        'Drag your finger across tiles to X lots of them at once. Start the drag on an X to clear them instead. A drag never moves a pug.',
+        'You have 3 treats. Placing a pug in the wrong spot costs a treat; lose all three and you can try again. TREATS OFF is relaxed mode with no losing.',
+        'HINT places one correct pug for you (2 per puzzle). CLEAR X wipes your X marks.',
+        'Boards get bigger as you level up, from 5x5 up to 10x10.',
+      ] },
+      { h: '2 players (teamwork!)', items: [
+        'Two players work together on one board and share the treats. You win or lose as a team.',
+        'Take turns. On your turn either place a pug (a guess - placing one ends your turn) or tap PASS if you are stuck. X marks are free and never end your turn.',
+        'A wrong guess costs a shared treat and passes the turn. If both players pass in a row, the game places one pug for you.',
+        'Tap the name chip to change player names.',
+      ] },
+    ],
+  },
   chess: {
     title: 'Chess',
     goal: 'Trap the other player\'s king so it cannot escape capture (checkmate).',

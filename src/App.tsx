@@ -11,6 +11,8 @@ import Mancala from './games/Mancala';
 import Battleship from './games/Battleship';
 import AcornPop from './games/AcornPop';
 import SlideSwap from './games/SlideSwap';
+import Pugdoku from './games/Pugdoku';
+import pugUrl from './assets/pug.png';
 import { AcornPiece, MushroomPiece } from './racers';
 import { Scenery, Piece, Disc, ConnectDisc, DieArt, FlagArt, BoardIcon, DominoArt, TreeIcon, Boat, Leaf } from './art';
 import { isMuted, setMuted, sfx } from './lib/sfx';
@@ -25,6 +27,7 @@ const GAMES = [
   { id: 'yahtzee', name: 'Yahtzee', icon: <DieArt px={7} />, blurb: 'Roll, hold, score. 13 rounds.', C: Yahtzee },
   { id: 'playnine', name: 'Play Nine', icon: <FlagArt px={6} />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
   { id: 'palace', name: 'Palace', icon: <Leaf color="#c01f1f" px={7} />, blurb: 'Climb the pile, burn it, and get out first. 2-4 players!', C: Palace },
+  { id: 'pugdoku', name: 'Pugdoku', icon: <img src={pugUrl} alt="" style={{ width: 66, height: 'auto', display: 'block' }} />, blurb: 'Find one pug per row, column and color. No touching! Solo or team up.', C: Pugdoku },
   { id: 'backgammon', name: 'Backgammon', icon: <BoardIcon px={5} />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
   { id: 'mancala', name: 'Mancala', icon: <span style={{ display: 'flex' }}><ConnectDisc px={2} side={0} /><ConnectDisc px={2} /></span>, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
   { id: 'battleship', name: 'Battleship', icon: <span style={{ display: 'block', width: 70, height: 26 }}><Boat len={3} id={3} /></span>, blurb: 'Hunt the cute little boats. Pass-the-device secret!', C: Battleship },

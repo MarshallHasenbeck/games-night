@@ -1,6 +1,6 @@
 const { chromium } = require('playwright');
 const SIZES = [[390,664,'iPhone 14 Safari'],[375,553,'iPhone SE Safari'],[430,740,'Pro Max Safari'],[393,660,'iPhone 15 Safari'],[844,340,'iPhone 14 land'],[932,360,'Pro Max land'],[667,320,'SE land']];
-const GAMES=['chess','checkers','connect4','yahtzee','playnine','backgammon','dominoes','mancala','battleship','acorn','slide'];
+const GAMES=['chess','checkers','connect4','yahtzee','playnine','backgammon','dominoes','mancala','battleship','acorn','slide','pugdoku'];
 (async () => {
   const b = await chromium.launch(); const errs=[]; let bad=0;
   for (const [vw,vh,name] of SIZES) {
