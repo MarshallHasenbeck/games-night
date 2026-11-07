@@ -33,16 +33,17 @@ export function transformPuzzle(pz: Puzzle, n: number, t = rnd(8)): Puzzle {
 }
 
 /** Difficulty = board size = how many pugs there are to find. */
-export type Diff = 'easy' | 'medium' | 'hard';
+export type Diff = 'easy' | 'medium' | 'hard' | 'relaxed';
 export const DIFFS: Record<Diff, { label: string; n: number }> = {
   easy: { label: 'EASY', n: 5 },
   medium: { label: 'MEDIUM', n: 7 },
   hard: { label: 'HARD', n: 9 },
+  relaxed: { label: 'RELAXED', n: 5 },   // easy-size board with no treats to lose
 };
 
 /** Easy always starts with a pug or two already placed; medium sometimes does; hard rarely. Returns the rows that are given. */
 export function pickGivens(n: number, diff: Diff): number[] {
-  const k = diff === 'easy' ? (rnd(100) < 35 ? 2 : 1) : diff === 'medium' ? (rnd(100) < 50 ? 1 : 0) : (rnd(100) < 25 ? 1 : 0);
+  const k = diff === 'easy' || diff === 'relaxed' ? (rnd(100) < 35 ? 2 : 1) : diff === 'medium' ? (rnd(100) < 50 ? 1 : 0) : (rnd(100) < 25 ? 1 : 0);
   return shuf([...Array(n).keys()]).slice(0, k);
 }
 

@@ -93,7 +93,7 @@ export default function Pugdoku() {
   const diffRef = useRef(diff); diffRef.current = diff;
   /** Puzzles solved + points per difficulty. Just for fun; nothing depends on it, so losing it costs nothing. */
   const prog = useRef<Record<Diff, { w: number; s: number; b?: number }>>({
-    easy: { w: 0, s: 0 }, medium: { w: 0, s: 0 }, hard: { w: 0, s: 0 }, ...(read<Record<Diff, { w: number; s: number; b?: number }>>('gn-pugdoku-stats') ?? {}),
+    easy: { w: 0, s: 0 }, medium: { w: 0, s: 0 }, hard: { w: 0, s: 0 }, relaxed: { w: 0, s: 0 }, ...(read<Record<Diff, { w: number; s: number; b?: number }>>('gn-pugdoku-stats') ?? {}),
   });
   const bank = useRef<Bank | null>(null);
   const pool = useRef<Record<number, Puzzle[]>>({});
@@ -205,7 +205,7 @@ export default function Pugdoku() {
   const check = (s: GState) => {
     if (!won(s)) return;
     s.over = 'win';
-    s.pts = s.n * 10 + s.lives * 10;
+    s.pts = s.n * 10 + (diffRef.current === 'relaxed' ? 0 : s.lives * 10);
     const pr = prog.current[diffRef.current]; pr.s += s.pts; pr.w += 1;
     if (pr.b === undefined || s.secs < pr.b) { s.best = pr.b !== undefined; pr.b = s.secs; }
     saveProg();
@@ -224,7 +224,7 @@ export default function Pugdoku() {
       if (!quick) { s.st[r][c] = 0; s.bad[r][c] = false; sfx.click(); lastTap.current = null; }   // a single tap on an X takes it back
       else {
         lastTap.current = null;
-        if (s.p[r] !== c) {
+        if (diffRef.current !== 'relaxed' && s.p[r] !== c) {
           s.lives -= 1; s.bad[r][c] = true; sfx.capture();
           try { navigator.vibrate?.(60); } catch { /* not supported */ }
           s.msg = '';
@@ -323,7 +323,7 @@ export default function Pugdoku() {
         <div className="captures pgdhud">
           <span className="pgdcount"><img src={pugUrl} alt="" />{pugs}/{s?.n ?? 0}</span>
           <span className="pgdtime" aria-label="time">TIME {fmt(s?.secs ?? 0)}</span>
-          {s && <span className="pgdbones">{[0, 1, 2].map((i) => <span key={i} className={i < s.lives ? '' : 'off'}><PixelArt rows={BONE_ROWS} palette={{ w: '#fff4d6' }} px={3} /></span>)}</span>}
+          {s && <span className="pgdbones">{[0, 1, 2].map((i) => <span key={i} className={diff !== 'relaxed' && i < s.lives ? '' : 'off'}><PixelArt rows={BONE_ROWS} palette={{ w: '#fff4d6' }} px={3} /></span>)}</span>}
           {mode === 'coop' && <span className="pgdscore">{DIFFS[diff].label} · SOLVED {pr.w}</span>}
         </div>
         {mode === 'coop' && s?.msg && <div className="hint pgdmsg">{s.msg}</div>}
@@ -336,8 +336,9 @@ export default function Pugdoku() {
             {s.g.map((row, r) => row.map((reg, c) => {
               const v = s.st[r][c];
               const isGiven = s.given[r] && v === 2;
+              const wrong = v === 2 && diff === 'relaxed' && s.p[r] !== c;   // relaxed: a wrong pug is allowed but shown in red
               return (
-                <div key={`${r}-${c}`} data-pr={r} data-pc={c} className={`pgdcell${isGiven ? ' given' : ''}`} style={{ background: s.pal[reg] }}>
+                <div key={`${r}-${c}`} data-pr={r} data-pc={c} className={`pgdcell${isGiven ? ' given' : ''}${wrong ? ' bad' : ''}`} style={{ background: s.pal[reg] }}>
                   {v === 1 && <span className={`pgdx${s.bad[r][c] ? ' bad' : ''}`}><PixelArt rows={X_ROWS} palette={{ x: s.bad[r][c] ? '#ff2a2a' : '#3a2410a8' }} px={4} /></span>}
                   {v === 2 && <img className="pgdpug" src={pugUrl} alt="pug" draggable={false} />}
                 </div>
