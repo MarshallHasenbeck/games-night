@@ -10,6 +10,7 @@ type Bank = Record<number, [string, string][]>;
 type GState = {
   n: number; g: number[][]; p: number[]; pal: string[];
   st: number[][];            // 0 empty, 1 X, 2 pug
+  bad: boolean[][];          // X marks that came from a wrong guess (shown in red, can't be removed)
   given: boolean[];          // rows that started with a pug
   lives: number; hints: number; turn: 0 | 1; passes: number; msg: string;
   over: null | 'win' | 'lose'; pts: number;
@@ -44,7 +45,7 @@ function PugWin({ title, sub, onNext }: { title: string; sub: string; onNext: ()
     left: Math.random() * 100, delay: Math.random() * 1.8, dur: 2.4 + Math.random() * 2, size: 6 + Math.floor(Math.random() * 8),
     color: CONF[i % CONF.length], sway: (Math.random() - 0.5) * 180, round: i % 3 === 0,
   })), []);
-  useEffect(() => { const ts = [setTimeout(sfx.move, 500), setTimeout(sfx.score, 1650), setTimeout(sfx.win, 1750)]; return () => ts.forEach(clearTimeout); }, []);
+  useEffect(() => { const ts = [setTimeout(sfx.move, 100), setTimeout(sfx.score, 1000), setTimeout(sfx.win, 1100)]; return () => ts.forEach(clearTimeout); }, []);
   if (!open) return <button className="btn reopen" onClick={() => setOpen(true)}>RESULT</button>;
   return (
     <Overlay><div className="celebrate" role="dialog">
@@ -131,7 +132,7 @@ export default function Pugdoku() {
     const st = Array.from({ length: n }, () => Array(n).fill(0)) as number[][];
     const given: boolean[] = Array(n).fill(false);
     givenRows.forEach((r) => { st[r][pz.p[r]] = 2; given[r] = true; });
-    return { n, g: pz.g, p: pz.p, pal, st, given, lives: 3, hints: 2, turn: m === 'coop' ? ((prog.current.coop.l - 1) % 2) as 0 | 1 : 0, passes: 0, msg: '', over: null, pts: 0 };
+    return { n, g: pz.g, p: pz.p, pal, st, bad: Array.from({ length: n }, () => Array(n).fill(false)) as boolean[][], given, lives: 3, hints: 2, turn: m === 'coop' ? ((prog.current.coop.l - 1) % 2) as 0 | 1 : 0, passes: 0, msg: '', over: null, pts: 0 };
   };
   const givenRowsRef = useRef<number[]>([]);
 
@@ -196,13 +197,13 @@ export default function Pugdoku() {
   };
   const tap = (r: number, c: number) => {
     const s = G.current; if (!s || s.over) return;
-    if (s.given[r] && s.st[r][c] === 2) return;
+    if ((s.given[r] && s.st[r][c] === 2) || s.bad[r][c]) return;
     const v = s.st[r][c];
     let placed = false;
     if (v === 0) { s.st[r][c] = 1; sfx.click(); }
     else if (v === 1) {
       if (!relaxedRef.current && s.p[r] !== c) {
-        s.lives -= 1; sfx.capture();
+        s.lives -= 1; s.bad[r][c] = true; sfx.capture();
         try { navigator.vibrate?.(60); } catch { /* not supported */ }
         s.msg = '';
         if (s.lives <= 0) s.over = 'lose';
@@ -231,7 +232,7 @@ export default function Pugdoku() {
   };
   const clearX = () => {
     const s = G.current; if (!s || s.over) return;
-    s.st = s.st.map((row) => row.map((v) => (v === 1 ? 0 : v))); sfx.click(); tick();
+    s.st = s.st.map((row, r) => row.map((v, c) => (v === 1 && !s.bad[r][c] ? 0 : v))); sfx.click(); tick();
   };
   const pass = () => {
     const s = G.current; if (!s || s.over || modeRef.current !== 'coop') return;
@@ -254,7 +255,7 @@ export default function Pugdoku() {
     const s = G.current; if (!s) return;
     const d = drag.current;
     if (d.mode === 'x' && s.st[r][c] === 0) s.st[r][c] = 1;
-    else if (d.mode === 'erase' && s.st[r][c] === 1) s.st[r][c] = 0;
+    else if (d.mode === 'erase' && s.st[r][c] === 1 && !s.bad[r][c]) s.st[r][c] = 0;
   };
   const onDown = (e: React.PointerEvent) => {
     const s = G.current; if (!s || s.over) return;
@@ -310,7 +311,7 @@ export default function Pugdoku() {
               const wrong = v === 2 && relaxed && s.p[r] !== c;
               return (
                 <div key={`${r}-${c}`} data-pr={r} data-pc={c} className={`pgdcell${isGiven ? ' given' : ''}${wrong ? ' bad' : ''}`} style={{ background: s.pal[reg] }}>
-                  {v === 1 && <span className="pgdx"><PixelArt rows={X_ROWS} palette={{ x: '#3a2410a8' }} px={4} /></span>}
+                  {v === 1 && <span className={`pgdx${s.bad[r][c] ? ' bad' : ''}`}><PixelArt rows={X_ROWS} palette={{ x: s.bad[r][c] ? '#ff2a2a' : '#3a2410a8' }} px={4} /></span>}
                   {v === 2 && <img className="pgdpug" src={pugUrl} alt="pug" draggable={false} />}
                 </div>
               );
