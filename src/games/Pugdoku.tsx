@@ -197,21 +197,28 @@ export default function Pugdoku() {
   };
   const tap = (r: number, c: number) => {
     const s = G.current; if (!s || s.over) return;
-    if ((s.given[r] && s.st[r][c] === 2) || s.bad[r][c]) return;
+    if ((s.given[r] && s.st[r][c] === 2) || s.bad[r][c]) return;   // starter pugs and red X marks are permanent
     const v = s.st[r][c];
+    const now = Date.now();
+    const lt = lastTap.current;
+    const quick = !!lt && lt.r === r && lt.c === c && now - lt.t < 400;   // a quick second tap = "I think the pug is here"
     let placed = false;
-    if (v === 0) { s.st[r][c] = 1; sfx.click(); }
+    if (v === 0) { s.st[r][c] = 1; sfx.click(); lastTap.current = { r, c, t: now }; }
     else if (v === 1) {
-      if (!relaxedRef.current && s.p[r] !== c) {
-        s.lives -= 1; s.bad[r][c] = true; sfx.capture();
-        try { navigator.vibrate?.(60); } catch { /* not supported */ }
-        s.msg = '';
-        if (s.lives <= 0) s.over = 'lose';
-        else if (modeRef.current === 'coop') { s.passes = 0; endTurn(s); }
-        tick(); return;
+      if (!quick) { s.st[r][c] = 0; s.bad[r][c] = false; sfx.click(); lastTap.current = null; }   // a single tap on an X takes it back
+      else {
+        lastTap.current = null;
+        if (!relaxedRef.current && s.p[r] !== c) {
+          s.lives -= 1; s.bad[r][c] = true; sfx.capture();
+          try { navigator.vibrate?.(60); } catch { /* not supported */ }
+          s.msg = '';
+          if (s.lives <= 0) s.over = 'lose';
+          else if (modeRef.current === 'coop') { s.passes = 0; endTurn(s); }
+          tick(); return;
+        }
+        s.st[r][c] = 2; placed = true; sfx.score();
       }
-      s.st[r][c] = 2; placed = true; sfx.score();
-    } else s.st[r][c] = 0;
+    } else { s.st[r][c] = 0; lastTap.current = null; }
     check(s);
     if (placed && modeRef.current === 'coop' && !s.over) { s.passes = 0; endTurn(s); }
     tick();
@@ -246,6 +253,7 @@ export default function Pugdoku() {
   };
 
   /* ---- touch: tap = X / pug, drag = paint X (or clear X when the drag starts on an X) ---- */
+  const lastTap = useRef<{ r: number; c: number; t: number } | null>(null);
   const drag = useRef<{ down: [number, number] | null; moved: boolean; last: [number, number] | null; mode: 'x' | 'erase' | null }>({ down: null, moved: false, last: null, mode: null });
   const cellAt = (x: number, y: number): [number, number] | null => {
     const el = document.elementFromPoint(x, y)?.closest('[data-pr]') as HTMLElement | null;
@@ -326,7 +334,7 @@ export default function Pugdoku() {
           <button className="btn" disabled={!s || !!s.over} onClick={clearX}>CLEAR ✕</button>
           {mode === 'coop' && <button className="btn primary" disabled={!s || !!s.over} onClick={pass}>PASS</button>}
         </div>
-        <p className="hint">Tap once for ✕, twice for a pug. Drag across tiles to ✕ them.</p>
+        <p className="hint">Tap for ✕, double-tap for a pug. Tap a ✕ again to remove it, or drag across tiles.</p>
       </div>
 
       {s?.over === 'win' && <PugWin title={mode === 'coop' ? 'SOLVED TOGETHER!' : 'SOLVED!'} sub={`${mode === 'coop' ? `${nm(0)} & ${nm(1)}: ` : ''}+${s.pts} points`} onNext={again} />}

@@ -36,9 +36,9 @@ export const RULES: Record<string, Rules> = {
         'Some puzzles start with a pug already placed (it has a cream ring and stays put). A color with just one tile must hold a pug.',
       ] },
       { h: 'Playing', items: [
-        'Tap a tile once to mark it with an X (no pug here). Tap again to place a pug. Tap a pug again to take it back.',
+        'Tap a tile once to mark it with an X (no pug here). Tap an X again, slowly, to take it back off. To place a pug, double-tap quickly. Tap a pug to take it back.',
         'Drag your finger across tiles to X lots of them at once. Start the drag on an X to clear them instead. A drag never moves a pug.',
-        'You have 3 treats. Placing a pug in the wrong spot costs a treat; lose all three and you can try again. TREATS OFF is relaxed mode with no losing.',
+        'You have 3 treats. Placing a pug in the wrong spot costs a treat and leaves a red X on that tile for the rest of the puzzle (it never comes off, so you know that spot is wrong); lose all three and you can try again. TREATS OFF is relaxed mode with no losing.',
         'HINT places one correct pug for you (2 per puzzle). CLEAR X wipes your X marks.',
         'Boards get bigger as you level up, from 5x5 up to 10x10.',
       ] },
