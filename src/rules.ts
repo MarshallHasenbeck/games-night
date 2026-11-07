@@ -38,7 +38,7 @@ export const RULES: Record<string, Rules> = {
       { h: 'Playing', items: [
         'Tap a tile once to mark it with an X (no pug here). Tap an X again, slowly, to take it back off. To place a pug, double-tap quickly. Tap a pug to take it back.',
         'Drag your finger across tiles to X lots of them at once. Start the drag on an X to clear them instead. A drag never moves a pug.',
-        'You have 3 treats. Placing a pug in the wrong spot costs a treat and leaves a red X on that tile for the rest of the puzzle (it never comes off, so you know that spot is wrong); lose all three and you can try again. TREATS OFF is relaxed mode with no losing.',
+        'You have 3 treats. Placing a pug in the wrong spot costs a treat and leaves a red X on that tile for the rest of the puzzle (it never comes off, so you know that spot is wrong); lose all three and you can try again.',
         'HINT places one correct pug for you (2 per puzzle). CLEAR X wipes your X marks.',
         'Pick EASY (5x5, 5 pugs), MEDIUM (7x7, 7 pugs) or HARD (9x9, 9 pugs). It stays on what you pick until you change it, and every puzzle is a fresh random one.',
       ] },
