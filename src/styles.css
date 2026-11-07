@@ -1311,7 +1311,7 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
    Pugdoku (class prefix pgd)
    ===================================================================== */
 .pgd { --bs: min(calc(var(--app-w, 100vw) - 64px), 560px, calc(var(--app-h, 100vh) - 420px)); }
-[data-fit="phone"] .game.pgd { --bs: min(calc(var(--app-w, 100vw) - 56px), 560px, calc(var(--app-h, 100vh) - 360px)); }
+[data-fit="phone"] .game.pgd { --bs: min(calc(var(--app-w, 100vw) - 56px), 560px, calc(var(--app-h, 100vh) - 395px)); }
 @media (orientation: landscape) and (min-width: 900px) { .game.split.pgd { --bs: min(calc(var(--app-h, 100vh) - 130px), 640px, calc(var(--app-w, 100vw) * 56 / 100)); } }
 [data-fit="land"] .game.split.pgd { --bs: min(calc(var(--app-h, 100vh) - 70px), calc(var(--app-w, 100vw) * 52 / 100)); }
 .pgdframe { width: calc(var(--bs) + 26px); max-width: none; margin: 6px auto; padding: 10px; border-radius: 16px; border: 3px solid var(--wood-dd);

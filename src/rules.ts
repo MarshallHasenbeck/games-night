@@ -40,7 +40,7 @@ export const RULES: Record<string, Rules> = {
         'Drag your finger across tiles to X lots of them at once. Start the drag on an X to clear them instead. A drag never moves a pug.',
         'You have 3 treats. Placing a pug in the wrong spot costs a treat and leaves a red X on that tile for the rest of the puzzle (it never comes off, so you know that spot is wrong); lose all three and you can try again. TREATS OFF is relaxed mode with no losing.',
         'HINT places one correct pug for you (2 per puzzle). CLEAR X wipes your X marks.',
-        'Boards get bigger as you level up, from 5x5 up to 10x10.',
+        'Pick EASY (5x5, 5 pugs), MEDIUM (7x7, 7 pugs) or HARD (9x9, 9 pugs). It stays on what you pick until you change it, and every puzzle is a fresh random one.',
       ] },
       { h: '2 players (teamwork!)', items: [
         'Two players work together on one board and share the treats. You win or lose as a team.',

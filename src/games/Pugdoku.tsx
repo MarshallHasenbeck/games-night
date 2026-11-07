@@ -2,7 +2,7 @@ import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { PixelArt } from '../Sprite';
 import { Overlay } from '../ui';
 import { sfx } from '../lib/sfx';
-import { COLORS, decodePuzzle, pickGivens, rnd, shuf, sizeFor, transformPuzzle, type Puzzle } from '../lib/pugdoku';
+import { COLORS, DIFFS, decodePuzzle, pickGivens, rnd, shuf, transformPuzzle, type Diff, type Puzzle } from '../lib/pugdoku';
 import pugUrl from '../assets/pug.png';
 
 type Mode = 'solo' | 'coop';
@@ -65,7 +65,7 @@ function PugWin({ title, sub, onNext }: { title: string; sub: string; onNext: ()
         <h2>{title}</h2>
         <p>{sub}</p>
         <div className="row">
-          <button className="btn primary" onClick={onNext}>NEXT LEVEL</button>
+          <button className="btn primary" onClick={onNext}>NEXT PUZZLE</button>
           <button className="btn" onClick={() => setOpen(false)}>VIEW BOARD</button>
         </div>
       </div>
@@ -77,8 +77,9 @@ const read = <T,>(k: string): T | null => { try { return JSON.parse(localStorage
 const write = (k: string, v: unknown) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } };
 
 export default function Pugdoku() {
-  const cfg0 = read<{ mode?: Mode; relaxed?: boolean; names?: [string, string]; named?: boolean }>('gn-pugdoku');
+  const cfg0 = read<{ mode?: Mode; diff?: Diff; relaxed?: boolean; names?: [string, string]; named?: boolean }>('gn-pugdoku');
   const [mode, setModeState] = useState<Mode>(cfg0?.mode === 'coop' ? 'coop' : 'solo');
+  const [diff, setDiffState] = useState<Diff>(cfg0?.diff && cfg0.diff in DIFFS ? cfg0.diff : 'easy');
   const [relaxed, setRelaxedState] = useState(!!cfg0?.relaxed);
   const [names, setNames] = useState<[string, string]>(cfg0?.names ?? ['P1', 'P2']);
   const [named, setNamed] = useState(!!cfg0?.named);
@@ -88,10 +89,11 @@ export default function Pugdoku() {
 
   const G = useRef<GState | null>(null);
   const modeRef = useRef(mode); modeRef.current = mode;
+  const diffRef = useRef(diff); diffRef.current = diff;
   const relaxedRef = useRef(relaxed); relaxedRef.current = relaxed;
-  const prog = useRef<Record<Mode, { l: number; s: number }>>({
-    solo: read('gn-pugdoku-solo') ?? { l: 1, s: 0 },
-    coop: read('gn-pugdoku-coop') ?? { l: 1, s: 0 },
+  /** Puzzles solved + points per difficulty. Just for fun; nothing depends on it, so losing it costs nothing. */
+  const prog = useRef<Record<Diff, { w: number; s: number }>>({
+    easy: { w: 0, s: 0 }, medium: { w: 0, s: 0 }, hard: { w: 0, s: 0 }, ...(read<Record<Diff, { w: number; s: number }>>('gn-pugdoku-stats') ?? {}),
   });
   const bank = useRef<Bank | null>(null);
   const pool = useRef<Record<number, Puzzle[]>>({});
@@ -100,9 +102,9 @@ export default function Pugdoku() {
   const used = useRef<string[]>(read<string[]>('gn-pugdoku-used') ?? []);
   const nm = (i: number) => names[i] || `P${i + 1}`;
 
-  const saveCfg = (over: Partial<{ mode: Mode; relaxed: boolean; names: [string, string]; named: boolean }> = {}) =>
-    write('gn-pugdoku', { mode, relaxed, names, named, ...over });
-  const saveProg = () => { write('gn-pugdoku-solo', prog.current.solo); write('gn-pugdoku-coop', prog.current.coop); };
+  const saveCfg = (over: Partial<{ mode: Mode; diff: Diff; relaxed: boolean; names: [string, string]; named: boolean }> = {}) =>
+    write('gn-pugdoku', { mode, diff, relaxed, names, named, ...over });
+  const saveProg = () => write('gn-pugdoku-stats', prog.current);
 
   /* ---- where puzzles come from: the verified bank (instant) + fresh ones built in the background ---- */
   const ensure = (n: number) => {
@@ -132,18 +134,18 @@ export default function Pugdoku() {
     const st = Array.from({ length: n }, () => Array(n).fill(0)) as number[][];
     const given: boolean[] = Array(n).fill(false);
     givenRows.forEach((r) => { st[r][pz.p[r]] = 2; given[r] = true; });
-    return { n, g: pz.g, p: pz.p, pal, st, bad: Array.from({ length: n }, () => Array(n).fill(false)) as boolean[][], given, lives: 3, hints: 2, turn: m === 'coop' ? ((prog.current.coop.l - 1) % 2) as 0 | 1 : 0, passes: 0, msg: '', over: null, pts: 0 };
+    return { n, g: pz.g, p: pz.p, pal, st, bad: Array.from({ length: n }, () => Array(n).fill(false)) as boolean[][], given, lives: 3, hints: 2, turn: m === 'coop' ? (prog.current[diffRef.current].w % 2) as 0 | 1 : 0, passes: 0, msg: '', over: null, pts: 0 };
   };
   const givenRowsRef = useRef<number[]>([]);
 
-  const startLevel = (m: Mode) => {
-    const lvl = prog.current[m].l, n = sizeFor(lvl);
+  const startLevel = (m: Mode, d: Diff = diffRef.current) => {
+    const n = DIFFS[d].n;
     const pz = nextPuzzle(n);
     if (!pz) { G.current = null; tick(); return; }
-    givenRowsRef.current = pickGivens(n, lvl);
+    givenRowsRef.current = pickGivens(n, d);
     G.current = fresh(n, pz, givenRowsRef.current, m, shuf(COLORS.slice(0, n)));
     tick();
-    setTimeout(() => { ensure(n); ensure(sizeFor(lvl + 1)); }, 1500);
+    setTimeout(() => ensure(n), 1500);
   };
   const retry = () => {
     const s = G.current; if (!s) return;
@@ -176,6 +178,13 @@ export default function Pugdoku() {
     setNames(nn); setNamed(true); setNamesOpen(false); saveCfg({ names: nn, named: true });
   };
 
+  /* ---- difficulty: stays what you picked until you change it ---- */
+  const setDiff = (d: Diff) => {
+    if (d === diff) return;
+    sfx.click(); diffRef.current = d; setDiffState(d); saveCfg({ diff: d });
+    startLevel(modeRef.current, d);
+  };
+
   /* ---- mode ---- */
   const setMode = (m: Mode) => {
     if (m === mode) return;
@@ -189,10 +198,9 @@ export default function Pugdoku() {
   const won = (s: GState) => { for (let r = 0; r < s.n; r++) if (s.st[r][s.p[r]] !== 2) return false; return s.st.flat().filter((v) => v === 2).length === s.n; };
   const check = (s: GState) => {
     if (!won(s)) return;
-    const m = modeRef.current;
     s.over = 'win';
     s.pts = s.n * 10 + (relaxedRef.current ? 0 : s.lives * 10);
-    prog.current[m].s += s.pts; prog.current[m].l += 1; saveProg();
+    const pr = prog.current[diffRef.current]; pr.s += s.pts; pr.w += 1; saveProg();
     setTimeout(sfx.win, 350);
   };
   const tap = (r: number, c: number) => {
@@ -284,8 +292,8 @@ export default function Pugdoku() {
   /* ---- render ---- */
   const s = G.current;
   const pugs = s ? s.st.flat().filter((v) => v === 2).length : 0;
-  const lvl = prog.current[mode].l;
-  const status = !s ? 'BUILDING A PUZZLE...' : mode === 'coop' ? `${nm(s.turn)}'S TURN` : `LEVEL ${lvl} · SCORE ${prog.current.solo.s}`;
+  const pr = prog.current[diff];
+  const status = !s ? 'BUILDING A PUZZLE...' : `${DIFFS[diff].label} · SOLVED ${pr.w} · SCORE ${pr.s}`;
   const again = () => startLevel(mode);
 
   return (
@@ -296,6 +304,9 @@ export default function Pugdoku() {
             <button className={mode === 'solo' ? 'on' : ''} onClick={() => setMode('solo')}>SOLO</button>
             <button className={mode === 'coop' ? 'on' : ''} onClick={() => setMode('coop')}>2 PLAYERS</button>
           </div>
+          <div className="seg small">
+            {(Object.keys(DIFFS) as Diff[]).map((d) => <button key={d} className={diff === d ? 'on' : ''} onClick={() => setDiff(d)}>{DIFFS[d].label}</button>)}
+          </div>
           <button className="btn small" onClick={() => { sfx.click(); const r = !relaxed; setRelaxedState(r); relaxedRef.current = r; saveCfg({ relaxed: r }); tick(); }}>{relaxed ? 'TREATS OFF' : 'TREATS ON'}</button>
         </div>
         <div className={`status pgdstatus ${mode === 'coop' && s ? `t${s.turn}` : ''}`}>
@@ -304,7 +315,7 @@ export default function Pugdoku() {
         <div className="captures pgdhud">
           <span className="pgdcount"><img src={pugUrl} alt="" />{pugs}/{s?.n ?? 0}</span>
           {!relaxed && s && <span className="pgdbones">{[0, 1, 2].map((i) => <span key={i} className={i < s.lives ? '' : 'off'}><PixelArt rows={BONE_ROWS} palette={{ w: '#fff4d6' }} px={3} /></span>)}</span>}
-          {mode === 'coop' && <span className="pgdscore">LEVEL {lvl} · {prog.current.coop.s}</span>}
+          {mode === 'coop' && <span className="pgdscore">{DIFFS[diff].label} · SOLVED {pr.w}</span>}
         </div>
         {mode === 'coop' && s?.msg && <div className="hint pgdmsg">{s.msg}</div>}
       </div>

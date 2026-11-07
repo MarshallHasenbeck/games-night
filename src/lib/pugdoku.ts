@@ -32,9 +32,17 @@ export function transformPuzzle(pz: Puzzle, n: number, t = rnd(8)): Puzzle {
   return { g, p };
 }
 
-/** Some levels start with a pug already placed (always one on levels 1-2). Returns the rows that are given. */
-export function pickGivens(n: number, level: number): number[] {
-  const k = level <= 2 ? 1 : rnd(100) < 40 ? (n >= 8 && rnd(100) < 40 ? 2 : 1) : 0;
+/** Difficulty = board size = how many pugs there are to find. */
+export type Diff = 'easy' | 'medium' | 'hard';
+export const DIFFS: Record<Diff, { label: string; n: number }> = {
+  easy: { label: 'EASY', n: 5 },
+  medium: { label: 'MEDIUM', n: 7 },
+  hard: { label: 'HARD', n: 9 },
+};
+
+/** Easy always starts with a pug or two already placed; medium sometimes does; hard rarely. Returns the rows that are given. */
+export function pickGivens(n: number, diff: Diff): number[] {
+  const k = diff === 'easy' ? (rnd(100) < 35 ? 2 : 1) : diff === 'medium' ? (rnd(100) < 50 ? 1 : 0) : (rnd(100) < 25 ? 1 : 0);
   return shuf([...Array(n).keys()]).slice(0, k);
 }
 
