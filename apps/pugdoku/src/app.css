@@ -48,7 +48,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: non
 /* phones: tighter bar and panel */
 [data-fit="phone"] .pdk-play { --panel: 164px; --bar: 46px; }
 [data-fit="phone"] .pdk-bar h1 { font-size: 22px; } [data-fit="phone"] .pdk-time { font-size: 21px; }
-[data-fit="phone"] .pdk-btns .btn { padding: 7px 10px; font-size: 16px; }
+[data-fit="phone"] .pdk-btns .btn { padding: 7px 8px; font-size: 15px; }
 [data-fit="phone"] .pdk-msg { font-size: 15px; }
 
 /* landscape (phone sideways, or iPad landscape): board on the left, controls on the right */

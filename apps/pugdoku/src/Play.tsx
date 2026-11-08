@@ -137,6 +137,7 @@ export default function Play({ initial, onExit, onNew }: { initial: GState; onEx
           <button className="btn" disabled={!!s.over || !s.hist.length} onClick={() => { const u = undo(s); if (u !== s) { sfx.click(); setS(u); } }}>↶ UNDO</button>
           <button className="btn" disabled={!!s.over || !s.hints} onClick={() => apply(hint(s))}>HINT ({s.hints})</button>
           <button className="btn" disabled={!!s.over} onClick={() => { const c = clearX(s); if (c !== s) { sfx.click(); setS(c); } }}>CLEAR ✕</button>
+          <button className="btn" onClick={() => { if (!s.over && s.hist.length && !confirm(`Start a new ${DIFFS[s.diff].label} puzzle? Your progress on this one will be lost.`)) return; sfx.click(); onNew(s.diff); }}>NEW</button>
         </div>
       </div>
 
