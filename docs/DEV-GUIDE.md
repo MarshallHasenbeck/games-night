@@ -78,6 +78,8 @@ docs/ROADMAP.md       saved ideas (online play etc.)
 
 ---
 
+**Pugdoku iOS app** (solo, offline, paid): see `docs/PUGDOKU-IOS.md` — `apps/pugdoku/` shares `src/lib/pugdoku*` with the web game.
+
 ## 4. Look & feel rules
 - Palette tokens are CSS variables at the top of `styles.css` (`--wood`, `--parch`, `--berry`, …). Fonts: *Pixelify Sans* (UI) and *Fredoka* (numerals).
 - Players are **P1 / P2 / P3 / P4** (`CPU n` when a seat is CPU) — colours red, blue, green, yellow (`PLAYER_COLORS`). Don't invent themed names.

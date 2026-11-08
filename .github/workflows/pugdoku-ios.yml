@@ -1,0 +1,33 @@
+name: Pugdoku iOS build check
+# Compiles the iOS app for the simulator (no signing) so Swift / Xcode-project mistakes show up without a Mac at hand.
+on:
+  push:
+    branches: ['claude/**']
+    paths: ['apps/pugdoku/**', 'src/lib/pugdoku*', 'src/games/Pugdoku.tsx', '.github/workflows/pugdoku-ios.yml']
+  workflow_dispatch:
+jobs:
+  logic-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npx tsx tools/tests/pugdoku-bank.ts
+      - run: npx tsx tools/tests/pugdoku-app.ts
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+        working-directory: apps/pugdoku
+      - run: npx cap sync ios
+        working-directory: apps/pugdoku
+      - name: Build for iPhone and iPad simulators
+        working-directory: apps/pugdoku/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build | tail -40

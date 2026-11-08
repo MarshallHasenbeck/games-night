@@ -150,10 +150,11 @@ function repair(n: number, g: Grid, p: number[]): boolean {
   return solveAll(n, g, 2).length === 1;
 }
 
-/** Keeps going until the puzzle has exactly ONE answer; never returns an unverified one. */
-export function makePuzzle(n: number): Puzzle {
+/** Keeps going until the puzzle has exactly ONE answer; never returns an unverified one.
+ *  `accept` lets the caller also demand more (e.g. "solvable by logic, at difficulty level 3-4"); rejected boards are just rebuilt. */
+export function makePuzzle(n: number, accept?: (pz: Puzzle) => boolean): Puzzle {
   for (;;) {
     const p = randomSolution(n), g = growRegions(n, p);
-    if (repair(n, g, p) && solveAll(n, g, 2).length === 1) return { g, p };
+    if (repair(n, g, p) && solveAll(n, g, 2).length === 1 && (!accept || accept({ g, p }))) return { g, p };
   }
 }

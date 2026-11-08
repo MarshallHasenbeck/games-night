@@ -41,7 +41,7 @@ const CONF = ['#f2b632', '#d4475a', '#6fbf4a', '#5ab0c8', '#fff4d6', '#b394ff', 
 const SPARKS: [number, number, string][] = [[-80, -70, '#f2b632'], [0, -100, '#fff4d6'], [80, -70, '#f08fb0'], [-100, 0, '#6fbf4a'], [100, 0, '#5ab0c8'], [-70, 60, '#f2b632'], [70, 60, '#d4475a'], [0, 70, '#fff4d6']];
 
 /** Win screen: a happy pug jumps up and catches a bone while confetti rains behind. */
-function PugWin({ title, sub, onNext }: { title: string; sub: string; onNext: () => void }) {
+export function PugWin({ title, sub, onNext }: { title: string; sub: string; onNext: () => void }) {
   const [open, setOpen] = useState(true);
   const bits = useMemo(() => Array.from({ length: 90 }, (_, i) => ({
     left: Math.random() * 100, delay: Math.random() * 1.8, dur: 2.4 + Math.random() * 2, size: 6 + Math.floor(Math.random() * 8),
