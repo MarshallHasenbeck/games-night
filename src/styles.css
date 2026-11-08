@@ -563,6 +563,11 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 [data-fit] .topbar > * { grid-area: auto; }
 [data-fit] .topbar h1 { font-size: 17px; -webkit-text-stroke: 1.5px var(--wood-dd); text-align: center; }
 [data-fit] .toggles { gap: 4px; }
+/* phone portrait: back + toggles share row 1 with breathing room, title gets its own centred row (buttons were touching) */
+[data-fit="phone"] .topbar { grid-template-columns: auto 1fr; grid-template-areas: "back toggles" "title title"; row-gap: 0; column-gap: 10px; margin-bottom: 4px; }
+[data-fit="phone"] .topbar > .btn { grid-area: back; }
+[data-fit="phone"] .topbar > h1 { grid-area: title; }
+[data-fit="phone"] .topbar > .toggles { grid-area: toggles; gap: 8px; }
 [data-fit] .status { font-size: 15px; padding: 2px 12px; margin: 3px auto; border-width: 2px; border-radius: 9px; }
 [data-fit] .hint { font-size: 13px; padding: 1px 10px; margin: 4px auto; border-width: 2px; }
 [data-fit] .hint.prompt { font-size: 13px; }
