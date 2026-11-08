@@ -2,7 +2,7 @@
 import { decodePuzzle } from '../../src/lib/pugdoku';
 import { BANK } from '../../src/lib/pugdoku-bank';
 import { TIERS, fits } from '../../src/lib/pugdoku-gen';
-import { newGame, tap, paint, undo, hint, clearX, solved, restart, MAX_LIVES, type GState } from '../../apps/pugdoku/src/game';
+import { canUndo, newGame, tap, paint, undo, hint, clearX, solved, restart, MAX_LIVES, type GState } from '../../apps/pugdoku/src/game';
 import { emptyCloud, emptyDiffs, mergeCloud, parseCloud, sameCloud, totals, type Cloud } from '../../apps/pugdoku/src/merge';
 
 let fails = 0;
@@ -32,6 +32,13 @@ for (let i = 0; i < MAX_LIVES; i++) { const c = [0, 1, 2, 3, 4].filter((x) => x 
 ok(L.over === 'lose', 'three wrong guesses lose');
 // undo keeps red marks and lost lives
 const u = undo(L.over ? { ...L, over: null } : L); ok(u.lives === 0 && u.bad.flat().filter(Boolean).length === MAX_LIVES, 'undo cannot dodge a mistake');
+// a correct pug is permanent: no tap removes it, undo keeps it, and undo is unavailable when nothing but a pug was placed
+g = tap(tap(mk(), 0, pz.p[0], false).s, 0, pz.p[0], true).s;
+ok(g.st[0][pz.p[0]] === 2, 'pug placed');
+ok(tap(g, 0, pz.p[0], false).s === g && tap(g, 0, pz.p[0], true).s === g, 'tapping a correct pug does nothing');
+ok(undo(g).st[0][pz.p[0]] === 2 && !canUndo(g), 'undo cannot remove a correct pug (and has nothing to undo)');
+const g2 = tap(g, 1, wrongCol(1), false).s; ok(canUndo(g2) && undo(g2).st[0][pz.p[0]] === 2 && undo(g2).st[1][wrongCol(1)] === 0, 'undo takes back the X but keeps the pug');
+{ const rx = tap(tap(mk('relaxed'), 0, wrongCol(0), false).s, 0, wrongCol(0), true).s; ok(!tap(rx, 0, wrongCol(0), false).s.st[0][wrongCol(0)], 'relaxed: a wrong pug can still be lifted'); }
 // undo reverts a normal move
 s = tap(mk(), 1, 1, false).s; ok(undo(s).st[1][1] === 0, 'undo takes back an X');
 // paint + one undo for a whole drag

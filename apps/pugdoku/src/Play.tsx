@@ -6,7 +6,7 @@ import { sfx } from '../../../src/lib/sfx';
 import { DIFFS, type Diff } from '../../../src/lib/pugdoku';
 import { PugWin } from '../../../src/games/Pugdoku';
 import pugUrl from '../../../src/assets/pug.png';
-import { clearX, hint, isRelaxed, locked, MAX_LIVES, paint, pugCount, restart, tap, undo, wrongPug, type Fx, type GState } from './game';
+import { canUndo, clearX, hint, isRelaxed, locked, MAX_LIVES, paint, pugCount, restart, tap, undo, wrongPug, type Fx, type GState } from './game';
 import { store } from './store';
 import { fmt } from './Modals';
 
@@ -134,7 +134,7 @@ export default function Play({ initial, onExit, onNew }: { initial: GState; onEx
         </div>
         <p className="pdk-msg" aria-live="polite">{s.msg || 'Tap for ✕, double-tap for a pug. Drag to ✕ lots.'}</p>
         <div className="pdk-btns">
-          <button className="btn" disabled={!!s.over || !s.hist.length} onClick={() => { const u = undo(s); if (u !== s) { sfx.click(); setS(u); } }}>↶ UNDO</button>
+          <button className="btn" disabled={!canUndo(s)} onClick={() => { const u = undo(s); if (u.st !== s.st) { sfx.click(); setS(u); } }}>↶ UNDO</button>
           <button className="btn" disabled={!!s.over || !s.hints} onClick={() => apply(hint(s))}>HINT ({s.hints})</button>
           <button className="btn" disabled={!!s.over} onClick={() => { const c = clearX(s); if (c !== s) { sfx.click(); setS(c); } }}>CLEAR ✕</button>
           <button className="btn" onClick={() => { if (!s.over && s.hist.length && !confirm(`Start a new ${DIFFS[s.diff].label} puzzle? Your progress on this one will be lost.`)) return; sfx.click(); onNew(s.diff); }}>NEW</button>

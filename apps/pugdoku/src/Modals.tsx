@@ -36,7 +36,7 @@ export function Rules() {
         <li>Drag your finger across tiles to X lots of them at once. Start the drag on an X to clear them instead.</li>
         <li>You have 3 treats. A pug in the wrong spot costs a treat and leaves a red X that stays for the rest of the puzzle. Lose all three and you can try the same puzzle again.</li>
         <li>RELAXED has no treats to lose: a wrong pug just glows red until you fix it.</li>
-        <li>UNDO takes back your last move (it can't undo a mistake). CLEAR X wipes your X marks.</li>
+        <li>A correct pug locks in place, so it can't be taken back. UNDO takes back your last X marks (it can't undo a mistake). CLEAR X wipes your X marks.</li>
         <li>HINT works out the next step in the logic for you, tells you why, and does it. You get 3 per puzzle.</li>
       </ul></section>
       <section><h3>Saving</h3><ul>

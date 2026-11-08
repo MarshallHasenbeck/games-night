@@ -72,8 +72,9 @@ const finish = (s: GState): Result => {
   return { s: { ...s, over: 'win', pts: s.n * 10 + (isRelaxed(s) ? 0 : s.lives * 10), hl: [], msg: '' }, fx: 'win' };
 };
 
-/** Can this tile be changed by the player at all? Starter pugs and red ✕ marks are permanent. */
-export const locked = (s: GState, r: number, c: number) => (s.given[r] && s.st[r][c] === 2) || s.bad[r][c];
+/** Can this tile be changed by the player at all? Correctly placed pugs (starter pugs, guesses that were right, hint pugs) and red ✕ marks are permanent.
+ *  The one exception: in relaxed mode a WRONG pug can be lifted again, since there is no penalty for placing it. */
+export const locked = (s: GState, r: number, c: number) => (s.st[r][c] === 2 && s.p[r] === c) || s.bad[r][c];
 
 /** Tap a tile. `quick` = a second tap right after the first: on an ✕ that means "the pug is here". */
 export function tap(s0: GState, r: number, c: number, quick: boolean): Result {
@@ -119,15 +120,22 @@ export function clearX(s0: GState): GState {
   return { ...s, st: s.st.map((row, r) => row.map((v, c) => (v === 1 && !s.bad[r][c] ? 0 : v))), hl: [], msg: '' };
 }
 
-/** Takes back the last change. Red ✕ marks from wrong guesses and lost treats stay (undo can't be used to dodge a mistake). */
+/** Takes back the last change that actually changes something. Red ✕ marks, lost treats and correctly placed pugs stay (nothing to undo there). */
 export function undo(s0: GState): GState {
-  if (s0.over || !s0.hist.length) return s0;
-  const last = s0.hist[s0.hist.length - 1];
-  const st = clone(last.st);
-  s0.bad.forEach((row, r) => row.forEach((b, c) => { if (b) st[r][c] = 1; }));
-  const bad = last.bad.map((row, r) => row.map((b, c) => b || s0.bad[r][c]));
-  return { ...s0, st, bad, hist: s0.hist.slice(0, -1), hl: [], msg: '' };
+  if (s0.over) return s0;
+  const keep = (st: number[][], bad: boolean[][]) => {
+    const out = clone(st);
+    s0.bad.forEach((row, r) => row.forEach((b, c) => { if (b) out[r][c] = 1; }));
+    s0.st.forEach((row, r) => row.forEach((v, c) => { if (v === 2 && s0.p[r] === c) out[r][c] = 2; }));
+    return { st: out, bad: bad.map((row, r) => row.map((b, c) => b || s0.bad[r][c])) };
+  };
+  for (let i = s0.hist.length - 1; i >= 0; i--) {
+    const { st, bad } = keep(s0.hist[i].st, s0.hist[i].bad);
+    if (JSON.stringify(st) !== JSON.stringify(s0.st)) return { ...s0, st, bad, hist: s0.hist.slice(0, i), hl: [], msg: '' };
+  }
+  return s0.hist.length ? { ...s0, hist: [] } : s0;
 }
+export const canUndo = (s: GState) => !s.over && undo(s).st !== s.st;
 
 /** A hint is a real deduction: the game works out what logic says is next, explains it, and does it for you
  *  (places the pug, or fills in the ✕ marks). If the board is too tangled to reason about (a wrong pug in relaxed mode), it reveals a pug. */
