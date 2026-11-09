@@ -1,0 +1,23 @@
+#!/bin/sh
+# Enforces Conventional Commits. See CONTRIBUTING.md.
+# Bypass in a genuine emergency with: git commit --no-verify
+first_line=$(head -n 1 "$1")
+
+# Let git's own generated messages through (merge, revert, fixup, squash).
+case "$first_line" in
+  Merge\ *|Revert\ \"*|fixup!\ *|squash!\ *) exit 0 ;;
+esac
+
+pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?!?: .+'
+if ! printf '%s' "$first_line" | grep -Eq "$pattern"; then
+  echo "Commit rejected: message must look like  type(scope): summary" >&2
+  echo "  types: feat fix docs style refactor perf test build ci chore revert" >&2
+  echo "  got:   $first_line" >&2
+  echo "  see CONTRIBUTING.md (bypass: git commit --no-verify)" >&2
+  exit 1
+fi
+
+if [ "${#first_line}" -gt 72 ]; then
+  echo "Commit rejected: summary line is ${#first_line} characters (max 72)." >&2
+  exit 1
+fi
