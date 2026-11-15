@@ -33,7 +33,7 @@ export const RULES: Record<string, Rules> = {
         'Exactly one pug in each row, each column and each color area.',
         'No two pugs may touch - not side by side, and not diagonally.',
         'Every puzzle has exactly one answer, so you can always work it out by thinking. No guessing needed!',
-        'Some puzzles start with a pug already placed (it has a cream ring and stays put). Every pug is framed in the color of the tile it sits on, so you can still see which color area it covers. A color with just one tile must hold a pug.',
+        'Some puzzles start with a pug already placed (it has a cream ring and stays put). Pugs sit a little smaller on their tile so the color around them still shows which color area they cover. A color with just one tile must hold a pug.',
       ] },
       { h: 'Playing', items: [
         'Tap a tile once to mark it with an X (no pug here). Tap an X again, slowly, to take it back off. To place a pug, double-tap quickly. A pug in the right spot locks and cannot be taken back. (In RELAXED, a wrong pug can still be tapped off.)',
