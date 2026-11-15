@@ -1328,7 +1328,7 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 .pgdcell.given { box-shadow: inset 0 0 0 3px #fff4d6, inset 0 -3px 0 rgba(0,0,0,.2); }
 .pgdcell.bad { box-shadow: inset 0 0 0 100px rgba(212,71,90,.45), inset 0 0 0 3px #fff; }
 /* a pug used to hide its tile colour: shrink it a little so the region colour shows all round it */
-.pgdcell.haspug .pgdpug { width: 78%; height: 78%; }
+.pgdcell.haspug .pgdpug { width: 83%; height: 83%; }
 .pgdpug { width: 96%; height: 96%; object-fit: contain; pointer-events: none; filter: drop-shadow(0 2px 0 rgba(20,10,0,.4)); animation: pgdpop .18s; }
 @keyframes pgdpop { from { transform: scale(.3); } to { transform: scale(1); } }
 .pgdx { display: block; width: 42%; pointer-events: none; } .pgdx svg { width: 100%; height: auto; display: block; }
