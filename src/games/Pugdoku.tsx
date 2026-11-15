@@ -338,7 +338,7 @@ export default function Pugdoku() {
               const isGiven = s.given[r] && v === 2;
               const wrong = v === 2 && diff === 'relaxed' && s.p[r] !== c;   // relaxed: a wrong pug is allowed but shown in red
               return (
-                <div key={`${r}-${c}`} data-pr={r} data-pc={c} className={`pgdcell${isGiven ? ' given' : ''}${wrong ? ' bad' : ''}`} style={{ background: s.pal[reg] }}>
+                <div key={`${r}-${c}`} data-pr={r} data-pc={c} className={`pgdcell${isGiven ? ' given' : ''}${wrong ? ' bad' : ''}${v === 2 ? ' haspug' : ''}`} style={{ background: s.pal[reg], ['--rc' as string]: s.pal[reg] }}>
                   {v === 1 && <span className={`pgdx${s.bad[r][c] ? ' bad' : ''}`}><PixelArt rows={X_ROWS} palette={{ x: s.bad[r][c] ? '#ff2a2a' : '#3a2410a8' }} px={4} /></span>}
                   {v === 2 && <img className="pgdpug" src={pugUrl} alt="pug" draggable={false} />}
                 </div>
