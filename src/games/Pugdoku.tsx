@@ -213,7 +213,7 @@ export default function Pugdoku() {
   };
   const tap = (r: number, c: number) => {
     const s = G.current; if (!s || s.over) return;
-    if ((s.given[r] && s.st[r][c] === 2) || s.bad[r][c]) return;   // starter pugs and red X marks are permanent
+    if ((s.given[r] && s.st[r][c] === 2) || (s.st[r][c] === 2 && s.p[r] === c) || s.bad[r][c]) return;   // starter pugs, correct pugs and red X marks are permanent
     const v = s.st[r][c];
     const now = Date.now();
     const lt = lastTap.current;
