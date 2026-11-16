@@ -346,10 +346,10 @@ function spriteUrl({ rows, pal }: Sprite) {
   rows.forEach((row, y) => [...row].forEach((ch, x) => { if (ch !== '.') { ctx.fillStyle = pal[ch]; ctx.fillRect(x + 1, y + 1, 1, 1); } }));
   return { url: cv.toDataURL('image/png'), w: w + 2 };
 }
-/* [kind, left %, bottom % of the landscape box, walk distance px, seconds] - kept off the pond (x 60-80%) */
+/* [kind, left %, bottom % of the landscape box, walk distance px, seconds] - kept in the middle: clear of the pond (x 60-80%) and the big framing trees at both edges */
 const CRITTERS: [string, number, number, number, number][] = [
-  ['cow', 6, 9, 46, 38], ['sheep', 15, 4, 40, 30], ['hen', 24, 11, 22, 14], ['farmer', 30, 5, 0, 0],
-  ['pig', 84, 7, 36, 34], ['hen', 91, 3, 18, 12], ['sheep', 95, 10, 30, 36], ['cow', 50, 2, 50, 44], ['hen', 43, 9, 20, 16],
+  ['cow', 21, 8, 40, 38], ['sheep', 26, 4, 34, 30], ['hen', 30, 10, 20, 14], ['farmer', 34, 5, 0, 0],
+  ['hen', 41, 8, 18, 16], ['cow', 46, 3, 36, 44], ['pig', 52, 6, 24, 34],
 ];
 function Critters() {
   const urls = useMemo(() => Object.fromEntries(Object.entries(SPRITES).map(([k, v]) => [k, spriteUrl(v)])), []);
