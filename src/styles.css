@@ -1367,3 +1367,8 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 .pgdx.bad svg { filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 1px 0 rgba(0,0,0,.4)); }
 @keyframes pgdbad { 0% { transform: scale(1.8) rotate(-12deg); } 30% { transform: scale(.9) translateX(-4px); } 55% { transform: scale(1.1) translateX(4px); } 100% { transform: scale(1) translateX(0); } }
 @media (prefers-reduced-motion: reduce) { .pgdx.bad { animation: none; } }
+
+/* farm animals get a ground shadow so they stand on the grass instead of floating */
+.critter::after { content: ''; position: absolute; left: 6%; right: 6%; bottom: calc(var(--k) * -1.2); height: calc(var(--k) * 2.4); border-radius: 50%; background: rgba(12, 38, 16, .5); z-index: 0; pointer-events: none; }
+.critter .cr-in { position: relative; z-index: 1; }
+.critter.farmer::after { left: 12%; right: 30%; }

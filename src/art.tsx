@@ -235,13 +235,15 @@ function makeLandscape(): string {
   for (let i = 0; i < 260; i++) { const x = r() * W, y = GY + 3 + r() * (H - GY - 4); R(x, y, 1, 1, r() < 0.5 ? '#86d150' : '#357a2c'); }
   // pond
   const pcx = 316, pcy = 152, prx = 46, pry = 8;
+  const WATER = ['#b6ecf8', '#9adcf0', '#7ccbea', '#62b8e0', '#4fa4d4', '#3f94c8', '#3585bb'];
   for (let y = pcy - pry; y <= pcy + pry; y++) {
     const half = Math.round(prx * Math.sqrt(1 - ((y - pcy) / pry) ** 2));
-    const col = y < pcy - 3 ? '#9adcf0' : y < pcy + 2 ? '#62b8e0' : '#3f94c8';
+    const col = WATER[Math.min(WATER.length - 1, Math.floor(((y - (pcy - pry)) / (pry * 2 + 1)) * WATER.length))];
     R(pcx - half - 1, y, half * 2 + 2, 1, '#2d6f9a'); R(pcx - half, y, half * 2, 1, col);
+    R(pcx - half, y, 2, 1, '#c9f2fb');   // bright rim on the near-left bank
   }
   for (let i = 0; i < 12; i++) R(pcx - 34 + r() * 68, pcy - 6 + r() * 11, 2, 1, '#e8f8ff');
-  [[-18, 2], [8, 4], [24, -2]].forEach(([dx, dy]) => { R(pcx + dx, pcy + dy, 5, 2, '#4aa84a'); R(pcx + dx + 1, pcy + dy, 1, 1, '#ff9ec0'); });
+  [[-18, 2], [8, 4], [24, -2]].forEach(([dx, dy]) => { R(pcx + dx - 1, pcy + dy - 1, 7, 4, '#1f6a2a'); R(pcx + dx, pcy + dy, 5, 2, '#4aa84a'); R(pcx + dx + 1, pcy + dy, 1, 1, '#ff9ec0'); });
   // fence
   for (let x = 120; x < 200; x += 13) {
     R(x, 148, 4, 15, '#7a4a22'); R(x, 148, 1, 15, '#b9813f'); R(x, 147, 4, 1, '#b9813f');
