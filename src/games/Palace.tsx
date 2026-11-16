@@ -272,7 +272,7 @@ export default function Palace() {
   const topIs8 = s.pile.length > 0 && s.pile[s.pile.length - 1].r === 8;
   const rule = !s.pile.length ? 'ANYTHING GOES' : nd === 0 ? 'ANYTHING GOES' : topIs8 ? `WINDOW: ${RANK_LABEL(nd)}+ OR A WILD` : `${RANK_LABEL(nd)} OR HIGHER`;
   const prompt =
-    s.phase === 'swap' ? `${name(swapSeat)}: SWAP FACE-UP CARDS WITH YOUR HAND (OR NOT), THEN READY`
+    s.phase === 'swap' ? `${name(swapSeat)}: SET-UP - SWAP FACE-UP CARDS WITH YOUR HAND IF YOU LIKE, THEN PRESS READY`
     : s.phase === 'over' ? 'GAME OVER'
     : cpuTurn ? `${name(s.turn)} IS THINKING...`
     : src === 'down' ? `${name(s.turn)}: TAP A FACE-DOWN CARD TO PLAY IT BLIND`
@@ -339,6 +339,12 @@ export default function Palace() {
 
         <div className={`mymat ${myTurn || s.phase === 'swap' ? 'turn' : ''}`} style={{ ['--pcol' as string]: PLAYER_COLORS[me].main }} data-seat={me}>
           <div className="pname"><span style={{ background: PLAYER_COLORS[me].main }}>{name(me)}</span><b>{src === 'hand' ? 'HAND' : src === 'up' ? 'FACE-UP' : 'FACE-DOWN'}</b></div>
+          {s.phase === 'swap' && handVisible && (
+            <div className="pswapbanner">
+              <b>SET-UP - THE GAME HASN'T STARTED YET</b>
+              <span>You may swap your 2 FACE-UP cards with cards from your hand: tap a face-up card, then a hand card. Happy as is? Just press READY.</span>
+            </div>
+          )}
           {canPlaySel && handVisible && (
             <div className="pmultibar">
               <button className="btn primary" onClick={playAll}>PLAY ALL {sel.length}</button>
@@ -381,12 +387,12 @@ export default function Palace() {
 
         <div className="area pchoice">
           {s.phase === 'swap' && handVisible ? (
-            <div className="row"><button className="btn primary" onClick={doReady}>READY ▶</button></div>
+            <div className="row"><button className="btn primary" onClick={doReady}>READY - START PLAYING ▶</button></div>
           ) : (
-            <div className={`row ${myTurn && handVisible ? '' : 'idle'}`}>
+            <div className={`row ${held || (myTurn && handVisible) ? '' : 'idle'}`}>
               {held ? (
                 <>
-                  <button className="btn primary" onClick={() => { sfx.click(); setHeld(null); setShownFor(null); }}>DONE - PASS TO {name(s.turn)}</button>
+                  <button className="btn primary" onClick={() => { sfx.click(); setHeld(null); setShownFor(null); }}>TURN OVER - PASS TO {name(s.turn)}</button>
                   <button className="btn" onClick={undo}>UNDO</button>
                 </>
               ) : (

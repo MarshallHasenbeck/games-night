@@ -1367,3 +1367,11 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 .pgdx.bad svg { filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 1px 0 rgba(0,0,0,.4)); }
 @keyframes pgdbad { 0% { transform: scale(1.8) rotate(-12deg); } 30% { transform: scale(.9) translateX(-4px); } 55% { transform: scale(1.1) translateX(4px); } 100% { transform: scale(1) translateX(0); } }
 @media (prefers-reduced-motion: reduce) { .pgdx.bad { animation: none; } }
+
+/* Palace: set-up banner and always-readable pass bar */
+.pswapbanner { display: flex; flex-direction: column; gap: 3px; margin: 0 0 8px; padding: 7px 10px; border-radius: 10px; background: #f2b632; color: #2a1a05; border: 3px solid var(--wood-dd); text-align: center; animation: pswapglow 1.8s ease-in-out infinite; }
+.pswapbanner b { font: 700 14px var(--font); letter-spacing: .5px; }
+.pswapbanner span { font: 500 13px/1.2 var(--font); }
+@keyframes pswapglow { 50% { box-shadow: 0 0 14px 3px rgba(242, 182, 50, .7); } }
+.palace .pchoice .row { opacity: 1; }
+.palace .pchoice .row.idle { opacity: .55; }
