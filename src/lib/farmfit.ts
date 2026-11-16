@@ -28,7 +28,11 @@ export const SHAPES: Shape[] = [
   make('J0', ['.#', '.#', '##'], 7), make('J1', ['#..', '###'], 7), make('J2', ['##', '#.', '#.'], 7), make('J3', ['###', '..#'], 7),
   make('I3h', ['###'], 8), make('I3v', ['#', '#', '#'], 8), make('I2h', ['##'], 8), make('I2v', ['#', '#'], 8),
   make('V0', ['##', '#.'], 9), make('V1', ['##', '.#'], 9), make('V2', ['#.', '##'], 9), make('V3', ['.#', '##'], 9),
+  make('ONE', ['#'], 10),
 ];
+/** what blocks are dealt from: the single block is listed three times so it turns up fairly often */
+const ONE = SHAPES.find((s) => s.id === 'ONE')!;
+const POOL: Shape[] = [...SHAPES, ONE, ONE];
 
 type Rng = () => number;
 const emptyGrid = (): Grid => Array.from({ length: N }, () => Array(N).fill(0));
@@ -60,7 +64,7 @@ export const lineBonus = (n: number) => (n * (n + 1) / 2) * 10;
 function deal(grid: Grid, rng: Rng): Shape[] {
   let best: Shape[] = [];
   for (let tries = 0; tries < 40; tries++) {
-    const t = [0, 1, 2].map(() => SHAPES[Math.floor(rng() * SHAPES.length)]);
+    const t = [0, 1, 2].map(() => POOL[Math.floor(rng() * POOL.length)]);
     best = t;
     if (t.some((s) => fitsAnywhere(grid, s))) return t; // never deal a hand that is dead on arrival if a live one exists
   }

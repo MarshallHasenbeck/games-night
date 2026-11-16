@@ -1389,7 +1389,7 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 .ffc { --c: #888; --cd: #555; background: linear-gradient(var(--c), var(--cd)); }
 .ffc.c1 { --c: #6bbdf2; --cd: #2f86c8; } .ffc.c2 { --c: #ffd25a; --cd: #d99a12; } .ffc.c3 { --c: #b87ae0; --cd: #7a3fa8; }
 .ffc.c4 { --c: #7ad862; --cd: #3a9a30; } .ffc.c5 { --c: #f0687c; --cd: #b02a42; } .ffc.c6 { --c: #ffa458; --cd: #d06a1c; }
-.ffc.c7 { --c: #5f86ea; --cd: #2a48a8; } .ffc.c8 { --c: #ffa4cc; --cd: #d4609c; } .ffc.c9 { --c: #4fd4c2; --cd: #1f8e80; }
+.ffc.c7 { --c: #5f86ea; --cd: #2a48a8; } .ffc.c8 { --c: #ffa4cc; --cd: #d4609c; } .ffc.c9 { --c: #4fd4c2; --cd: #1f8e80; } .ffc.c10 { --c: #f4e2b4; --cd: #b89a58; }
 .ffcell.ffc { background: linear-gradient(var(--c), var(--cd)); box-shadow: inset 0 2px 0 rgba(255, 255, 255, .55), inset 0 -3px 0 rgba(0, 0, 0, .25), inset 2px 0 0 rgba(255, 255, 255, .2), 0 0 0 1px rgba(36, 20, 10, .6); animation: ffpop .16s; }
 @keyframes ffpop { from { transform: scale(.7); } }
 .ffcell.ffpv { opacity: .72; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .8); animation: none; }

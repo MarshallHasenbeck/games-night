@@ -11,7 +11,8 @@ const blank = (): State => ({ grid: Array.from({ length: N }, () => Array(N).fil
     eq(new Set(s.cells.map((c) => c.join())).size, s.cells.length, `${s.id} unique cells`);
     eq([Math.max(...s.cells.map((c) => c[0])) + 1, Math.max(...s.cells.map((c) => c[1])) + 1], [s.h, s.w], `${s.id} box`);
   }
-  eq(new Set(SHAPES.map((s) => s.color)).size, 9, 'nine colours');
+  eq(new Set(SHAPES.map((s) => s.color)).size, 10, 'ten colours');
+  eq(byId('ONE').cells.length, 1, 'a single block exists');
 }
 // bonus table
 eq([1, 2, 3, 4, 5].map(lineBonus), [10, 30, 60, 100, 150], 'line bonus grows with every extra line');
