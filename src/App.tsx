@@ -13,6 +13,7 @@ import AcornPop from './games/AcornPop';
 import SlideSwap from './games/SlideSwap';
 import Pugdoku from './games/Pugdoku';
 import FarmFit, { FarmFitIcon } from './games/FarmFit';
+import GiantPumpkin, { GiantPumpkinIcon } from './games/GiantPumpkin';
 import pugUrl from './assets/pug.png';
 import { AcornPiece, MushroomPiece } from './racers';
 import { Scenery, Piece, Disc, ConnectDisc, DieArt, FlagArt, BoardIcon, DominoArt, TreeIcon, Boat, Leaf } from './art';
@@ -30,6 +31,7 @@ const GAMES = [
   { id: 'palace', name: 'Palace', icon: <Leaf color="#c01f1f" px={7} />, blurb: 'Climb the pile, burn it, and get out first. 2-4 players!', C: Palace },
   { id: 'pugdoku', name: 'Pugdoku', icon: <img className="pugicon" src={pugUrl} alt="" />, blurb: 'Find one pug per row, column and color. No touching! Solo or team up.', C: Pugdoku },
   { id: 'farmfit', name: 'Farm Fit', icon: <FarmFitIcon />, blurb: 'Drop colorful blocks on the field. Fill a row or column to clear it!', C: FarmFit },
+  { id: 'pumpkin', name: 'Giant Pumpkin', icon: <GiantPumpkinIcon />, blurb: 'Swipe to match crops and grow them, all the way to a giant pumpkin!', C: GiantPumpkin },
   { id: 'backgammon', name: 'Backgammon', icon: <BoardIcon px={5} />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
   { id: 'mancala', name: 'Mancala', icon: <span style={{ display: 'flex' }}><ConnectDisc px={2} side={0} /><ConnectDisc px={2} /></span>, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
   { id: 'battleship', name: 'Battleship', icon: <span style={{ display: 'block', width: 70, height: 26 }}><Boat len={3} id={3} /></span>, blurb: 'Hunt the cute little boats. Pass-the-device secret!', C: Battleship },
