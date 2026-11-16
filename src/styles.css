@@ -79,6 +79,7 @@ button { font-family: inherit; color: inherit; touch-action: manipulation; }
 .tile:active { transform: translateY(2px) scale(.99); }
 .tile-icon { grid-row: span 2; display: grid; place-items: center; background: radial-gradient(circle at 50% 35%, #3f7d4d, #25503a); border: 3px solid var(--wood-dd); border-radius: 12px; height: 84px; margin: 4px; }
 .tile-icon svg { image-rendering: pixelated; max-width: 76px; max-height: 76px; }
+.tile-icon img.gicon { display: block; width: 76px; height: 76px; object-fit: contain; pointer-events: none; }
 .tile-icon img.pugicon { display: block; width: auto; height: auto; max-width: 70px; max-height: 66px; object-fit: contain; }
 .tile-name { font: 700 28px var(--font); color: var(--brown); align-self: end; }
 .tile-blurb { font-size: 20px; color: #7a5028; align-self: start; }
@@ -1473,3 +1474,12 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 [data-fit="land"] .gpwrap { flex-direction: row; align-items: center; justify-content: center; gap: 14px; }
 [data-fit="land"] .gptools { flex-direction: column; width: 96px; gap: 6px; }
 [data-fit="land"] .ffscore { font-size: 18px; padding: 1px 16px; }
+
+.tile-icon img.gicon { max-width: none; }
+@media (max-width: 520px) { .tile-icon img.gicon { width: 66px; height: 66px; } }
+
+/* the compact phone/tablet menu: a slightly taller icon bar so the new, more detailed icons fit */
+[data-fit] .tile-icon { height: 62px; }
+[data-fit] .tile-icon svg { max-width: 58px; max-height: 58px; }
+[data-fit] .tile-icon img.gicon { width: 58px; height: 58px; }
+[data-fit] .tile-icon img.pugicon { max-width: 56px; max-height: 54px; }

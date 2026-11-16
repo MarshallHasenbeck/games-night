@@ -178,5 +178,5 @@ export default function GiantPumpkin() {
 
 /** menu icon: a little pumpkin */
 export function GiantPumpkinIcon() {
-  return <img src={cropUrl(10)} alt="" style={{ width: 70, height: 70, imageRendering: 'pixelated' }} />;
+  return <img className="gicon" src={cropUrl(10)} alt="" draggable={false} />;
 }

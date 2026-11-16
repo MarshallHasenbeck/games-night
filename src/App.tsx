@@ -15,29 +15,30 @@ import Pugdoku from './games/Pugdoku';
 import FarmFit, { FarmFitIcon } from './games/FarmFit';
 import GiantPumpkin, { GiantPumpkinIcon } from './games/GiantPumpkin';
 import pugUrl from './assets/pug.png';
-import { AcornPiece, MushroomPiece } from './racers';
-import { Scenery, Piece, Disc, ConnectDisc, DieArt, FlagArt, BoardIcon, DominoArt, TreeIcon, Boat, Leaf } from './art';
+import { Scenery, TreeIcon } from './art';
 import { isMuted, setMuted, sfx } from './lib/sfx';
 import { cycleTime, useTime } from './lib/theme';
 import { getStats, resetStats } from './lib/stats';
 import { RulesModal } from './ui';
+import { menuIcon } from './lib/menuicons';
+const MI = ({ n }: { n: string }) => <img className="gicon" src={menuIcon(n)} alt="" draggable={false} />;
 
 const GAMES = [
-  { id: 'chess', name: 'Chess', icon: <Piece side="w" type="n" px={5} />, blurb: 'Classic kings & pawns. Legal moves glow.', C: Chess },
-  { id: 'checkers', name: 'Checkers', icon: <Disc side={0} king px={5} />, blurb: 'Jump, crown, conquer. Captures forced.', C: Checkers },
-  { id: 'connect4', name: 'Connect 4', icon: <ConnectDisc px={5} />, blurb: 'Drop discs. Four in a row wins.', C: Connect4 },
-  { id: 'yahtzee', name: 'Yahtzee', icon: <DieArt px={7} />, blurb: 'Roll, hold, score. 13 rounds.', C: Yahtzee },
-  { id: 'playnine', name: 'Play Nine', icon: <FlagArt px={6} />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
-  { id: 'palace', name: 'Palace', icon: <Leaf color="#c01f1f" px={7} />, blurb: 'Climb the pile, burn it, and get out first. 2-4 players!', C: Palace },
+  { id: 'chess', name: 'Chess', icon: <MI n="Chess" />, blurb: 'Classic kings & pawns. Legal moves glow.', C: Chess },
+  { id: 'checkers', name: 'Checkers', icon: <MI n="Checkers" />, blurb: 'Jump, crown, conquer. Captures forced.', C: Checkers },
+  { id: 'connect4', name: 'Connect 4', icon: <MI n="Connect4" />, blurb: 'Drop discs. Four in a row wins.', C: Connect4 },
+  { id: 'yahtzee', name: 'Yahtzee', icon: <MI n="Yahtzee" />, blurb: 'Roll, hold, score. 13 rounds.', C: Yahtzee },
+  { id: 'playnine', name: 'Play Nine', icon: <MI n="Play Nine" />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
+  { id: 'palace', name: 'Palace', icon: <MI n="Palace" />, blurb: 'Climb the pile, burn it, and get out first. 2-4 players!', C: Palace },
   { id: 'pugdoku', name: 'Pugdoku', icon: <img className="pugicon" src={pugUrl} alt="" />, blurb: 'Find one pug per row, column and color. No touching! Solo or team up.', C: Pugdoku },
   { id: 'farmfit', name: 'Farm Fit', icon: <FarmFitIcon />, blurb: 'Drop colorful blocks on the field. Fill a row or column to clear it!', C: FarmFit },
   { id: 'pumpkin', name: 'Giant Pumpkin', icon: <GiantPumpkinIcon />, blurb: 'Swipe to match crops and grow them, all the way to a giant pumpkin!', C: GiantPumpkin },
-  { id: 'backgammon', name: 'Backgammon', icon: <BoardIcon px={5} />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
-  { id: 'mancala', name: 'Mancala', icon: <span style={{ display: 'flex' }}><ConnectDisc px={2} side={0} /><ConnectDisc px={2} /></span>, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
-  { id: 'battleship', name: 'Battleship', icon: <span style={{ display: 'block', width: 70, height: 26 }}><Boat len={3} id={3} /></span>, blurb: 'Hunt the cute little boats. Pass-the-device secret!', C: Battleship },
-  { id: 'acorn', name: 'Acorn Pop', icon: <span style={{ display: 'block', width: 45, height: 50 }}><AcornPiece color={0} /></span>, blurb: 'Pop the dice, race your acorns home. 2-4 players!', C: AcornPop },
-  { id: 'slide', name: 'Slide & Swap', icon: <span style={{ display: 'block', width: 45, height: 45 }}><MushroomPiece color={1} /></span>, blurb: 'Draw cards, slide, bump, swap. A friendly race!', C: SlideSwap },
-  { id: 'dominoes', name: 'Dominoes', icon: <DominoArt px={5} />, blurb: 'Match the ends. First to 100.', C: Dominoes },
+  { id: 'backgammon', name: 'Backgammon', icon: <MI n="Backgammon" />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
+  { id: 'mancala', name: 'Mancala', icon: <MI n="Mancala" />, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
+  { id: 'battleship', name: 'Battleship', icon: <MI n="Battleship" />, blurb: 'Hunt the cute little boats. Pass-the-device secret!', C: Battleship },
+  { id: 'acorn', name: 'Acorn Pop', icon: <MI n="Acorn Pop" />, blurb: 'Pop the dice, race your acorns home. 2-4 players!', C: AcornPop },
+  { id: 'slide', name: 'Slide & Swap', icon: <MI n="Slide & Swap" />, blurb: 'Draw cards, slide, bump, swap. A friendly race!', C: SlideSwap },
+  { id: 'dominoes', name: 'Dominoes', icon: <MI n="Dominoes" />, blurb: 'Match the ends. First to 100.', C: Dominoes },
 ] as const;
 
 function Scoreboard() {
