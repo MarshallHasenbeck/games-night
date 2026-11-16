@@ -68,6 +68,7 @@ docs/ROADMAP.md       saved ideas (online play etc.)
 | **Slide & Swap** | `lib/slide.ts` | in lib | Sorry!-style card race, slides, swap, 7-split, 2–4 players |
 | **Pugdoku** | `lib/pugdoku.ts` (+ `pugdoku-bank.ts`, `pugdoku.worker.ts`) | none (solo or 2-player co-op) | Queens-style logic puzzle: one pug per row/column/colour, none touching. Every puzzle has exactly ONE answer: 789 pre-verified puzzles in `pugdoku-bank.ts` (rotated/flipped/recoloured per play) + fresh ones built in a Web Worker. Co-op pass-and-play with custom names. Art is `src/assets/pug.png` (Marshall's own picture). Test: `npx tsx tools/tests/pugdoku-bank.ts` |
 | **Palace** | `lib/palace.ts` | `cpuAction` | Marshall's house rules: 2 down/2 up/3 hand, 2 wild, 3 wild+reverse, 8 window, 10 burn, four of a kind = go again; pass-and-play with hand-off screens, 2-4 players. Test: `npx tsx tools/tests/palace-engine.ts` |
+| **Farm Fit** | `lib/farmfit.ts` | none (solo, best score saved) | 10x10 block puzzle: three colour-coded tetromino-style blocks at a time (never rotated), drag onto the field, full rows/columns clear (1 line 10, 2 lines 30, 3 lines 60, 4 lines 100...). Test: `npx tsx tools/tests/farmfit-engine.ts` |
 
 ### Adding a new game (checklist)
 1. `src/lib/<game>.ts` — pure state + legal-move functions (+ simple CPU). Write a quick `tools/tests/*.ts` that plays hundreds of random games and asserts invariants.

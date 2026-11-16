@@ -1,6 +1,22 @@
 export type Rules = { title: string; goal: string; sections: { h: string; items: string[] }[] };
 
 export const RULES: Record<string, Rules> = {
+  farmfit: {
+    title: 'Farm Fit',
+    goal: 'Fit blocks onto the 10 by 10 field and clear rows and columns to score. The game ends when none of your blocks fit anywhere.',
+    sections: [
+      { h: 'Playing', items: [
+        'You always have three blocks waiting at the bottom. Drag one onto the field and let go. Blocks never turn, so look at the shape and plan ahead.',
+        'Fill a whole row or a whole column and it clears away. A row and a column can clear at the same time.',
+        'When you have used all three blocks, three new ones arrive.',
+      ] },
+      { h: 'Scoring', items: [
+        'Every square you place is worth 1 point.',
+        'Clearing lines scores a bonus, and clearing several at once is worth much more: 1 line = 10, 2 lines = 30, 3 lines = 60, 4 lines = 100, and it keeps growing.',
+        'The game ends when none of the three blocks fit. Try to beat your best score!',
+      ] },
+    ],
+  },
   palace: {
     title: 'Palace',
     goal: 'Be the first to get rid of all your cards. When three or more play, the rest keep going until only one is left - that player loses.',
