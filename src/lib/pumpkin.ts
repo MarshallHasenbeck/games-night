@@ -3,7 +3,7 @@
  * A 4x4 garden. Swipe and every crop slides as far as it can; two of the same crop merge into the next one up.
  * Seed -> sprout -> radish -> carrot -> potato -> corn -> tomato -> eggplant -> cabbage -> melon -> pumpkin -> GIANT PUMPKIN (the win),
  * and then it keeps going: ribbon, golden, crystal, moon, sun, rainbow, starlit, legend, mythic pumpkins.
- * Stones sit in the garden and never move. They crack when a merge happens right next to them, and break on the second crack.
+ * In the rocks mode, stones (never more than two at a time) sit in the garden and never move. They crack when a merge happens right next to them, and break on the second crack.
  * Every few merges you earn a farm tool: hoe (pull up one crop or stone), watering can (grow one crop a step), swap (trade two crops).
  */
 export const SIZE = 4;
@@ -20,6 +20,7 @@ export const TOOLS: Tool[] = ['hoe', 'can', 'swap'];
 export type State = {
   grid: Grid; score: number; moves: number; merges: number; nextId: number;
   tools: Record<Tool, number>; toolTurn: number; // which tool is earned next (index into TOOLS)
+  rocks: boolean; // this garden has stones in it (the "no rocks" mode never does)
   won: boolean;   // reached the Giant Pumpkin at some point
   over: boolean;  // nothing can move and no tools left
   stuck: boolean; // nothing can move (a tool might still help)
@@ -36,18 +37,19 @@ export type Result = {
 };
 
 type Rng = () => number;
-const EARN_EVERY = 8, TOOL_CAP = 3, STONE_EVERY = 14, STONE_MAX = 3;
+const EARN_EVERY = 8, TOOL_CAP = 3, STONE_EVERY = 14;
+export const STONE_MAX = 2; // never more than two stones in the garden at once
 export const value = (t: number) => 2 ** (t + 1); // seed = 2 ... giant pumpkin = 4096
 
 const emptyGrid = (): Grid => Array.from({ length: SIZE }, () => Array<Tile>(SIZE).fill(null));
 const clone = (s: State): State => ({ ...s, grid: s.grid.map((row) => row.map((t) => (t ? { ...t } : null))), tools: { ...s.tools } });
 const emptyCells = (g: Grid) => { const o: [number, number][] = []; g.forEach((row, r) => row.forEach((t, c) => { if (!t) o.push([r, c]); })); return o; };
 
-export function newGame(rng: Rng = Math.random): State {
-  const s: State = { grid: emptyGrid(), score: 0, moves: 0, merges: 0, nextId: 1, tools: { hoe: 0, can: 0, swap: 0 }, toolTurn: 0, won: false, over: false, stuck: false };
+export function newGame(rng: Rng = Math.random, rocks = true): State {
+  const s: State = { grid: emptyGrid(), score: 0, moves: 0, merges: 0, nextId: 1, tools: { hoe: 0, can: 0, swap: 0 }, toolTurn: 0, rocks, won: false, over: false, stuck: false };
   const cells = emptyCells(s.grid).sort(() => rng() - 0.5);
   for (let i = 0; i < 2; i++) { const [r, c] = cells.pop()!; s.grid[r][c] = { kind: 'crop', id: s.nextId++, t: 0 }; }
-  for (let i = 0; i < 2; i++) { const [r, c] = cells.pop()!; s.grid[r][c] = { kind: 'stone', id: s.nextId++, hp: 2 }; }
+  if (rocks) for (let i = 0; i < STONE_MAX; i++) { const [r, c] = cells.pop()!; s.grid[r][c] = { kind: 'stone', id: s.nextId++, hp: 2 }; }
   return s;
 }
 
@@ -146,7 +148,7 @@ export function move(prev: State, dir: Dir, rng: Rng = Math.random): Result {
   }
   free = emptyCells(s.grid);
   const stones = s.grid.flat().filter((t) => t?.kind === 'stone').length;
-  if (s.moves % STONE_EVERY === 0 && stones < STONE_MAX && free.length > 3) {
+  if (s.rocks && s.moves % STONE_EVERY === 0 && stones < STONE_MAX && free.length > 3) {
     const [r, c] = free[Math.floor(rng() * free.length)];
     const st: Stone = { kind: 'stone', id: s.nextId++, hp: 2 };
     s.grid[r][c] = st; res.spawned.push({ id: st.id, r, c, t: -1 });

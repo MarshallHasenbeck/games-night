@@ -3,7 +3,7 @@ import { SIZE, TOP, MAXT, newGame, move, canMove, useHoe, useCan, useSwap, value
 const fail = (m: string): never => { throw new Error(m); };
 const eq = (a: unknown, b: unknown, m: string) => { if (JSON.stringify(a) !== JSON.stringify(b)) fail(`${m}: got ${JSON.stringify(a)} want ${JSON.stringify(b)}`); };
 let nid = 500;
-const blank = (): State => ({ grid: Array.from({ length: SIZE }, () => Array(SIZE).fill(null)), score: 0, moves: 0, merges: 0, nextId: 9000, tools: { hoe: 0, can: 0, swap: 0 }, toolTurn: 0, won: false, over: false, stuck: false });
+const blank = (): State => ({ grid: Array.from({ length: SIZE }, () => Array(SIZE).fill(null)), score: 0, moves: 0, merges: 0, nextId: 9000, tools: { hoe: 0, can: 0, swap: 0 }, toolTurn: 0, rocks: true, won: false, over: false, stuck: false });
 const crop = (t: number): Crop => ({ kind: 'crop', id: nid++, t });
 const row = (s: State, r: number) => s.grid[r].map((x) => (x ? (x.kind === 'crop' ? x.t : 'S') : '.')).join('');
 const fixed = () => 0.5; // spawn lands on a predictable free cell, always a seed (rng<0.9)
@@ -13,6 +13,12 @@ const fixed = () => 0.5; // spawn lands on a predictable free cell, always a see
   const s = newGame();
   eq(s.grid.flat().filter((t) => t?.kind === 'crop').length, 2, 'two seeds');
   eq(s.grid.flat().filter((t) => t?.kind === 'stone').length, 2, 'two stones');
+}
+// rocks mode starts with two stones; no-rocks mode has none, ever
+{
+  const calm = newGame(Math.random, false);
+  eq(calm.grid.flat().filter((t) => t?.kind === 'stone').length, 0, 'no-rocks mode starts with no stones');
+  eq(calm.rocks, false, 'mode is remembered in the state');
 }
 // slide + merge once per move, toward the swiped side
 {
@@ -88,8 +94,10 @@ const fixed = () => 0.5; // spawn lands on a predictable free cell, always a see
   let seed = 77; const rng = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
   const dirs: Dir[] = ['up', 'down', 'left', 'right'];
   let games = 0, moves = 0, won = 0, tools = 0, brokenStones = 0, bestTier = 0;
+  let maxStones = 0, stonesInCalm = 0;
   for (let g = 0; g < 300; g++) {
-    let s = newGame(rng); let safety = 0;
+    const rocks = g % 2 === 0;
+    let s = newGame(rng, rocks); let safety = 0;
     while (!s.over && safety++ < 6000) {
       const order = dirs.slice().sort(() => rng() - 0.5);
       let moved = false;
@@ -101,7 +109,11 @@ const fixed = () => 0.5; // spawn lands on a predictable free cell, always a see
         const spawned = r.spawned.filter((x) => x.t >= 0).reduce((a, x) => a + value(x.t), 0);
         if (after !== before + spawned) fail(`crop value not conserved: ${before} + ${spawned} != ${after}`);
         brokenStones += r.broken.length; if (r.earned) tools++;
-        s = r.state; moves++; moved = true; break;
+        s = r.state; moves++; moved = true;
+        const n = s.grid.flat().filter((x) => x?.kind === 'stone').length;
+        if (rocks) maxStones = Math.max(maxStones, n); else stonesInCalm += n;
+        if (n > 2) fail(`more than two stones on the board: ${n}`);
+        break;
       }
       if (!moved) { // stuck: use a tool if there is one, else it is over
         if (s.tools.hoe) { const cell = s.grid.flat().findIndex((t) => !!t); s = useHoe(s, Math.floor(cell / SIZE), cell % SIZE)!; }
@@ -114,6 +126,7 @@ const fixed = () => 0.5; // spawn lands on a predictable free cell, always a see
     games++; if (s.won) won++;
     bestTier = Math.max(bestTier, ...s.grid.flat().map((t) => (t?.kind === 'crop' ? t.t : 0)));
   }
-  console.log('random games ok', { games, avgMoves: Math.round(moves / games), won, toolsEarned: tools, stonesBroken: brokenStones, bestTier });
+  if (stonesInCalm) fail('stones appeared in the no-rocks mode');
+  console.log('random games ok', { games, maxStones, avgMoves: Math.round(moves / games), won, toolsEarned: tools, stonesBroken: brokenStones, bestTier });
 }
 console.log('pumpkin rule cases ok');

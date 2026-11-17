@@ -1424,8 +1424,8 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 @media (orientation: portrait) and (min-width: 700px) { .game.ff { --bs: min(calc(var(--app-w, 100vw) - 90px), 720px, calc((var(--app-h, 100vh) - 300px) / 1.25)); --tc: calc(var(--bs) * .062); } }
 
 /* ---------------- Giant Pumpkin ---------------- */
-.game.gp { --bs: min(calc(var(--app-w, 100vw) - 58px), 560px, calc(var(--app-h, 100vh) - 360px)); --gp: calc(var(--bs) * .025); --cs: calc((var(--bs) - var(--gp) * 5) / 4); }
-[data-fit="phone"] .game.gp { --bs: min(calc(var(--app-w, 100vw) - 50px), 560px, calc(var(--app-h, 100vh) - 330px)); }
+.game.gp { --bs: min(calc(var(--app-w, 100vw) - 58px), 560px, calc(var(--app-h, 100vh) - 402px)); --gp: calc(var(--bs) * .025); --cs: calc((var(--bs) - var(--gp) * 5) / 4); }
+[data-fit="phone"] .game.gp { --bs: min(calc(var(--app-w, 100vw) - 50px), 560px, calc(var(--app-h, 100vh) - 372px)); }
 [data-fit="phone"] .game.gp .prompt { font-size: 15px; }
 .gpwrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .gpframe { position: relative; width: calc(var(--bs) + 26px); padding: 10px; border-radius: 16px; border: 3px solid var(--wood-dd);

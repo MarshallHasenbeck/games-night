@@ -10,8 +10,11 @@ export const RULES: Record<string, Rules> = {
         'When two of the same crop bump, they grow into the next one: seed, sprout, radish, carrot, potato, corn, tomato, eggplant, cabbage, melon, pumpkin, Giant Pumpkin. Reaching the Giant Pumpkin is the win, but the garden does not stop there: it keeps growing into Ribbon, Golden, Crystal, Moon, Sun, Rainbow, Starlit, Legend and finally Mythic pumpkins.',
         'After every swipe a new seed (sometimes a sprout) pops up. If the garden fills up and nothing can match, the game ends.',
       ] },
-      { h: 'Stones', items: [
-        'Stones never move and crops cannot pass them. Make a match right next to a stone to crack it. A second match next to it breaks it. Every so often a new stone appears.',
+      { h: 'Two modes', items: [
+        'NO ROCKS is a clear garden with nothing in the way. ROCKS adds stones. Your best score is saved separately for each mode, and you can switch any time (it starts a fresh garden).',
+      ] },
+      { h: 'Stones (ROCKS mode)', items: [
+        'Stones never move and crops cannot pass them. Make a match right next to a stone to crack it. A second match next to it breaks it. Every so often a new stone appears, but there are never more than two in the garden at once.',
       ] },
       { h: 'Farm tools', items: [
         'Every few matches you earn a tool, up to 3 of each: HOE, WATER and SWAP.',
