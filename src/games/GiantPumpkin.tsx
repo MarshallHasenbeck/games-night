@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { sfx, sfx2 } from '../lib/sfx';
 import { Celebrate, Overlay } from '../ui';
 import { cropUrl, stoneUrl } from '../lib/cropart';
-import { CROPS, SIZE, TOP, MAXT, TOOLS, newGame, move, useHoe, useCan, useSwap, type State, type Dir, type Tool, type Tile } from '../lib/pumpkin';
+import { CROPS, SIZES, TOP, MAXT, TOOLS, newGame, move, useHoe, useCan, useSwap, type State, type Dir, type Tool, type Tile } from '../lib/pumpkin';
 
-const bestKey = (rocks: boolean) => (rocks ? 'gn-pumpkin-best-rocks' : 'gn-pumpkin-best-calm');
-const readBest = (rocks: boolean) => { try { return +(localStorage.getItem(bestKey(rocks)) || 0) || 0; } catch { return 0; } };
-const saveBest = (rocks: boolean, v: number) => { try { localStorage.setItem(bestKey(rocks), String(v)); } catch { /* private mode */ } };
+const bestKey = (rocks: boolean, size: number) => `gn-pumpkin-best-${rocks ? 'rocks' : 'calm'}-${size}`;
+const readBest = (rocks: boolean, size: number) => { try { return +(localStorage.getItem(bestKey(rocks, size)) || 0) || 0; } catch { return 0; } };
+const saveBest = (rocks: boolean, size: number, v: number) => { try { localStorage.setItem(bestKey(rocks, size), String(v)); } catch { /* private mode */ } };
+const SIZE_KEY = 'gn-pumpkin-size';
+const readSize = () => { try { const v = +(localStorage.getItem(SIZE_KEY) || 4); return (SIZES as readonly number[]).includes(v) ? v : 4; } catch { return 4; } };
 const MODE_KEY = 'gn-pumpkin-rocks';
 const readRocks = () => { try { return localStorage.getItem(MODE_KEY) !== '0'; } catch { return true; } };
 const TOOL_NAME: Record<Tool, string> = { hoe: 'HOE', can: 'WATER', swap: 'SWAP' };
@@ -19,9 +21,10 @@ type Ghost = { id: number; t: number; r: number; c: number; dx: number; dy: numb
 
 export default function GiantPumpkin() {
   const [rocks, setRocks] = useState(readRocks);
-  const [s, setS] = useState<State>(() => newGame(Math.random, readRocks()));
-  const [best, setBest] = useState(() => readBest(readRocks()));
-  const [pendingMode, setPendingMode] = useState<boolean | null>(null);
+  const [size, setSize] = useState(readSize);
+  const [s, setS] = useState<State>(() => newGame(Math.random, readRocks(), readSize()));
+  const [best, setBest] = useState(() => readBest(readRocks(), readSize()));
+  const [pendingMode, setPendingMode] = useState<{ rocks: boolean; size: number } | null>(null);
   const [ghosts, setGhosts] = useState<Ghost[]>([]);
   const [pops, setPops] = useState<Set<number>>(new Set());
   const [tool, setTool] = useState<Tool | null>(null);
@@ -42,7 +45,7 @@ export default function GiantPumpkin() {
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 1300); return () => clearTimeout(t); }, [toast]);
 
   const finish = (n: State) => {
-    if (n.score > best) { saveBest(rocks, n.score); setBest(n.score); }
+    if (n.score > best) { saveBest(rocks, size, n.score); setBest(n.score); }
     if (n.over) { setNewBest(n.score > best); setTimeout(sfx.win, 300); }
   };
 
@@ -80,8 +83,9 @@ export default function GiantPumpkin() {
   const cellAt = (x: number, y: number): [number, number] | null => {
     const b = boardRef.current; if (!b) return null;
     const rc = b.getBoundingClientRect();
-    const c = Math.floor(((x - rc.left) / rc.width) * SIZE), r = Math.floor(((y - rc.top) / rc.height) * SIZE);
-    return r >= 0 && c >= 0 && r < SIZE && c < SIZE ? [r, c] : null;
+    const n = sRef.current.size;
+    const c = Math.floor(((x - rc.left) / rc.width) * n), r = Math.floor(((y - rc.top) / rc.height) * n);
+    return r >= 0 && c >= 0 && r < n && c < n ? [r, c] : null;
   };
   const useAt = (r: number, c: number) => {
     const cur = sRef.current; let n: State | null = null;
@@ -107,8 +111,8 @@ export default function GiantPumpkin() {
     doMove(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
   };
 
-  const reset = (mode: boolean = rocks) => { if (mode !== rocks) { setRocks(mode); setBest(readBest(mode)); try { localStorage.setItem(MODE_KEY, mode ? '1' : '0'); } catch { /* private mode */ } } setPendingMode(null); setS(newGame(Math.random, mode)); setGhosts([]); setPops(new Set()); setTool(null); setFirst(null); setToast(null); setTier(0); setWinOpen(false); setConfirmNew(false); setNewBest(false); };
-  const pickMode = (m: boolean) => { if (m === rocks) return; sfx.click(); if (s.moves) setPendingMode(m); else reset(m); };
+  const reset = (mode: boolean = rocks, sz: number = size) => { if (mode !== rocks) { setRocks(mode); try { localStorage.setItem(MODE_KEY, mode ? '1' : '0'); } catch { /* private mode */ } } if (sz !== size) { setSize(sz); try { localStorage.setItem(SIZE_KEY, String(sz)); } catch { /* private mode */ } } setBest(readBest(mode, sz)); setPendingMode(null); setS(newGame(Math.random, mode, sz)); setGhosts([]); setPops(new Set()); setTool(null); setFirst(null); setToast(null); setTier(0); setWinOpen(false); setConfirmNew(false); setNewBest(false); };
+  const pickMode = (m: boolean, sz: number = size) => { if (m === rocks && sz === size) return; sfx.click(); if (s.moves) setPendingMode({ rocks: m, size: sz }); else reset(m, sz); };
   const arm = (t: Tool) => { if (s.tools[t] < 1 || s.over && false) return; sfx.click(); setFirst(null); setTool(tool === t ? null : t); };
 
   const tiles: { id: number; r: number; c: number; tile: NonNullable<Tile> }[] = [];
@@ -119,10 +123,15 @@ export default function GiantPumpkin() {
   return (
     <div className="game gp">
       <div className="head">
-        <div className="modebar"><div className="seg">
-          <button className={!rocks ? 'on' : ''} onClick={() => pickMode(false)}>NO ROCKS</button>
-          <button className={rocks ? 'on' : ''} onClick={() => pickMode(true)}>ROCKS</button>
-        </div></div>
+        <div className="modebar">
+          <div className="seg">
+            {SIZES.map((n) => <button key={n} className={size === n ? 'on' : ''} onClick={() => pickMode(rocks, n)}>{n}x{n}</button>)}
+          </div>
+          <div className="seg">
+            <button className={!rocks ? 'on' : ''} onClick={() => pickMode(false)}>NO ROCKS</button>
+            <button className={rocks ? 'on' : ''} onClick={() => pickMode(true)}>ROCKS</button>
+          </div>
+        </div>
         <div className="status ffscore"><span>SCORE <b>{s.score}</b></span><span>BEST <b>{Math.max(best, s.score)}</b></span></div>
         <div className="gpladder" aria-hidden>
           {CROPS.slice(0, Math.max(TOP, tier) + 1).map((n, t) => <img key={t} className={t <= tier ? 'lit' : ''} src={cropUrl(t)} alt={n} title={n} />)}
@@ -132,9 +141,9 @@ export default function GiantPumpkin() {
 
       <div className="main gpwrap">
         <div className="gpframe">
-          <div className={`gpboard${tool ? ' armed' : ''}`} ref={boardRef} key={`b${shake % 2}`} data-shake={shake ? 1 : 0}
+          <div className={`gpboard${tool ? ' armed' : ''}${s.size > 5 ? ' tiny' : ''}`} style={{ ['--n' as string]: s.size }} ref={boardRef} key={`b${shake % 2}`} data-shake={shake ? 1 : 0}
             onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => { down.current = null; }} onContextMenu={(e) => e.preventDefault()}>
-            {Array.from({ length: SIZE * SIZE }, (_, i) => <div key={i} className="gpcell" style={{ ['--r' as string]: Math.floor(i / SIZE), ['--c' as string]: i % SIZE }} />)}
+            {Array.from({ length: s.size * s.size }, (_, i) => <div key={i} className="gpcell" style={{ ['--r' as string]: Math.floor(i / s.size), ['--c' as string]: i % s.size }} />)}
             {ghosts.map((g) => (
               <div key={`g${g.id}`} className="gptile ghost" style={{ ['--r' as string]: g.r, ['--c' as string]: g.c, ['--dx' as string]: g.dx, ['--dy' as string]: g.dy, background: TINT[g.t] }}>
                 <img src={cropUrl(g.t)} alt="" draggable={false} />
@@ -170,14 +179,14 @@ export default function GiantPumpkin() {
       {winOpen && (
         <Overlay><div className="celebrate" role="dialog"><div className="banner">
           <div className="gpwin"><img src={cropUrl(TOP)} alt="" /></div>
-          <h2>GIANT PUMPKIN!</h2><p>You grew it! Score {s.score}. Keep going: it grows on into Ribbon, Golden, Crystal, Moon pumpkins and beyond!</p>
+          <h2>PUMPKIN!</h2><p>You grew it! Score {s.score}. Keep going: it keeps growing into Giant, Ribbon, Golden, Crystal and Moon pumpkins and beyond!</p>
           <div className="row"><button className="btn primary" onClick={() => setWinOpen(false)}>KEEP GROWING</button><button className="btn" onClick={() => reset()}>NEW GAME</button></div>
         </div></div></Overlay>
       )}
       {pendingMode !== null && (
         <Overlay><div className="celebrate" role="dialog"><div className="banner">
-          <h2>SWITCH TO {pendingMode ? 'ROCKS' : 'NO ROCKS'}?</h2><p>This starts a fresh garden and ends the one you're growing.</p>
-          <div className="row"><button className="btn primary" onClick={() => setPendingMode(null)}>KEEP PLAYING</button><button className="btn" onClick={() => reset(pendingMode)}>SWITCH</button></div>
+          <h2>SWITCH TO {pendingMode.size}x{pendingMode.size} {pendingMode.rocks ? 'WITH ROCKS' : 'NO ROCKS'}?</h2><p>This starts a fresh garden and ends the one you're growing.</p>
+          <div className="row"><button className="btn primary" onClick={() => setPendingMode(null)}>KEEP PLAYING</button><button className="btn" onClick={() => reset(pendingMode.rocks, pendingMode.size)}>SWITCH</button></div>
         </div></div></Overlay>
       )}
       {confirmNew && (
