@@ -185,3 +185,55 @@ export function useSwap(prev: State, a: [number, number], b: [number, number]): 
   if (prev.tools.swap < 1 || !ta || !tb || ta.kind !== 'crop' || tb.kind !== 'crop' || (a[0] === b[0] && a[1] === b[1])) return null;
   const s = clone(prev); [s.grid[a[0]][a[1]], s.grid[b[0]][b[1]]] = [s.grid[b[0]][b[1]], s.grid[a[0]][a[1]]]; s.tools.swap--; settle(s); return s;
 }
+
+/* ---------- duel games and the computer player ---------- */
+const devMoves = (): number => { try { const dev = (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV; return dev ? Number(new URLSearchParams(location.search).get('swipes')) || 0 : 0; } catch { return 0; } }; // ?swipes=8 in the dev server only, for quick testing
+/** a duel game lasts this many swipes (or until the garden is stuck), so a strong player cannot go on forever */
+export const DUEL_MOVES = devMoves() || 150;
+
+/** weight each cell so the big crops pile up along a snaking path from a corner */
+function weight(r: number, c: number, n: number): number { return n * n - (r % 2 === 0 ? r * n + c : r * n + (n - 1 - c)); }
+function judge(s: State): number {
+  let sc = 0, empty = 0;
+  s.grid.forEach((row, r) => row.forEach((t, c) => { if (!t) empty++; else if (t.kind === 'crop') sc += 2 ** t.t * weight(r, c, s.size); else sc -= 30; }));
+  return sc + empty * 500;
+}
+const DIRS: Dir[] = ['left', 'down', 'right', 'up'];
+/**
+ * One decision for the computer: a swipe, or (when stuck) a farm tool.
+ * `spawnRng` is the generator the real swipe uses, so the computer meets exactly the same new crops as a human on the same seed.
+ */
+export function cpuStep(s: State, level: 1 | 2 | 3, pick: Rng, spawnRng: Rng): State {
+  if (s.over) return s;
+  const valid = DIRS.filter((d) => move(s, d, () => 0.5).moved);
+  if (!valid.length) {
+    const cells: [number, number, number][] = [];
+    s.grid.forEach((row, r) => row.forEach((t, c) => { if (t) cells.push([r, c, t.kind === 'crop' ? t.t : -1]); }));
+    cells.sort((a, b) => a[2] - b[2]);
+    let n: State | null = null;
+    if (s.tools.hoe && cells.length) n = useHoe(s, cells[0][0], cells[0][1]);
+    else if (s.tools.can) { const c = cells.find((x) => x[2] >= 0); if (c) n = useCan(s, c[0], c[1]); }
+    if (n) return n;
+    return { ...s, over: true };
+  }
+  let dir: Dir = valid[0];
+  if (level === 1 && pick() < 0.8) dir = valid[Math.floor(pick() * valid.length)];
+  else if (level === 1 || level === 2) {
+    let bv = -1e18;
+    for (const d of valid) { const r = move(s, d, () => 0.5); const v = judge(r.state) + r.made.length * 40 + (level === 2 ? 0 : 0); if (v > bv) { bv = v; dir = d; } }
+    if (level === 2 && pick() < 0.12) dir = valid[Math.floor(pick() * valid.length)]; // a good player who sometimes slips
+  } else {
+    let bv = -1e18;
+    for (const d of valid) {
+      let tot = 0, k = 0;
+      for (const x of [0.12, 0.38, 0.63, 0.88]) {
+        const r = move(s, d, () => x); if (!r.moved) continue;
+        let inner = -1e18;
+        for (const e of DIRS) { const q = move(r.state, e, () => 0.5); if (q.moved) inner = Math.max(inner, judge(q.state)); }
+        tot += inner === -1e18 ? judge(r.state) - 4000 : inner; k++;
+      }
+      if (k && tot / k > bv) { bv = tot / k; dir = d; }
+    }
+  }
+  return move(s, dir, spawnRng).state;
+}

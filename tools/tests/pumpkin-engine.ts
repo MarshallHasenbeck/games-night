@@ -1,3 +1,5 @@
+import { cpuStep, DUEL_MOVES } from '../../src/lib/pumpkin';
+import { makeRng } from '../../src/lib/duel';
 import { SIZES, TOP, MAXT, newGame, move, canMove, useHoe, useCan, useSwap, value, type State, type Crop, type Dir, type Grid } from '../../src/lib/pumpkin';
 
 const SIZE = 4;
@@ -138,5 +140,27 @@ const fixed = () => 0.5; // spawn lands on a predictable free cell, always a see
   }
   if (stonesInCalm) fail('stones appeared in the no-rocks mode');
   console.log('random games ok', { games, maxStones, avgMoves: Math.round(moves / games), won, toolsEarned: tools, stonesBroken: brokenStones, bestTier });
+}
+// duel: same seed + same swipes = exactly the same garden for everyone
+{
+  const sp = (seed: number, k: number) => makeRng(seed * 31 + k * 7919 + 1);
+  const play = (seed: number) => { let s = newGame(makeRng(seed), true, 4); const seq: Dir[] = ['left', 'down', 'right', 'up', 'left', 'left', 'down', 'right']; seq.forEach((d) => { const r = move(s, d, sp(seed, s.moves)); if (r.moved) s = r.state; }); return JSON.stringify(s.grid.map((row) => row.map((t) => (t ? (t.kind === 'crop' ? t.t : 'S') : '.')))); };
+  eq(play(77), play(77), 'same seed, same swipes, same garden');
+}
+// the computer plays legal games to the swipe limit, and the levels are ordered
+{
+  const avg: number[] = [];
+  for (const level of [1, 2, 3] as const) {
+    let tot = 0; const G = level === 3 ? 8 : 16;
+    for (let g = 0; g < G; g++) {
+      const seed = 500 + g; let s = newGame(makeRng(seed), g % 2 === 0, 4); const pick = makeRng(seed + 9);
+      let guard = 0;
+      while (!s.over && s.moves < DUEL_MOVES && guard++ < 3000) s = cpuStep(s, level, pick, makeRng(seed * 31 + s.moves * 7919 + 1));
+      tot += s.score;
+    }
+    avg.push(Math.round(tot / G));
+  }
+  console.log('computer average scores at 150 swipes (easy, medium, hard)', avg);
+  if (!(avg[1] > avg[0] && avg[2] > avg[1])) fail('computer levels not ordered: ' + avg.join(', '));
 }
 console.log('pumpkin rule cases ok');

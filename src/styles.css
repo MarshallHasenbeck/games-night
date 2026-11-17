@@ -1424,8 +1424,9 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 @media (orientation: portrait) and (min-width: 700px) { .game.ff { --bs: min(calc(var(--app-w, 100vw) - 90px), 720px, calc((var(--app-h, 100vh) - 300px) / 1.25)); --tc: calc(var(--bs) * .062); } }
 
 /* ---------------- Giant Pumpkin ---------------- */
-.game.gp { --bs: min(calc(var(--app-w, 100vw) - 58px), 560px, calc(var(--app-h, 100vh) - 402px)); --gp: calc(var(--bs) * .025); }
-[data-fit="phone"] .game.gp { --bs: min(calc(var(--app-w, 100vw) - 50px), 560px, calc(var(--app-h, 100vh) - 372px)); }
+.game.gp { --bs: min(calc(var(--app-w, 100vw) - 58px), 560px, calc(var(--app-h, 100vh) - 446px)); --gp: calc(var(--bs) * .025); }
+[data-fit="phone"] .game.gp { --bs: min(calc(var(--app-w, 100vw) - 50px), 560px, calc(var(--app-h, 100vh) - 394px)); }
+[data-fit="phone"] .game.gp:not([data-duel="solo"]) { --bs: min(calc(var(--app-w, 100vw) - 50px), 560px, calc(var(--app-h, 100vh) - 350px)); }
 [data-fit="phone"] .game.gp .prompt { font-size: 15px; }
 .gpwrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .gpframe { position: relative; width: calc(var(--bs) + 26px); padding: 10px; border-radius: 16px; border: 3px solid var(--wood-dd);
@@ -1462,15 +1463,15 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 @keyframes gptoolpulse { 50% { transform: scale(1.12); } }
 .gptoast { background: #5a9a3a; top: 38%; }
 .gpwin { display: flex; justify-content: center; } .gpwin img { width: 110px; image-rendering: pixelated; animation: gppop .5s; }
-@media (orientation: portrait) and (min-width: 700px) { .game.gp { --bs: min(calc(var(--app-w, 100vw) - 90px), 720px, calc(var(--app-h, 100vh) - 380px)); } }
+@media (orientation: portrait) and (min-width: 700px) { .game.gp { --bs: min(calc(var(--app-w, 100vw) - 90px), 720px, calc(var(--app-h, 100vh) - 420px)); } }
 @media (orientation: landscape) and (min-width: 900px) {
-  .game.gp { --bs: min(calc(var(--app-h, 100vh) - 210px), calc(var(--app-w, 100vw) * .5), 680px); }
+  .game.gp { --bs: min(calc(var(--app-h, 100vh) - 250px), calc(var(--app-w, 100vw) * .5), 680px); }
   .gpwrap { flex-direction: row; align-items: center; justify-content: center; gap: 22px; }
   .gptools { flex-direction: column; width: 130px; }
 }
 [data-fit="land"] .game.gp .prompt { display: none; }
 [data-fit="land"] .game.gp .gpladder { display: none; }
-[data-fit="land"] .game.gp { --bs: calc(var(--app-h, 100vh) - 76px); }
+[data-fit="land"] .game.gp { --bs: calc(var(--app-h, 100vh) - 116px); }
 [data-fit="land"] .gpwrap { flex-direction: row; align-items: center; justify-content: center; gap: 14px; }
 [data-fit="land"] .gptools { flex-direction: column; width: 96px; gap: 6px; }
 [data-fit="land"] .ffscore { font-size: 18px; padding: 1px 16px; }
@@ -1490,3 +1491,9 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 
 .ffscore .me { color: var(--sun); }
 .ffscore .hand { font-size: 13px; opacity: .85; align-self: center; }
+
+[data-fit="phone"] .game.gp:not([data-duel="solo"]) .prompt { display: none; }
+[data-fit="phone"] .game.gp[data-duel]:not([data-duel="solo"]) .gpladder { display: none; }
+
+.gpbars { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center; }
+.game.gp .ffscore .hand { font-size: 13px; opacity: .85; align-self: center; }

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { sfx, sfx2 } from '../lib/sfx';
-import { Celebrate, Overlay } from '../ui';
+import { Celebrate, DuelBar, Overlay } from '../ui';
+import { makeRng, newSeed, useDuelMode, type DuelMode } from '../lib/duel';
 import { cropUrl, stoneUrl } from '../lib/cropart';
-import { CROPS, SIZES, TOP, MAXT, TOOLS, newGame, move, useHoe, useCan, useSwap, type State, type Dir, type Tool, type Tile } from '../lib/pumpkin';
+import { CROPS, SIZES, TOP, MAXT, TOOLS, newGame, move, cpuStep, DUEL_MOVES, useHoe, useCan, useSwap, type State, type Dir, type Tool, type Tile } from '../lib/pumpkin';
 
 const bestKey = (rocks: boolean, size: number) => `gn-pumpkin-best-${rocks ? 'rocks' : 'calm'}-${size}`;
 const readBest = (rocks: boolean, size: number) => { try { return +(localStorage.getItem(bestKey(rocks, size)) || 0) || 0; } catch { return 0; } };
@@ -41,6 +42,18 @@ export default function GiantPumpkin() {
   const [confirmNew, setConfirmNew] = useState(false);
   const [newBest, setNewBest] = useState(false);
   const [pulse, setPulse] = useState<Tool | null>(null);
+  const duel = useDuelMode('pumpkin');
+  const mode = duel.mode;
+  const [seed, setSeed] = useState(() => newSeed());
+  const [turn, setTurn] = useState<0 | 1>(0);
+  const [scores, setScores] = useState<[number | null, number | null]>([null, null]);
+  const [cpuS, setCpuS] = useState<State | null>(null);
+  const [handoff, setHandoff] = useState(false);
+  const [result, setResult] = useState<{ title: string; sub: string } | null>(null);
+  const [pendingDuel, setPendingDuel] = useState<DuelMode | null>(null);
+  const cpuPick = useRef(makeRng(99));
+  /** every swipe in a duel uses the same random numbers for both players, so both meet the same new crops */
+  const spawnFor = (sd: number, moves: number) => makeRng(sd * 31 + moves * 7919 + 1);
   const uid = useRef(0);
   const sRef = useRef(s); sRef.current = s;
   const down = useRef<{ x: number; y: number } | null>(null);
@@ -49,16 +62,36 @@ export default function GiantPumpkin() {
   const say = (text: string) => setToast({ k: ++uid.current, text });
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(null), 1300); return () => clearTimeout(t); }, [toast]);
 
-  const finish = (n: State) => {
-    if (n.score > best) { saveBest(rocks, size, n.score); setBest(n.score); }
-    if (n.over) { setNewBest(n.score > best); setTimeout(sfx.win, 300); }
+  const finish = (n: State, cpu: State | null = cpuS) => {
+    if (mode === 'solo') {
+      if (n.score > best) { saveBest(rocks, size, n.score); setBest(n.score); }
+      if (n.over) { setNewBest(n.score > best); setTimeout(sfx.win, 300); }
+      return;
+    }
+    if (!(n.over || n.moves >= DUEL_MOVES)) return;
+    if (mode === 'two') {
+      if (turn === 0) { setScores([n.score, null]); setTimeout(() => setHandoff(true), 600); }
+      else endDuel(scores[0] ?? 0, n.score);
+    } else if (cpu) {
+      let c: State = cpu; let guard = 0;
+      while (!c.over && c.moves < DUEL_MOVES && guard++ < 1000) c = cpuStep(c, duel.level, cpuPick.current, spawnFor(seed, c.moves));
+      setCpuS(c); endDuel(n.score, c.score);
+    }
   };
+  /** the final scores of a duel: who won? */
+  const endDuel = (a: number, b: number) => {
+    const names: [string, string] = mode === 'cpu' ? ['YOU', 'CPU'] : ['P1', 'P2'];
+    const title = a === b ? "IT'S A TIE!" : a > b ? (mode === 'cpu' ? 'YOU WIN!' : `${names[0]} WINS!`) : (mode === 'cpu' ? 'CPU WINS!' : `${names[1]} WINS!`);
+    setScores([a, b]);
+    setTimeout(() => { setResult({ title, sub: `${names[0]} ${a}  -  ${names[1]} ${b}` }); sfx.win(); }, 600);
+  };
+  const stepCpu = (c: State): State => { const target = c.moves + 1; let n = c, g = 0; while (!n.over && n.moves < target && g++ < 6) n = cpuStep(n, duel.level, cpuPick.current, spawnFor(seed, n.moves)); return n; };
 
   const doMove = (dir: Dir) => {
     const cur = sRef.current;
-    if (cur.over || winOpen) return;
+    if (cur.over || winOpen || handoff || result || (mode !== 'solo' && cur.moves >= DUEL_MOVES)) return;
     setTool(null); setFirst(null);
-    const r = move(cur, dir);
+    const r = move(cur, dir, mode === 'solo' ? Math.random : spawnFor(seed, cur.moves));
     if (!r.moved) { setShake((v) => v + 1); sfx2.hit(); return; }
     const where = new Map<number, [number, number]>();
     cur.grid.forEach((row, rr) => row.forEach((t, cc) => { if (t) where.set(t.id, [rr, cc]); }));
@@ -71,8 +104,10 @@ export default function GiantPumpkin() {
     if (r.earned) { say(`NEW TOOL: ${TOOL_NAME[r.earned]}!`); setPulse(r.earned); setTimeout(() => setPulse(null), 1200); }
     const top = maxCrop(r.state.grid);
     if (top > tier) { setTier(top); if (!r.earned && !r.broken.length && top >= 2) say(`${cropLabel(top).toUpperCase()}!`); }
-    if (r.newlyWon) { setTimeout(() => { setWinOpen(true); sfx.win(); }, 380); }
-    setS(r.state); finish(r.state);
+    if (r.newlyWon && mode === 'solo') { setTimeout(() => { setWinOpen(true); sfx.win(); }, 380); }
+    let cpu = cpuS;
+    if (mode === 'cpu' && cpu && !cpu.over && cpu.moves < DUEL_MOVES) { cpu = stepCpu(cpu); setCpuS(cpu); }
+    setS(r.state); finish(r.state, cpu);
   };
 
   // keyboard (desktop)
@@ -95,7 +130,7 @@ export default function GiantPumpkin() {
   const useAt = (r: number, c: number) => {
     const cur = sRef.current; let n: State | null = null;
     if (tool === 'hoe') n = useHoe(cur, r, c);
-    else if (tool === 'can') { n = useCan(cur, r, c); if (n && n.won && !cur.won) setTimeout(() => { setWinOpen(true); sfx.win(); }, 300); }
+    else if (tool === 'can') { n = useCan(cur, r, c); if (n && n.won && !cur.won && mode === 'solo') setTimeout(() => { setWinOpen(true); sfx.win(); }, 300); }
     else if (tool === 'swap') {
       const t = cur.grid[r][c];
       if (!t || t.kind !== 'crop') return;
@@ -116,18 +151,24 @@ export default function GiantPumpkin() {
     doMove(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
   };
 
-  const reset = (mode: boolean = rocks, sz: number = size) => { if (mode !== rocks) { setRocks(mode); try { localStorage.setItem(MODE_KEY, mode ? '1' : '0'); } catch { /* private mode */ } } if (sz !== size) { setSize(sz); try { localStorage.setItem(SIZE_KEY, String(sz)); } catch { /* private mode */ } } setBest(readBest(mode, sz)); setPendingMode(null); setS(newGame(Math.random, mode, sz)); setGhosts([]); setPops(new Set()); setTool(null); setFirst(null); setToast(null); setTier(0); setWinOpen(false); setConfirmNew(false); setNewBest(false); };
+  const reset = (rk: boolean = rocks, sz: number = size, dm: DuelMode = mode) => { if (rk !== rocks) { setRocks(rk); try { localStorage.setItem(MODE_KEY, rk ? '1' : '0'); } catch { /* private mode */ } } if (sz !== size) { setSize(sz); try { localStorage.setItem(SIZE_KEY, String(sz)); } catch { /* private mode */ } } setBest(readBest(rk, sz)); setPendingMode(null); const sd = newSeed(); setSeed(sd); cpuPick.current = makeRng(sd + 17); setS(dm === 'solo' ? newGame(Math.random, rk, sz) : newGame(makeRng(sd), rk, sz)); setCpuS(dm === 'cpu' ? newGame(makeRng(sd), rk, sz) : null); setTurn(0); setScores([null, null]); setHandoff(false); setResult(null); setPendingDuel(null); setGhosts([]); setPops(new Set()); setTool(null); setFirst(null); setToast(null); setTier(0); setWinOpen(false); setConfirmNew(false); setNewBest(false); };
   const pickMode = (m: boolean, sz: number = size) => { if (m === rocks && sz === size) return; sfx.click(); if (s.moves) setPendingMode({ rocks: m, size: sz }); else reset(m, sz); };
+  const startSecond = () => { setS(newGame(makeRng(seed), rocks, size)); setTurn(1); setHandoff(false); setTier(0); setGhosts([]); setToast(null); setTool(null); setFirst(null); };
+  useEffect(() => { reset(rocks, size, duel.mode); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [duel.mode]);
+  const pickDuel = (m: DuelMode) => { if (m === mode) return; if (s.moves && !result) setPendingDuel(m); else duel.setMode(m); };
+  const swipesLeft = Math.max(0, DUEL_MOVES - s.moves);
   const arm = (t: Tool) => { if (s.tools[t] < 1 || s.over && false) return; sfx.click(); setFirst(null); setTool(tool === t ? null : t); };
 
   const tiles: { id: number; r: number; c: number; tile: NonNullable<Tile> }[] = [];
   s.grid.forEach((row, r) => row.forEach((t, c) => { if (t) tiles.push({ id: t.id, r, c, tile: t }); }));
 
-  const prompt = s.over ? 'NO MORE ROOM!' : tool ? TOOL_HELP[tool] + (tool === 'swap' && first ? ' (pick the second)' : '') : s.stuck ? 'STUCK! USE A FARM TOOL TO KEEP GROWING' : s.moves === 0 ? `${SIZE_NOTE[s.size]} Swipe to start.` : 'Swipe to slide the crops. Match two to grow them!';
+  const prompt = mode !== 'solo' ? `${mode === 'two' ? `P${turn + 1}'S TURN - ` : ''}${swipesLeft} SWIPES LEFT. Same garden and same new crops for both players. Highest score wins!` : s.over ? 'NO MORE ROOM!' : tool ? TOOL_HELP[tool] + (tool === 'swap' && first ? ' (pick the second)' : '') : s.stuck ? 'STUCK! USE A FARM TOOL TO KEEP GROWING' : s.moves === 0 ? `${SIZE_NOTE[s.size]} Swipe to start.` : 'Swipe to slide the crops. Match two to grow them!';
 
   return (
-    <div className="game gp">
+    <div className="game gp" data-duel={mode}>
       <div className="head">
+        <div className="gpbars">
+        <DuelBar mode={mode} level={duel.level} setMode={pickDuel} setLevel={(l) => { duel.setLevel(l); reset(rocks, size, mode); }} />
         <div className="modebar">
           <div className="seg">
             {SIZES.map((n) => <button key={n} className={size === n ? 'on' : ''} title={SIZE_NOTE[n]} onClick={() => pickMode(rocks, n)}>{n}x{n}</button>)}
@@ -137,7 +178,10 @@ export default function GiantPumpkin() {
             <button className={rocks ? 'on' : ''} onClick={() => pickMode(true)}>ROCKS</button>
           </div>
         </div>
-        <div className="status ffscore"><span>SCORE <b>{s.score}</b></span><span>BEST <b>{Math.max(best, s.score)}</b></span></div>
+        </div>
+        {mode === 'solo' && <div className="status ffscore"><span>SCORE <b>{s.score}</b></span><span>BEST <b>{Math.max(best, s.score)}</b></span></div>}
+        {mode === 'two' && <div className="status ffscore"><span className={turn === 0 ? 'me' : ''}>P1 <b>{turn === 0 ? s.score : scores[0] ?? 0}</b></span><span className={turn === 1 ? 'me' : ''}>P2 <b>{turn === 1 ? s.score : '-'}</b></span><span className="hand">{swipesLeft} SWIPES</span></div>}
+        {mode === 'cpu' && <div className="status ffscore"><span className="me">YOU <b>{s.score}</b></span><span>CPU <b>{cpuS?.score ?? 0}</b></span><span className="hand">{swipesLeft} SWIPES</span></div>}
         <div className="gpladder" aria-hidden>
           {CROPS.slice(0, Math.max(TOP, tier) + 1).map((n, t) => <img key={t} className={t <= tier ? 'lit' : ''} src={cropUrl(t)} alt={n} title={n} />)}
         </div>
@@ -200,7 +244,20 @@ export default function GiantPumpkin() {
           <div className="row"><button className="btn primary" onClick={() => setConfirmNew(false)}>KEEP PLAYING</button><button className="btn" onClick={() => reset()}>YES, START OVER</button></div>
         </div></div></Overlay>
       )}
-      {s.over && !winOpen && <Celebrate title="NO MORE ROOM!" sub={`Score ${s.score}${newBest ? ' · NEW BEST!' : ` · Best ${best}`} · grew a ${cropLabel(tier)}`} onAgain={() => reset()} />}
+      {pendingDuel && (
+        <Overlay><div className="celebrate" role="dialog"><div className="banner">
+          <h2>SWITCH MODE?</h2><p>This ends the garden you're growing and starts a new one.</p>
+          <div className="row"><button className="btn primary" onClick={() => setPendingDuel(null)}>KEEP PLAYING</button><button className="btn" onClick={() => { const m = pendingDuel; setPendingDuel(null); duel.setMode(m); }}>SWITCH</button></div>
+        </div></div></Overlay>
+      )}
+      {handoff && (
+        <Overlay><div className="handoff"><div className="banner">
+          <h2>PASS TO P2</h2><p>P1 scored {scores[0]}. P2 gets the very same garden and the very same new crops. Beat it!</p>
+          <button className="btn primary" onClick={startSecond}>I'M P2 - START</button>
+        </div></div></Overlay>
+      )}
+      {mode === 'solo' && s.over && !winOpen && <Celebrate title="NO MORE ROOM!" sub={`Score ${s.score}${newBest ? ' · NEW BEST!' : ` · Best ${best}`} · grew a ${cropLabel(tier)}`} onAgain={() => reset()} />}
+      {result && <Celebrate title={result.title} sub={result.sub} onAgain={() => reset()} />}
     </div>
   );
 }
