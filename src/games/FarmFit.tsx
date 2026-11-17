@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { sfx, sfx2 } from '../lib/sfx';
 import { Celebrate, DuelBar, Overlay } from '../ui';
-import { N, DUEL_HANDS, newGame, place, canPlace, completes, cpuMove, type State, type Shape } from '../lib/farmfit';
+import { N, DUEL_HANDS, anchorOf, newGame, place, canPlace, completes, cpuMove, type State, type Shape } from '../lib/farmfit';
 import { newSeed, useDuelMode, type DuelMode } from '../lib/duel';
 
 const BEST_KEY = 'gn-farmfit-best';
@@ -17,7 +17,8 @@ function Blocks({ s, size, gap }: { s: Shape; size?: string; gap?: string }) {
     <div className="ffmini" style={{ gridTemplateColumns: `repeat(${s.w}, var(--tc))`, gridTemplateRows: `repeat(${s.h}, var(--tc))`, ...style }}>
       {Array.from({ length: s.w * s.h }, (_, i) => {
         const r = Math.floor(i / s.w), c = i % s.w;
-        return on.has(`${r},${c}`) ? <i key={i} className={`ffc c${s.color}`} /> : <i key={i} />;
+        const [ar, ac] = anchorOf(s);
+        return on.has(`${r},${c}`) ? <i key={i} className={`ffc c${s.color}${r === ar && c === ac ? ' fm' : ''}`} /> : <i key={i} />;
       })}
     </div>
   );
@@ -82,6 +83,7 @@ export default function FarmFit() {
       setTimeout(() => setBurst((b) => b.filter((x) => !ids.some((y) => y.id === x.id))), 520);
     }
     if (lines) setToast({ k: ++uid.current, text: `${PRAISE[Math.min(lines, 5)]} +${res.points}` });
+    if ((res.state.skips ?? 0) > (s.skips ?? 0)) setTimeout(() => setToast({ k: ++uid.current, text: 'NO ROOM: NEW BLOCKS' }), lines ? 900 : 0);
     setS(res.state);
     // the computer plays the same deal alongside you, one block for every block you place
     let cpu = cpuS;
@@ -162,7 +164,7 @@ export default function FarmFit() {
               const r = Math.floor(i / N), c = i % N, v = s.grid[r][c], p = pv.get(`${r},${c}`);
               const b = burst.find((x) => x.r === r && x.c === c);
               return (
-                <div key={i} data-rc={`${r}-${c}`} className={`ffcell${(r + c) % 2 ? ' alt' : ''}${v ? ` ffc c${v}` : ''}${p ? ` ffc ffpv c${p}` : ''}${ok && will(r, c) && (v || p) ? ' ffwill' : ''}`}>
+                <div key={i} data-rc={`${r}-${c}`} className={`ffcell${(r + c) % 2 ? ' alt' : ''}${v ? ` ffc c${v}${s.marks?.[r][c] ? ' fm' : ''}` : ''}${p ? ` ffc ffpv c${p}` : ''}${ok && will(r, c) && (v || p) ? ' ffwill' : ''}`}>
                   {b && <span className={`ffburst ffc c${b.color}`} />}
                 </div>
               );

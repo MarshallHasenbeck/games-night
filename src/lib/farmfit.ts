@@ -8,8 +8,11 @@ export const N = 10;
 export type Cell = [number, number]; // [row, col]
 export type Shape = { id: string; cells: Cell[]; w: number; h: number; color: number }; // color 1..9
 export type Grid = number[][]; // 0 empty, otherwise the colour of the block that filled it
-export type State = { grid: Grid; tray: (Shape | null)[]; score: number; over: boolean; lines: number; moves: number; /** duel games: every player is dealt the same hands from this seed */ seed?: number; hand?: number };
+export type State = { grid: Grid; tray: (Shape | null)[]; score: number; over: boolean; lines: number; moves: number; /** duel games: every player is dealt the same hands from this seed */ seed?: number; hand?: number; /** duel games: how many hands were thrown away because nothing in them fitted */ skips?: number; /** the one cell of each placed block that carries its animal face */ marks?: boolean[][] };
 export type Placed = { state: State; rows: number[]; cols: number[]; cleared: { r: number; c: number; color: number }[]; points: number; bonus: number };
+
+/** the one cell of a block that wears the animal face (roughly its middle) */
+export const anchorOf = (s: Shape): Cell => s.cells[Math.floor(s.cells.length / 2)];
 
 const make = (id: string, art: string[], color: number): Shape => {
   const cells: Cell[] = [];
@@ -32,7 +35,7 @@ export const SHAPES: Shape[] = [
 ];
 /** what blocks are dealt from: the single block is listed three times so it turns up fairly often */
 const ONE = SHAPES.find((s) => s.id === 'ONE')!;
-const POOL: Shape[] = [...SHAPES, ONE, ONE];
+const POOL: Shape[] = [...SHAPES, ONE, ONE, ONE, ONE, ...SHAPES.filter((s) => s.id === 'I2h' || s.id === 'I2v')];
 
 import { makeRng } from './duel';
 type Rng = () => number;
@@ -65,12 +68,42 @@ const devHands = (): number => { try { const dev = (import.meta as unknown as { 
 export const DUEL_HANDS = devHands() || 10;
 export const lineBonus = (n: number) => (n * (n + 1) / 2) * 10;
 
+/** place a block and clear any full lines (used only to look ahead) */
+function simPlace(grid: Grid, s: Shape, r: number, c: number): Grid {
+  const g = grid.map((row) => row.slice());
+  for (const [dr, dc] of s.cells) g[r + dr][c + dc] = s.color;
+  const rows: number[] = [], cols: number[] = [];
+  for (let y = 0; y < N; y++) if (g[y].every(Boolean)) rows.push(y);
+  for (let x = 0; x < N; x++) if (g.every((row) => row[x])) cols.push(x);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (rows.includes(y) || cols.includes(x)) g[y][x] = 0;
+  return g;
+}
+/** true if all of these blocks can be placed one after another, in some order and some spots */
+export function handIsPlayable(grid: Grid, shapes: Shape[]): boolean {
+  if (!shapes.length) return true;
+  const tried = new Set<string>();
+  for (let i = 0; i < shapes.length; i++) {
+    const s = shapes[i];
+    if (tried.has(s.id)) continue; tried.add(s.id);
+    const rest = shapes.filter((_, j) => j !== i);
+    for (let r = 0; r <= N - s.h; r++) for (let c = 0; c <= N - s.w; c++) {
+      if (canPlace(grid, s, r, c) && handIsPlayable(simPlace(grid, s, r, c), rest)) return true;
+    }
+  }
+  return false;
+}
+/** a hand that can always be played out in full, so a deal never ends the game for you on its own */
 function deal(grid: Grid, rng: Rng): Shape[] {
   let best: Shape[] = [];
-  for (let tries = 0; tries < 40; tries++) {
+  for (let tries = 0; tries < 60; tries++) {
     const t = [0, 1, 2].map(() => POOL[Math.floor(rng() * POOL.length)]);
     best = t;
-    if (t.some((s) => fitsAnywhere(grid, s))) return t; // never deal a hand that is dead on arrival if a live one exists
+    if (handIsPlayable(grid, t)) return t;
+  }
+  // very crowded board: fall back to any hand where at least one block still fits, else a single block
+  for (let tries = 0; tries < 40; tries++) {
+    const t = [0, 1, 2].map(() => POOL[Math.floor(rng() * POOL.length)]);
+    if (t.some((s) => fitsAnywhere(grid, s))) return t;
   }
   return best;
 }
@@ -95,6 +128,9 @@ export function place(prev: State, slot: number, r: number, c: number, rng: Rng 
   const cleared: Placed['cleared'] = [];
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (grid[y][x] && (rows.includes(y) || cols.includes(x))) cleared.push({ r: y, c: x, color: grid[y][x] });
   cleared.forEach(({ r: y, c: x }) => { grid[y][x] = 0; });
+  const marks = (prev.marks ?? emptyGrid().map((row) => row.map(() => false))).map((row) => row.slice());
+  const [ar, ac] = anchorOf(s); marks[r + ar][c + ac] = true;
+  cleared.forEach(({ r: y, c: x }) => { marks[y][x] = false; });
   const n = rows.length + cols.length;
   const bonus = lineBonus(n), points = s.cells.length + bonus;
   let tray = prev.tray.slice(); tray[slot] = null;
@@ -102,8 +138,19 @@ export function place(prev: State, slot: number, r: number, c: number, rng: Rng 
   if (tray.every((t) => !t)) { if (prev.seed !== undefined) { hand = (prev.hand ?? 0) + 1; tray = handFor(prev.seed, hand); } else tray = deal(grid, rng); }
   const finished = prev.seed !== undefined && (hand ?? 0) >= DUEL_HANDS;
   if (finished) tray = [null, null, null];
-  const state: State = { grid, tray, score: prev.score + points, over: false, lines: prev.lines + n, moves: prev.moves + 1, seed: prev.seed, hand };
+  const state: State = { grid, tray, score: prev.score + points, over: false, lines: prev.lines + n, moves: prev.moves + 1, seed: prev.seed, hand, marks };
   state.over = finished || stuck(grid, tray);
+  // duel games: everybody gets the same blocks whatever their board looks like, so a hand that does not fit is thrown away
+  // (and the next one dealt) instead of ending the game on the spot; two dead hands in a row end it
+  if (!state.over && prev.seed !== undefined) {
+    let dead = 0, h = hand ?? 0;
+    while (stuck(grid, state.tray)) {
+      dead++; h++; state.skips = (state.skips ?? 0) + 1;
+      if (dead >= 2 || h >= DUEL_HANDS) { state.tray = [null, null, null]; state.over = true; break; }
+      state.tray = handFor(prev.seed, h);
+    }
+    state.hand = h;
+  }
   return { state, rows, cols, cleared, points, bonus };
 }
 
