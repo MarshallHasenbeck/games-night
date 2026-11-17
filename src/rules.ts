@@ -11,7 +11,7 @@ export const RULES: Record<string, Rules> = {
         'After every swipe a new small crop pops up. They are mostly seeds, but as your garden grows the new ones grow a little too. If the garden fills up and nothing can match, the game ends.',
       ] },
       { h: 'Garden size and rocks', items: [
-        'Pick a garden size at the top: 4x4 is the classic challenge, 5x5 is roomier and 6x6 is the relaxed one. Bigger gardens make it much easier to grow the later crops.',
+        'Pick a garden size at the top. A bigger garden means more room, so it is EASIER: 4x4 is the classic challenge (tight and tricky), 5x5 is roomy (a friendlier climb) and 6x6 is relaxed (lots of room to grow the big crops).',
         'NO ROCKS is a clear garden with nothing in the way. ROCKS adds stones. Your best score is saved separately for each mode, and you can switch any time (it starts a fresh garden).',
       ] },
       { h: 'Stones (ROCKS mode)', items: [

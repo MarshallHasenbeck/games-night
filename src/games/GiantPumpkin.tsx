@@ -11,6 +11,11 @@ const SIZE_KEY = 'gn-pumpkin-size';
 const readSize = () => { try { const v = +(localStorage.getItem(SIZE_KEY) || 4); return (SIZES as readonly number[]).includes(v) ? v : 4; } catch { return 4; } };
 const MODE_KEY = 'gn-pumpkin-rocks';
 const readRocks = () => { try { return localStorage.getItem(MODE_KEY) !== '0'; } catch { return true; } };
+const SIZE_NOTE: Record<number, string> = {
+  4: '4x4 CLASSIC: tight and tricky. Bigger gardens are easier!',
+  5: '5x5 ROOMY: more space to work in, a friendlier climb.',
+  6: '6x6 RELAXED: lots of room, great for growing the big crops.',
+};
 const TOOL_NAME: Record<Tool, string> = { hoe: 'HOE', can: 'WATER', swap: 'SWAP' };
 const TOOL_HELP: Record<Tool, string> = { hoe: 'Tap a crop or stone to pull it up', can: 'Tap a crop to grow it one step', swap: 'Tap two crops to trade places' };
 const TINT = ['#e9d6a8', '#d4ebb0', '#f6c4c4', '#ffd7a8', '#e9d0a4', '#fbe9a0', '#f9bcb0', '#d9bff0', '#cdeebd', '#c6e8b4', '#ffd09a', '#ffe28a', '#bcd8f6', '#ffe9a0', '#c8f0f6', '#e0e4f6', '#ffe28a', '#e8d0f6', '#d6b8f0', '#ffd0a0', '#ffc8d0'];
@@ -118,14 +123,14 @@ export default function GiantPumpkin() {
   const tiles: { id: number; r: number; c: number; tile: NonNullable<Tile> }[] = [];
   s.grid.forEach((row, r) => row.forEach((t, c) => { if (t) tiles.push({ id: t.id, r, c, tile: t }); }));
 
-  const prompt = s.over ? 'NO MORE ROOM!' : tool ? TOOL_HELP[tool] + (tool === 'swap' && first ? ' (pick the second)' : '') : s.stuck ? 'STUCK! USE A FARM TOOL TO KEEP GROWING' : 'Swipe to slide the crops. Match two to grow them!';
+  const prompt = s.over ? 'NO MORE ROOM!' : tool ? TOOL_HELP[tool] + (tool === 'swap' && first ? ' (pick the second)' : '') : s.stuck ? 'STUCK! USE A FARM TOOL TO KEEP GROWING' : s.moves === 0 ? `${SIZE_NOTE[s.size]} Swipe to start.` : 'Swipe to slide the crops. Match two to grow them!';
 
   return (
     <div className="game gp">
       <div className="head">
         <div className="modebar">
           <div className="seg">
-            {SIZES.map((n) => <button key={n} className={size === n ? 'on' : ''} onClick={() => pickMode(rocks, n)}>{n}x{n}</button>)}
+            {SIZES.map((n) => <button key={n} className={size === n ? 'on' : ''} title={SIZE_NOTE[n]} onClick={() => pickMode(rocks, n)}>{n}x{n}</button>)}
           </div>
           <div className="seg">
             <button className={!rocks ? 'on' : ''} onClick={() => pickMode(false)}>NO ROCKS</button>
