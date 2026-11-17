@@ -1,4 +1,4 @@
-import { N, SHAPES, newGame, place, canPlace, fitsAnywhere, completes, lineBonus, type State, type Shape } from '../../src/lib/farmfit';
+import { N, SHAPES, newGame, place, canPlace, fitsAnywhere, completes, lineBonus, handFor, cpuMove, type State, type Shape } from '../../src/lib/farmfit';
 
 const fail = (m: string): never => { throw new Error(m); };
 const eq = (a: unknown, b: unknown, m: string) => { if (JSON.stringify(a) !== JSON.stringify(b)) fail(`${m}: got ${JSON.stringify(a)} want ${JSON.stringify(b)}`); };
@@ -81,5 +81,33 @@ eq([1, 2, 3, 4, 5].map(lineBonus), [10, 30, 60, 100, 150], 'line bonus grows wit
     games++; lines += s.lines; topScore = Math.max(topScore, s.score);
   }
   console.log('random games ok', { games, avgMoves: Math.round(moves / games), avgLines: Math.round(lines / games), multiLineClears: multi, bestScore: topScore });
+}
+// duel: the same seed deals the same hands to everybody, whatever is on their board
+{
+  const a = newGame(Math.random, 4242), b = newGame(() => 0.123, 4242);
+  eq(a.tray.map((s) => s!.id), b.tray.map((s) => s!.id), 'same seed, same first hand');
+  eq(handFor(4242, 5).map((s) => s.id), handFor(4242, 5).map((s) => s.id), 'hands repeat');
+  eq(handFor(1, 0).map((s) => s.id) === handFor(2, 0).map((s) => s.id), false, 'different seeds differ');
+  // two different boards still get the same second hand
+  let x = a, y = b; const seen = (st: State) => st.tray.map((s) => s?.id).join();
+  for (let i = 0; i < 3; i++) { const mx = cpuMove(x, 2, Math.random)!; x = place(x, mx.slot, mx.r, mx.c)!.state; }
+  for (let i = 0; i < 3; i++) { const o = [0, 1, 2].map((slot) => ({ slot })).filter((m) => y.tray[m.slot]); let done = false; for (const m of o) { const sh = y.tray[m.slot]!; for (let r = N - sh.h; r >= 0 && !done; r--) for (let c = N - sh.w; c >= 0 && !done; c--) if (canPlace(y.grid, sh, r, c)) { y = place(y, m.slot, r, c)!.state; done = true; } if (done) break; } }
+  eq(seen(x), seen(y), 'after three blocks each, both are on the same next hand');
+}
+// computer player: legal moves, finishes, and harder levels score more on average
+{
+  let seed = 31; const rng = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+  const avg: number[] = [];
+  for (const level of [1, 2, 3] as const) {
+    let tot = 0; const G = level === 3 ? 12 : 25;
+    for (let g = 0; g < G; g++) {
+      let s = newGame(rng, 1000 + g), n = 0;
+      while (!s.over && n++ < 4000) { const m = cpuMove(s, level, rng); if (!m) break; const p = place(s, m.slot, m.r, m.c, rng); if (!p) fail('cpu chose an illegal move'); s = p.state; }
+      tot += s.score;
+    }
+    avg.push(Math.round(tot / G));
+  }
+  console.log('cpu average scores (easy, medium, hard)', avg);
+  if (!(avg[1] > avg[0] && avg[2] > avg[1])) fail('computer levels are not ordered: ' + avg.join(', '));
 }
 console.log('farmfit rule cases ok');

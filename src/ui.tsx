@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { sfx } from './lib/sfx';
 import { PLAYER_COLORS, playerName, type SeatCfg } from './lib/seats';
+import type { DuelMode, Level } from './lib/duel';
 
 /** Full-screen popups render on <body> so the auto-fit scaling of the game can't displace them. */
 export const Overlay = ({ children }: { children: ReactNode }) => createPortal(children, document.body);
@@ -69,6 +70,26 @@ export function ModeBar({ opp, onChange, levels = true }: { opp: Opp; onChange?:
         <div className="seg small">
           {(['EASY', 'MEDIUM', 'HARD'] as const).map((n, i) => (
             <button key={n} className={opp.level === i + 1 ? 'on' : ''} onClick={() => { sfx.click(); opp.setLevel((i + 1) as 1 | 2 | 3); }}>{n}</button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** SOLO / 2 PLAYERS / VS CPU picker for the games where both players get the same deal */
+export function DuelBar({ mode, level, setMode, setLevel }: { mode: DuelMode; level: Level; setMode: (m: DuelMode) => void; setLevel: (l: Level) => void }) {
+  return (
+    <div className="modebar">
+      <div className="seg">
+        {([['solo', 'SOLO'], ['two', '2 PLAYERS'], ['cpu', 'VS CPU']] as const).map(([m, label]) => (
+          <button key={m} className={mode === m ? 'on' : ''} onClick={() => { sfx.click(); setMode(m); }}>{label}</button>
+        ))}
+      </div>
+      {mode === 'cpu' && (
+        <div className="seg small">
+          {(['EASY', 'MEDIUM', 'HARD'] as const).map((n, i) => (
+            <button key={n} className={level === i + 1 ? 'on' : ''} onClick={() => { sfx.click(); setLevel((i + 1) as Level); }}>{n}</button>
           ))}
         </div>
       )}

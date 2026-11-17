@@ -1375,8 +1375,8 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 .critter.farmer::after { left: 12%; right: 30%; }
 
 /* ---------------- Farm Fit ---------------- */
-.game.ff { --bs: min(calc(var(--app-w, 100vw) - 58px), 560px, calc((var(--app-h, 100vh) - 300px) / 1.25)); --tc: calc(var(--bs) * .058); }
-[data-fit="phone"] .game.ff { --bs: min(calc(var(--app-w, 100vw) - 50px), 560px, calc((var(--app-h, 100vh) - 262px) / 1.25)); }
+.game.ff { --bs: min(calc(var(--app-w, 100vw) - 58px), 560px, calc((var(--app-h, 100vh) - 346px) / 1.25)); --tc: calc(var(--bs) * .058); }
+[data-fit="phone"] .game.ff { --bs: min(calc(var(--app-w, 100vw) - 50px), 560px, calc((var(--app-h, 100vh) - 304px) / 1.25)); }
 [data-fit="phone"] .game.ff .prompt { display: none; }
 [data-fit="phone"] .game.ff .head .status { margin: 4px auto; }
 .ffscore { display: inline-flex; gap: 22px; font-size: 22px; padding: 3px 22px; }
@@ -1416,7 +1416,7 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
   .fftray { grid-template-columns: 1fr; width: calc(var(--tc) * 4 + 44px); }
 }
 [data-fit="land"] .game.ff .prompt { display: none; }
-[data-fit="land"] .game.ff { --bs: calc(var(--app-h, 100vh) - 76px); --tc: calc(var(--bs) * .075); }
+[data-fit="land"] .game.ff { --bs: calc(var(--app-h, 100vh) - 112px); --tc: calc(var(--bs) * .075); }
 [data-fit="land"] .ffwrap { flex-direction: row; align-items: center; justify-content: center; gap: 14px; }
 [data-fit="land"] .fftray { grid-template-columns: 1fr; width: calc(var(--tc) * 4 + 30px); gap: 6px; }
 [data-fit="land"] .ffslot { height: calc(var(--tc) * 4 + 14px); }
@@ -1487,3 +1487,6 @@ html .rules, html[data-fit] .rules { max-height: calc(var(--real-h, 100dvh) - ma
 .gpboard.tiny .gpname { display: none; }
 .gpboard.tiny .gptile img { width: 88%; height: 88%; margin-top: 0; }
 .modebar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+.ffscore .me { color: var(--sun); }
+.ffscore .hand { font-size: 13px; opacity: .85; align-self: center; }
