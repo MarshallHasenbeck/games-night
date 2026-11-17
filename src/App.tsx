@@ -32,7 +32,7 @@ const GAMES = [
   { id: 'palace', name: 'Palace', icon: <MI n="Palace" />, blurb: 'Climb the pile, burn it, and get out first. 2-4 players!', C: Palace },
   { id: 'pugdoku', name: 'Pugdoku', icon: <img className="pugicon" src={pugUrl} alt="" />, blurb: 'Find one pug per row, column and color. No touching! Solo or team up.', C: Pugdoku },
   { id: 'farmfit', name: 'Farm Fit', icon: <FarmFitIcon />, blurb: 'Drop colorful blocks on the field. Fill a row or column to clear it!', C: FarmFit },
-  { id: 'pumpkin', name: 'Giant Pumpkin', icon: <GiantPumpkinIcon />, blurb: 'Swipe to match crops and grow them, all the way to a giant pumpkin!', C: GiantPumpkin },
+  { id: 'pumpkin', name: 'Bumper Crop', icon: <GiantPumpkinIcon />, blurb: 'Swipe to match crops and grow them, all the way to a pumpkin and beyond!', C: GiantPumpkin },
   { id: 'backgammon', name: 'Backgammon', icon: <MI n="Backgammon" />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
   { id: 'mancala', name: 'Mancala', icon: <MI n="Mancala" />, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
   { id: 'battleship', name: 'Battleship', icon: <MI n="Battleship" />, blurb: 'Hunt the cute little boats. Pass-the-device secret!', C: Battleship },

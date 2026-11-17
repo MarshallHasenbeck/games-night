@@ -1,4 +1,4 @@
-/** Pixel-art crops for Giant Pumpkin: drawn smooth, then pixelated (same recipe as the menu icons). Cached data URLs. */
+/** Pixel-art crops for Bumper Crop: drawn smooth, then pixelated (same recipe as the menu icons). Cached data URLs. */
 const O = '#24140a';
 type C = CanvasRenderingContext2D;
 const lin = (c: C, x0: number, y0: number, x1: number, y1: number, st: string[]) => { const g = c.createLinearGradient(x0, y0, x1, y1); st.forEach((s, i) => g.addColorStop(i / (st.length - 1), s)); return g; };

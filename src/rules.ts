@@ -2,8 +2,8 @@ export type Rules = { title: string; goal: string; sections: { h: string; items:
 
 export const RULES: Record<string, Rules> = {
   pumpkin: {
-    title: 'Giant Pumpkin',
-    goal: 'Grow a Giant Pumpkin! Slide matching crops together to make the next crop up, from a tiny seed all the way to the biggest pumpkin.',
+    title: 'Bumper Crop',
+    goal: 'Grow a Pumpkin, then keep going! Slide matching crops together to make the next crop up, from a tiny seed all the way to the Pumpkin and the giant, golden and mythic pumpkins beyond.',
     sections: [
       { h: 'Playing', items: [
         'Swipe in any direction (or use the arrow keys). Every crop slides as far as it can that way.',

@@ -1,5 +1,5 @@
 /**
- * Giant Pumpkin - pure rules, no React.
+ * Bumper Crop (files still say pumpkin) - pure rules, no React.
  * A 4x4 garden. Swipe and every crop slides as far as it can; two of the same crop merge into the next one up.
  * Seed -> sprout -> radish -> carrot -> potato -> corn -> tomato -> eggplant -> cabbage -> melon -> PUMPKIN (the win),
  * and then it keeps going: giant pumpkin, ribbon, golden, crystal, moon, sun, rainbow, starlit, legend, mythic pumpkins.
@@ -22,7 +22,7 @@ export type State = {
   size: number; grid: Grid; score: number; moves: number; merges: number; nextId: number;
   tools: Record<Tool, number>; toolTurn: number; // which tool is earned next (index into TOOLS)
   rocks: boolean; // this garden has stones in it (the "no rocks" mode never does)
-  won: boolean;   // reached the Giant Pumpkin at some point
+  won: boolean;   // reached the Pumpkin (the win) at some point
   over: boolean;  // nothing can move and no tools left
   stuck: boolean; // nothing can move (a tool might still help)
 };
