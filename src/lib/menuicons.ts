@@ -130,7 +130,14 @@ export function menuIcon(name: string): string {
     else { d[i + 3] = 0; for (const [sx, sy, rx, ry] of SH) { const nx = (px + .5 - sx * k) / (rx * k), ny = (py + .5 - sy * k) / (ry * k); if (nx * nx + ny * ny <= 1) { d[i] = d[i + 1] = d[i + 2] = 0; d[i + 3] = 75; } } }
   }
   x.putImageData(im, 0, 0);
-  const big = document.createElement('canvas'); big.width = big.height = N * 4;
-  const b = big.getContext('2d')!; b.imageSmoothingEnabled = false; b.drawImage(cv, 0, 0, N * 4, N * 4);
+  // trim the empty margin so every icon fills its box, then centre it (square, small even margin)
+  let x0 = N, y0 = N, x1 = -1, y1 = -1;
+  for (let py = 0; py < N; py++) for (let px = 0; px < N; px++) if (d[(py * N + px) * 4 + 3] > 80) { if (px < x0) x0 = px; if (px > x1) x1 = px; if (py < y0) y0 = py; if (py > y1) y1 = py; }
+  if (x1 < 0) { x0 = 0; y0 = 0; x1 = y1 = N - 1; }
+  const bw = x1 - x0 + 1, bh = y1 - y0 + 1, side = Math.max(bw, bh), BIG = N * 4, pad = 4;
+  const sc = (BIG - pad * 2) / side;
+  const big = document.createElement('canvas'); big.width = big.height = BIG;
+  const b = big.getContext('2d')!; b.imageSmoothingEnabled = false;
+  b.drawImage(cv, x0, y0, bw, bh, (BIG - bw * sc) / 2, (BIG - bh * sc) / 2, bw * sc, bh * sc);
   const url = big.toDataURL('image/png'); cache.set(name, url); return url;
 }

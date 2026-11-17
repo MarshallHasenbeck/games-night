@@ -218,13 +218,16 @@ export default function FarmFit() {
 
 /** menu icon */
 export function FarmFitIcon() {
-  const b = (x: number, y: number, c: string, d: string) => <g key={`${x}${y}`}><rect x={x} y={y} width="11" height="11" rx="2" fill={c} stroke="#3a2410" strokeWidth="1.6" /><rect x={x + 2} y={y + 2} width="7" height="2.4" rx="1" fill="#fff" opacity=".45" /><rect x={x} y={y + 8} width="11" height="3" rx="1.5" fill={d} opacity=".5" /></g>;
+  const FILL: Record<string, [string, string]> = { B: ['#4aa3df', '#14294a'], O: ['#ee8a3a', '#7a3a1e'], Y: ['#f2b632', '#7a5a0e'], R: ['#d4475a', '#5a1020'], G: ['#5cb84a', '#1f4d1c'] };
+  const rows = ['.....', '.B.O.', '.BOO.', '.BRYY', 'GBOYR']; // a nearly full stack with a finished bottom row
+  const P = 12, S = 11;
   return (
-    <svg width="64" height="64" viewBox="0 0 64 64" style={{ imageRendering: 'pixelated' }}>
-      {[b(6, 6, '#4aa3df', '#14294a'), b(6, 18, '#4aa3df', '#14294a'), b(6, 30, '#4aa3df', '#14294a'),
-        b(20, 30, '#ee8a3a', '#7a3a1e'), b(32, 30, '#ee8a3a', '#7a3a1e'), b(32, 18, '#ee8a3a', '#7a3a1e'),
-        b(20, 46, '#f2b632', '#7a5a0e'), b(32, 46, '#f2b632', '#7a5a0e'), b(44, 46, '#d4475a', '#5a1020'), b(44, 34, '#d4475a', '#5a1020'),
-        b(44, 6, '#5cb84a', '#1f4d1c'), b(32, 6, '#5cb84a', '#1f4d1c')]}
+    <svg width="64" height="64" viewBox="-1 -1 62 62" style={{ imageRendering: 'pixelated' }}>
+      {rows.flatMap((row, r) => [...row].map((ch, c) => {
+        if (ch === '.') return null;
+        const [f, d] = FILL[ch], x = c * P, y = r * P;
+        return <g key={`${r}${c}`}><rect x={x} y={y} width={S} height={S} rx="2" fill={f} stroke="#3a2410" strokeWidth="1.6" /><rect x={x + 2} y={y + 2} width="7" height="2.4" rx="1" fill="#fff" opacity=".45" /><rect x={x} y={y + 8} width={S} height="3" rx="1.5" fill={d} opacity=".5" /></g>;
+      }))}
     </svg>
   );
 }
