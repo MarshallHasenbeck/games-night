@@ -1,7 +1,7 @@
-// Checks the Pugdoku bank: every puzzle (and its rotations/flips) has exactly ONE answer, and it matches the stored one.
-// Run: npx tsx tools/tests/pugdoku-bank.ts
-import { BANK } from '../../src/lib/pugdoku-bank';
-import { decodePuzzle, solveAll, transformPuzzle, makePuzzle } from '../../src/lib/pugdoku';
+// Checks the Pug Patch bank: every puzzle (and its rotations/flips) has exactly ONE answer, and it matches the stored one.
+// Run: npx tsx tools/tests/pugpatch-bank.ts
+import { BANK } from '../../src/lib/pugpatch-bank';
+import { decodePuzzle, solveAll, transformPuzzle, makePuzzle } from '../../src/lib/pugpatch';
 
 let bad = 0, total = 0;
 const seen = new Set<string>();

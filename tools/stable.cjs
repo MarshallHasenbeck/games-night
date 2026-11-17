@@ -6,13 +6,13 @@ const SIZES = [[1376,900,'13in Safari land'],[1376,1032,'13in full land'],[1032,
     const mob = vw < 700 || vh < 460;
     const p = await b.newPage({ viewport: { width: vw, height: vh }, isMobile: mob, hasTouch: mob, deviceScaleFactor: mob ? 2 : 1 });
     p.on('pageerror',e=>errs.push(e.message));
-    await p.goto('http://localhost:4173/'); await p.evaluate(()=>{ localStorage.setItem('gn-time','day'); localStorage.setItem('gn-rules-playnine','1'); localStorage.setItem('gn-opp-playnine', JSON.stringify({cpu:false})); });
-    await p.goto('http://localhost:4173/#playnine'); await p.reload(); await p.waitForTimeout(2600);
+    await p.goto('http://localhost:4173/'); await p.evaluate(()=>{ localStorage.setItem('gn-time','day'); localStorage.setItem('gn-rules-fairway','1'); localStorage.setItem('gn-opp-fairway', JSON.stringify({cpu:false})); });
+    await p.goto('http://localhost:4173/#fairway'); await p.reload(); await p.waitForTimeout(2600);
     for (let k=0;k<2;k++){ for (let i=0;i<2;i++){ await p.locator('.pgrid.turn .pcard.active').first().click({force:true}); await p.waitForTimeout(100);} }
     await p.waitForTimeout(600);
     const snap = () => p.evaluate(()=>{ const r=(s,n=0)=>{const e=document.querySelectorAll(s)[n]; const b=e.getBoundingClientRect(); return [Math.round(b.x),Math.round(b.y),Math.round(b.width),Math.round(b.height)]}; 
-      let minLeft = 1e9, maxRight = 0; document.querySelectorAll('.pgrid, .pnmid, .holestrip, .head').forEach(e=>{const b=e.getBoundingClientRect(); if(b.width>0){minLeft=Math.min(minLeft,b.left); maxRight=Math.max(maxRight,b.right);}});
-      return { p1:r('.pgrid',0), p2:r('.pgrid',1), mid:r('.pnmid'), prompt:r('.prompt'), foot:r('.foot'), minLeft:Math.round(minLeft), maxRight:Math.round(maxRight), iw: innerWidth, over: document.documentElement.scrollHeight-innerHeight, cw: Math.round(document.querySelector('.pcard:not(.small)').getBoundingClientRect().width) }; });
+      let minLeft = 1e9, maxRight = 0; document.querySelectorAll('.pgrid, .fwmid, .holestrip, .head').forEach(e=>{const b=e.getBoundingClientRect(); if(b.width>0){minLeft=Math.min(minLeft,b.left); maxRight=Math.max(maxRight,b.right);}});
+      return { p1:r('.pgrid',0), p2:r('.pgrid',1), mid:r('.fwmid'), prompt:r('.prompt'), foot:r('.foot'), minLeft:Math.round(minLeft), maxRight:Math.round(maxRight), iw: innerWidth, over: document.documentElement.scrollHeight-innerHeight, cw: Math.round(document.querySelector('.pcard:not(.small)').getBoundingClientRect().width) }; });
     const A = await snap();                                   // step 1 (draw)
     await p.locator('.pile').nth(0).locator('.pcard').click({force:true}); await p.waitForTimeout(700);
     const B = await snap();                                   // step 2 (card drawn: extra card + choice row)

@@ -1,5 +1,5 @@
 /**
- * Acorn Pop - a Trouble-style dice race. 32 squares round the board, 4 acorns each.
+ * Acorn Pop - a dice race around the board. 32 squares round the board, 4 acorns each.
  * Seat s starts on ring square 3 + 8s. An acorn's progress: -1 = in the pen, 0..31 = on the ring (0 = its start square),
  * 32..35 = the four home slots. Seat ids are board sides (0 top, 1 right, 2 bottom, 3 left).
  */

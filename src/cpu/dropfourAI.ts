@@ -1,4 +1,4 @@
-import { R, C, type Grid, findWin, landingRow } from '../lib/connect4';
+import { R, C, type Grid, findWin, landingRow } from '../lib/dropfour';
 
 const ORDER = [3, 2, 4, 1, 5, 0, 6];
 const DEPTH = [3, 5, 7];

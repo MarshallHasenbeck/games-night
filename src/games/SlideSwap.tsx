@@ -24,8 +24,8 @@ const angle = (idx: number) => {
 
 function Face({ v, flip }: { v: number; flip?: boolean }) {
   return (
-    <span className={`scard ${v === 0 ? 'sorry' : v === 4 ? 'back' : ''} ${flip ? 'flipin' : ''}`}>
-      <b>{v === 0 ? 'SORRY!' : v}</b>
+    <span className={`scard ${v === 0 ? 'shoo' : v === 4 ? 'back' : ''} ${flip ? 'flipin' : ''}`}>
+      <b>{v === 0 ? 'SHOO!' : v}</b>
       <small>{CARD_TEXT[v]}</small>
     </span>
   );
@@ -130,7 +130,7 @@ export default function SlideSwap() {
     const [lr, lc] = at(t, m.pawn, m.to, v[t]);
     if (m.kind === 'enter') addFx(lr, lc, 'dust');
     if (m.target) {
-      if (m.kind === 'sorry') addFx(lr, lc, 'sorry', 'SORRY!');
+      if (m.kind === 'shoo') addFx(lr, lc, 'shoo', 'SHOO!');
       else { const [or, oc] = at(m.target.seat, m.target.pawn, s.pawns[m.target.seat][m.target.pawn], s.pawns[m.target.seat]); addFx(or, oc, 'swap', 'SWAP!'); addFx(lr, lc, 'swap'); }
       setFlying(new Set([`${m.target.seat}-${m.target.pawn}`, `${t}-${m.pawn}`])); setTimeout(() => setFlying(new Set()), 900);
       v[m.target.seat][m.target.pawn] = m.kind === 'swap' ? m.oppTo! : PEN; setView(v.map((a) => [...a])); await sleep(450);
@@ -169,7 +169,7 @@ export default function SlideSwap() {
   const clickPawn = (seat: number, pawn: number) => {
     if (!pending || busy.current) return;
     if (seat === g.turn) {
-      if (g.card === 0) return;                        // Sorry!: tap the opponent instead
+      if (g.card === 0) return;                        // Shoo!: tap the opponent instead
       const ms = mineMoves(pawn);
       if (!ms.length) return;
       if (ms.length === 1) { doPlay(ms[0], g); return; }

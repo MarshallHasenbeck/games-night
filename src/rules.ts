@@ -75,8 +75,8 @@ export const RULES: Record<string, Rules> = {
       ] },
     ],
   },
-  pugdoku: {
-    title: 'Pugdoku',
+  pugpatch: {
+    title: 'Pug Patch',
     goal: 'Find where every pug is hiding: one pug in every row, every column and every color. Pugs never touch, not even corners.',
     sections: [
       { h: 'The rules', items: [
@@ -146,8 +146,8 @@ export const RULES: Record<string, Rules> = {
       ] },
     ],
   },
-  connect4: {
-    title: 'Connect 4',
+  dropfour: {
+    title: 'Drop Four',
     goal: 'Be the first to line up four of your discs - across, up and down, or diagonally.',
     sections: [
       { h: 'How to play', items: [
@@ -162,8 +162,8 @@ export const RULES: Record<string, Rules> = {
       ] },
     ],
   },
-  yahtzee: {
-    title: 'Yahtzee',
+  diceharvest: {
+    title: 'Dice Harvest',
     goal: 'Score the most points over 13 rounds by making the best dice combinations.',
     sections: [
       { h: 'Your turn', items: [
@@ -179,13 +179,13 @@ export const RULES: Record<string, Rules> = {
         '3 of a Kind / 4 of a Kind: at least that many matching dice. Score the total of all 5 dice.',
         'Full House: three of one number + two of another = 25.',
         'Small Straight (4 in a row) = 30. Large Straight (5 in a row) = 40.',
-        'Yahtzee (all 5 the same) = 50. Chance: any roll, add up all the dice.',
-        'Extra Yahtzees: +100 bonus each if you already scored 50 in the Yahtzee box. They also count as a wild card for other boxes.',
+        'Five Alike (all 5 the same) = 50. Chance: any roll, add up all the dice.',
+        'Extra Five Alikes: +100 bonus each if you already scored 50 in the Five Alike box. They also count as a wild card for other boxes.',
       ] },
     ],
   },
-  playnine: {
-    title: 'Play Nine',
+  fairway: {
+    title: 'Fairway',
     goal: 'Have the LOWEST total score after 9 holes (rounds). Like golf - low is good!',
     sections: [
       { h: 'Setup', items: [
@@ -218,7 +218,7 @@ export const RULES: Record<string, Rules> = {
     sections: [
       { h: 'How to play', items: [
         'Pick 2, 3 or 4 players at the top. Tap a player chip to switch it between HUMAN and CPU.',
-        'On your turn, tap the bubble to POP the dice. Then tap one of your glowing acorns to move it that many squares, clockwise.',
+        'On your turn, tap the cup to ROLL the dice. Then tap one of your glowing acorns to move it that many squares, clockwise.',
         'You need a 6 to bring an acorn out of the pen onto your start square. A 6 also lets you roll again!',
         'No acorns out yet? You get 3 tries to roll a 6.',
       ] },
@@ -248,7 +248,7 @@ export const RULES: Record<string, Rules> = {
         '3, 5, 8, 12: move forward that many. 4: move BACKWARD 4. 10: forward 10, or back 1.',
         '7: move one pawn 7, or split it between two pawns (tap a smaller number, then move another pawn the rest).',
         '11: forward 11, or SWAP places with an opponent\'s pawn. No move possible? Your turn is skipped.',
-        'SORRY!: take a pawn from START and bump any opponent\'s pawn off the board - your pawn takes its place.',
+        'SHOO!: take a pawn from START and bump any opponent\'s pawn off the board - your pawn takes its place.',
       ] },
       { h: 'Slides', items: [
         'Land exactly on the arrow of a slide that is NOT your colour and you whoosh along it to the dot at the end.',
@@ -330,8 +330,8 @@ export const RULES: Record<string, Rules> = {
       ] },
     ],
   },
-  battleship: {
-    title: 'Battleship',
+  pondpatrol: {
+    title: 'Pond Patrol',
     goal: 'Find and sink all 5 of your opponent\'s hidden boats before they sink yours.',
     sections: [
       { h: 'Placing your boats', items: [

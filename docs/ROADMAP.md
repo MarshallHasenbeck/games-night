@@ -3,7 +3,7 @@
 ## Saved for later: 2-player on separate devices (online play)
 
 **Decision (Oct 2026):** use **Supabase Realtime** (a brand-new project, separate from the gettoit app). Not set up yet - parked until
-the owner is ready. First games wanted: **Battleship** and **Play Nine** (then Connect 4 / Chess / the rest). The newer 2-4 player
+the owner is ready. First games wanted: **Pond Patrol** and **Fairway** (then Drop Four / Chess / the rest). The newer 2-4 player
 games (**Acorn Pop**, **Slide & Swap**) would need a room with up to 4 seats, so build the sync layer for N seats from the start.
 
 **Goal:** each player uses their own phone/iPad. One creates a game and gets a 4-letter room code (or a share link),
@@ -19,19 +19,19 @@ the other joins with it. Moves sync live. Pass-the-iPad curtains are no longer n
    (`apply(state, move) -> state`), so online play = send the move, both devices apply it. Add a `mySeat: 0 | 1`
    so each device only lets its own player act.
 4. **Hidden information** (needs care so the other player can't peek):
-   - Dominoes hands and Battleship fleets: keep each player's secret part private (only send the *result* of a move,
+   - Dominoes hands and Pond Patrol fleets: keep each player's secret part private (only send the *result* of a move,
      e.g. "hit / miss / sunk"), never the whole state.
-   - Play Nine face-down cards and the deck order: dealt by one side, only revealed cards sent.
-   - Chess, Checkers, Connect 4, Backgammon, Mancala, Yahtzee have no hidden info (Backgammon/Yahtzee dice must be
+   - Fairway face-down cards and the deck order: dealt by one side, only revealed cards sent.
+   - Chess, Checkers, Drop Four, Backgammon, Mancala, Dice Harvest have no hidden info (Backgammon/Dice Harvest dice must be
      rolled by one authority so both players see the same roll).
 5. **Polish:** reconnect on refresh (store room code + seat in localStorage), "waiting for opponent…", rematch,
    resign/leave, and a simple presence indicator.
 
 ### Suggested order
-Connect 4 → Checkers → Chess → Mancala (simplest, no hidden info) → Backgammon → Yahtzee → Play Nine →
-Dominoes → Battleship (most hidden information).
+Drop Four → Checkers → Chess → Mancala (simplest, no hidden info) → Backgammon → Dice Harvest → Fairway →
+Dominoes → Pond Patrol (most hidden information).
 
 ## Other ideas
 - Custom player names and colors
-- Cribbage, Go Fish, Uno-style card game
+- Cribbage, Go Fish, a colour-matching card game
 - Daily puzzle / achievements

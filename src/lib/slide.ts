@@ -1,17 +1,17 @@
 /**
- * Slide & Swap - a Sorry!-style card race. 60 squares round the edge, 4 pawns each.
+ * Slide & Swap - a card race around the board. 60 squares round the edge, 4 pawns each.
  * Seat s (0 top, 1 right, 2 bottom, 3 left) owns ring squares 15s..15s+14. Its pawns leave the start area onto ring square 15s+4.
  * A pawn's progress q: PEN = in the start area, -10..58 on the ring (0 = its exit square, 58 = its turn-in square),
  * 59..63 = the five safe squares, 64 = home (exact count).
  */
-import { shuffle } from './playnine';
+import { shuffle } from './fairway';
 
 export const PEN = -100, SAFE = 59, HOME = 64, MIN_Q = -10, RING = 60;
 export type SState = {
   seats: number[]; pawns: number[][]; turn: number; deck: number[]; discard: number[];
   card: number | null; remaining: number | null; locked: number | null; winner: number | null;
 };
-export type SMove = { pawn: number; to: number; kind: 'move' | 'enter' | 'sorry' | 'swap'; target?: { seat: number; pawn: number }; oppTo?: number; label?: string };
+export type SMove = { pawn: number; to: number; kind: 'move' | 'enter' | 'shoo' | 'swap'; target?: { seat: number; pawn: number }; oppTo?: number; label?: string };
 export type Slide = { start: number; end: number; owner: number };
 
 export const SLIDES: Slide[] = [0, 1, 2, 3].flatMap((owner) => {
@@ -82,7 +82,7 @@ export function legalMoves(s: SState): SMove[] {
   } else if (c === 0) {
     const pawn = mine.indexOf(PEN);
     if (pawn >= 0) for (const seat of s.seats) if (seat !== t) s.pawns[seat].forEach((oq, op) => {
-      if (onRing(oq)) out.push({ pawn, to: progOf(t, ringOf(seat, oq)), kind: 'sorry', target: { seat, pawn: op }, label: 'SORRY!' });
+      if (onRing(oq)) out.push({ pawn, to: progOf(t, ringOf(seat, oq)), kind: 'shoo', target: { seat, pawn: op }, label: 'SHOO!' });
     });
   } else if (c === 7) {
     for (let k = 1; k <= 7; k++) mine.forEach((q, pawn) => {
@@ -110,7 +110,7 @@ export function play(s: SState, m: SMove): { state: AfterState; info: PlayInfo }
   const bump = (o: { seat: number; pawn: number }) => { pawns[o.seat][o.pawn] = PEN; bumped.push(o); };
   if (m.kind === 'swap' && m.target) {
     pawns[m.target.seat][m.target.pawn] = m.oppTo!; pawns[t][m.pawn] = m.to;
-  } else if (m.kind === 'sorry' && m.target) {
+  } else if (m.kind === 'shoo' && m.target) {
     bump(m.target); pawns[t][m.pawn] = m.to;
   } else {
     const from = pawns[t][m.pawn];

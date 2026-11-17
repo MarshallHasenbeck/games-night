@@ -11,10 +11,10 @@ let mv=legalMoves(s); const m=mv.find(x=>x.pawn===0)!; const r=play(s,m);
 ok(r.info.slide!==null,'landing on opponent slide start slides');
 ok(r.info.bumped.some(b=>b.seat===2&&b.pawn===1),'slide bumps pawn on slide squares');
 ok(ringOf(0,r.state.pawns[0][0])===sl.end,'ends on slide end '+sl.end);
-// sorry
+// shoo
 let s2=newSlide([0,2]); s2={...s2,turn:0,card:0}; s2.pawns[2][0]=((20-34)+60)%60;
-mv=legalMoves(s2); ok(mv.length===1&&mv[0].kind==='sorry','sorry offers replace');
-const r2=play(s2,mv[0]); ok(r2.state.pawns[2][0]===PEN&&ringOf(0,r2.state.pawns[0][mv[0].pawn])===20,'sorry replaces opponent');
+mv=legalMoves(s2); ok(mv.length===1&&mv[0].kind==='shoo','shoo offers replace');
+const r2=play(s2,mv[0]); ok(r2.state.pawns[2][0]===PEN&&ringOf(0,r2.state.pawns[0][mv[0].pawn])===20,'shoo replaces opponent');
 // swap
 let s3=newSlide([0,2]); s3={...s3,turn:0,card:11}; s3.pawns[0][0]=10; s3.pawns[2][0]=((40-34)+60)%60;
 mv=legalMoves(s3); const sw=mv.find(x=>x.kind==='swap')!; ok(!!sw,'swap offered');

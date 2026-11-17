@@ -8,7 +8,7 @@
  */
 export const SIZES = [4, 5, 6] as const; // garden sizes: 4x4, 5x5, 6x6
 export type Size = (typeof SIZES)[number];
-export const TOP = 10; // Pumpkin (worth 2048, like the 2048 tile): reaching it wins, but the garden keeps growing past it
+export const TOP = 10; // Pumpkin (worth 2048 points): reaching it wins, but the garden keeps growing past it
 export const MAXT = 20; // Mythic Pumpkin: the last step (a worth of 2 million points per tile; effectively endless)
 export const CROPS = ['Seed', 'Sprout', 'Radish', 'Carrot', 'Potato', 'Corn', 'Tomato', 'Eggplant', 'Cabbage', 'Melon', 'Pumpkin', 'Giant Pumpkin',
   'Ribbon', 'Golden', 'Crystal', 'Moon', 'Sun', 'Rainbow', 'Starlit', 'Legend', 'Mythic'];

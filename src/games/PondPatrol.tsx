@@ -3,7 +3,7 @@ import { Boat, DuckArt, FishArt } from '../art';
 import { sfx, sfx2, sfx3 } from '../lib/sfx';
 import {
   N, FLEET, newFleet, randomFleet, canPlace, cells, fire, shipAt, isSunk, allSunk, cpuShot, type Fleet, type Ship,
-} from '../lib/battleship';
+} from '../lib/pondpatrol';
 import { Celebrate, ModeBar, Overlay, useOpponent } from '../ui';
 import { recordResult } from '../lib/stats';
 
@@ -62,8 +62,8 @@ function Pond({ fleet, reveal, onCell, target, small, preview, label, shake, las
   );
 }
 
-export default function Battleship() {
-  const opp = useOpponent('battleship');
+export default function PondPatrol() {
+  const opp = useOpponent('pondpatrol');
   const [phase, setPhase] = useState<Phase>('setup');
   const [fleets, setFleets] = useState<[Fleet, Fleet]>([newFleet(), newFleet()]);
   const [placing, setPlacing] = useState<0 | 1>(0);          // whose fleet is being set up
@@ -99,7 +99,7 @@ export default function Battleship() {
     if (winner === null) { recorded.current = false; return; }
     if (recorded.current) return;
     recorded.current = true;
-    recordResult('battleship', winner);
+    recordResult('pondpatrol', winner);
     setTimeout(sfx.win, 300);
   }, [winner]);
 
@@ -217,7 +217,7 @@ export default function Battleship() {
     : target ? `${names[viewer]}: PRESS FIRE!` : `${names[viewer]}: TAP A SPOT TO AIM`;
 
   return (
-    <div className="game battleship">
+    <div className="game pondpatrol">
       <div className="head">
         <ModeBar opp={opp} onChange={reset} />
         <div className="status">{status}</div>

@@ -35,8 +35,8 @@ export const AcornPiece = ({ color }: { color: number }) => <span className="pie
 /** A little mushroom pawn in a player's colour. */
 export const MushroomPiece = ({ color }: { color: number }) => <span className="piece-art"><PixelArt rows={MUSHROOM} palette={pal(color)} px={1} /></span>;
 
-/* ---------- little burst effects (dust, bump, home sparkle, slide streak, sorry zap, swap swirl) ---------- */
-export type FxKind = 'dust' | 'bump' | 'home' | 'slide' | 'sorry' | 'swap';
+/* ---------- little burst effects (dust, bump, home sparkle, slide streak, shoo zap, swap swirl) ---------- */
+export type FxKind = 'dust' | 'bump' | 'home' | 'slide' | 'shoo' | 'swap';
 export type Fx = { id: number; r: number; c: number; kind: FxKind; text?: string };
 
 export function useFx(): [Fx[], (r: number, c: number, kind: FxKind, text?: string) => void] {

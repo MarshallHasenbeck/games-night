@@ -2,8 +2,8 @@ const { chromium } = require('playwright');
 const SIZES=[[1376,900],[1376,1032],[1032,1250],[1180,740],[820,1180],[1024,700],[390,844],[844,390]];
 (async()=>{const b=await chromium.launch();let bad=0;
 for(const [vw,vh] of SIZES){const mob=vw<700||vh<460;const p=await b.newPage({viewport:{width:vw,height:vh},isMobile:mob,hasTouch:mob});
-await p.goto('http://localhost:4173/');await p.evaluate(()=>{localStorage.setItem('gn-time','day');localStorage.setItem('gn-rules-playnine','1');localStorage.setItem('gn-opp-playnine',JSON.stringify({cpu:false}));});
-await p.goto('http://localhost:4173/#playnine');await p.reload();await p.waitForTimeout(2200);
+await p.goto('http://localhost:4173/');await p.evaluate(()=>{localStorage.setItem('gn-time','day');localStorage.setItem('gn-rules-fairway','1');localStorage.setItem('gn-opp-fairway',JSON.stringify({cpu:false}));});
+await p.goto('http://localhost:4173/#fairway');await p.reload();await p.waitForTimeout(2200);
 for(let i=0;i<2;i++)for(let k=0;k<2;k++){await p.locator('.pgrid.turn .pcard.active').first().click({force:true});await p.waitForTimeout(100);}
 await p.waitForTimeout(600);
 const snap=()=>p.evaluate(()=>{const r=s=>{const b=document.querySelector(s).getBoundingClientRect();return [Math.round(b.x),Math.round(b.y),Math.round(b.width),Math.round(b.height)]};return {pr:r('.prompt'),p1:r('.pgrid'),foot:r('.foot'),sy:scrollY,over:document.documentElement.scrollHeight-innerHeight,lines:Math.round(document.querySelector('.prompt').getBoundingClientRect().height)}});

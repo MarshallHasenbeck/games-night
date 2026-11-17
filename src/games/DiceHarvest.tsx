@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  CATS, LABEL, UPPER, LOWER, emptyCard, scoreFor, upperSum, upperBonus, total, isYahtzee, cpuHolds, cpuCategory, type Cat, type Card,
-} from '../lib/yahtzee';
+  CATS, LABEL, UPPER, LOWER, emptyCard, scoreFor, upperSum, upperBonus, total, isFiveAlike, cpuHolds, cpuCategory, type Cat, type Card,
+} from '../lib/diceharvest';
 import { sfx } from '../lib/sfx';
 import { Celebrate, ModeBar, useOpponent } from '../ui';
 import { recordResult } from '../lib/stats';
@@ -29,8 +29,8 @@ const fresh = (): S => ({
   cards: [emptyCard(), emptyCard()], bonus: [0, 0], turn: 0, dice: [0, 0, 0, 0, 0], held: Array(5).fill(false), rolls: 3, lastPick: null,
 });
 
-export default function Yahtzee() {
-  const opp = useOpponent('yahtzee');
+export default function DiceHarvest() {
+  const opp = useOpponent('diceharvest');
   const [s, setS] = useState<S>(fresh);
   const [tumble, setTumble] = useState<number[] | null>(null);
   const busy = useRef(false);
@@ -45,7 +45,7 @@ export default function Yahtzee() {
     if (!done) { recorded.current = false; return; }
     if (recorded.current) return;
     recorded.current = true;
-    recordResult('yahtzee', t[0] === t[1] ? 'draw' : t[0] > t[1] ? 0 : 1);
+    recordResult('diceharvest', t[0] === t[1] ? 'draw' : t[0] > t[1] ? 0 : 1);
     setTimeout(sfx.win, 300);
   }, [done]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -73,14 +73,14 @@ export default function Yahtzee() {
   };
 
   const me = s.cards[s.turn];
-  const joker = rolled && isYahtzee(s.dice) && me.yahtzee === 50 && me[UPPER[s.dice[0] - 1]] !== null;
+  const joker = rolled && isFiveAlike(s.dice) && me.fiveAlike === 50 && me[UPPER[s.dice[0] - 1]] !== null;
 
   const commit = (cat: Cat) => {
     sfx.score();
     setS((p) => {
       const cards: [Card, Card] = [{ ...p.cards[0] }, { ...p.cards[1] }];
       const bonus: [number, number] = [...p.bonus];
-      const jk = isYahtzee(p.dice) && cards[p.turn].yahtzee === 50;
+      const jk = isFiveAlike(p.dice) && cards[p.turn].fiveAlike === 50;
       if (jk) bonus[p.turn]++;
       cards[p.turn][cat] = scoreFor(cat, p.dice, jk && cards[p.turn][UPPER[p.dice[0] - 1]] !== null);
       return { ...p, cards, bonus, turn: p.turn === 0 ? 1 : 0, dice: [0, 0, 0, 0, 0], held: Array(5).fill(false), rolls: 3, lastPick: { p: p.turn, cat, n: (p.lastPick?.n ?? 0) + 1 } };
@@ -146,7 +146,7 @@ export default function Yahtzee() {
   );
 
   return (
-    <div className="game split rev yahtzee">
+    <div className="game split rev diceharvest">
       <div className="head">
       <ModeBar opp={opp} levels onChange={reset} />
       <div className="status">
@@ -163,7 +163,7 @@ export default function Yahtzee() {
         </button>
         <button className="btn" onClick={reset}>NEW GAME</button>
       </div>
-      <p className="hint">{rolled && !done && !cpuTurn ? <>Tap dice to HOLD. Tap a glowing box to score.{joker ? ' YAHTZEE BONUS +100!' : ''}</> : 'Roll up to 3 times, then fill one box.'}</p>
+      <p className="hint">{rolled && !done && !cpuTurn ? <>Tap dice to HOLD. Tap a glowing box to score.{joker ? ' FIVE ALIKE BONUS +100!' : ''}</> : 'Roll up to 3 times, then fill one box.'}</p>
       </div>
       <table className="main score">
         <thead><tr><th /><th className={s.turn === 0 ? 'cur' : ''}>{names[0]}</th><th className={s.turn === 1 ? 'cur' : ''}>{names[1]}</th></tr></thead>
@@ -171,7 +171,7 @@ export default function Yahtzee() {
           {UPPER.map(row)}
           <tr className="subrow"><th>Upper 63=+35</th>{[0, 1].map((p) => <td key={p}>{upperSum(s.cards[p])}{upperBonus(s.cards[p]) ? ' +35' : ''}</td>)}</tr>
           {LOWER.map(row)}
-          <tr className="subrow"><th>Yahtzee bonus</th>{[0, 1].map((p) => <td key={p}>{s.bonus[p] ? `+${s.bonus[p] * 100}` : ''}</td>)}</tr>
+          <tr className="subrow"><th>Five Alike bonus</th>{[0, 1].map((p) => <td key={p}>{s.bonus[p] ? `+${s.bonus[p] * 100}` : ''}</td>)}</tr>
           <tr className="total"><th>Total</th><td>{t[0]}</td><td>{t[1]}</td></tr>
         </tbody>
       </table>

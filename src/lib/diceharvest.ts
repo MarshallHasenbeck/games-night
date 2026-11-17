@@ -1,12 +1,12 @@
 export const CATS = [
   'ones', 'twos', 'threes', 'fours', 'fives', 'sixes',
-  'threeKind', 'fourKind', 'fullHouse', 'smStraight', 'lgStraight', 'yahtzee', 'chance',
+  'threeKind', 'fourKind', 'fullHouse', 'smStraight', 'lgStraight', 'fiveAlike', 'chance',
 ] as const;
 export type Cat = (typeof CATS)[number];
 export const LABEL: Record<Cat, string> = {
   ones: 'Ones', twos: 'Twos', threes: 'Threes', fours: 'Fours', fives: 'Fives', sixes: 'Sixes',
   threeKind: '3 of a Kind', fourKind: '4 of a Kind', fullHouse: 'Full House',
-  smStraight: 'Small Straight', lgStraight: 'Large Straight', yahtzee: 'Yahtzee', chance: 'Chance',
+  smStraight: 'Small Straight', lgStraight: 'Large Straight', fiveAlike: 'Five Alike', chance: 'Chance',
 };
 export const UPPER = CATS.slice(0, 6);
 export const LOWER = CATS.slice(6);
@@ -16,9 +16,9 @@ export const emptyCard = (): Card => Object.fromEntries(CATS.map((c) => [c, null
 const sum = (d: number[]) => d.reduce((a, b) => a + b, 0);
 const counts = (d: number[]) => [1, 2, 3, 4, 5, 6].map((n) => d.filter((x) => x === n).length);
 
-export const isYahtzee = (d: number[]) => d.every((x) => x === d[0]);
+export const isFiveAlike = (d: number[]) => d.every((x) => x === d[0]);
 
-/** Score for putting `d` in `cat`. `joker` = extra Yahtzee with its upper box filled (fixed-value boxes pay in full). */
+/** Score for putting `d` in `cat`. `joker` = extra Dice Harvest with its upper box filled (fixed-value boxes pay in full). */
 export function scoreFor(cat: Cat, d: number[], joker = false): number {
   const c = counts(d);
   const i = UPPER.indexOf(cat as (typeof UPPER)[number]);
@@ -35,24 +35,24 @@ export function scoreFor(cat: Cat, d: number[], joker = false): number {
       const s = new Set(d);
       return joker || (s.size === 5 && (!s.has(1) || !s.has(6))) ? 40 : 0;
     }
-    case 'yahtzee': return isYahtzee(d) ? 50 : 0;
+    case 'fiveAlike': return isFiveAlike(d) ? 50 : 0;
     default: return sum(d);
   }
 }
 
 export const upperSum = (card: Card) => UPPER.reduce((a, c) => a + (card[c] ?? 0), 0);
 export const upperBonus = (card: Card) => (upperSum(card) >= 63 ? 35 : 0);
-export const total = (card: Card, yahtzeeBonuses: number) =>
-  CATS.reduce((a, c) => a + (card[c] ?? 0), 0) + upperBonus(card) + yahtzeeBonuses * 100;
+export const total = (card: Card, fiveAlikeBonuses: number) =>
+  CATS.reduce((a, c) => a + (card[c] ?? 0), 0) + upperBonus(card) + fiveAlikeBonuses * 100;
 
 /* ---------- computer player ---------- */
 const PAR: Record<Cat, number> = {
   ones: 2.1, twos: 5.3, threes: 8.6, fours: 12.2, fives: 15.6, sixes: 19.2,
-  threeKind: 21.7, fourKind: 13.1, fullHouse: 22.9, smStraight: 29.5, lgStraight: 32.7, yahtzee: 16.9, chance: 22,
+  threeKind: 21.7, fourKind: 13.1, fullHouse: 22.9, smStraight: 29.5, lgStraight: 32.7, fiveAlike: 16.9, chance: 22,
 };
 const open = (card: Card) => CATS.filter((c) => card[c] === null);
 const rand6 = () => 1 + Math.floor(Math.random() * 6);
-const isJoker = (card: Card, d: number[]) => isYahtzee(d) && card.yahtzee === 50 && card[UPPER[d[0] - 1]] !== null;
+const isJoker = (card: Card, d: number[]) => isFiveAlike(d) && card.fiveAlike === 50 && card[UPPER[d[0] - 1]] !== null;
 
 function bestValue(card: Card, d: number[]): number {
   const joker = isJoker(card, d);

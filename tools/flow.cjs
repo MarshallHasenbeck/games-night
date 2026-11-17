@@ -4,8 +4,8 @@ const { chromium } = require('playwright');
   const b = await chromium.launch(); const errs = []; const ok = (c, m) => console.log((c ? 'PASS ' : 'FAIL ') + m);
   const p = await b.newPage({ viewport: { width: 1180, height: 820 } });
   p.on('pageerror', e => errs.push(e.message));
-  await p.goto('http://localhost:4173/'); await p.evaluate(() => { localStorage.setItem('gn-time','day'); localStorage.setItem('gn-rules-playnine','1'); localStorage.setItem('gn-opp-playnine', JSON.stringify({cpu:false})); });
-  await p.goto('http://localhost:4173/#playnine'); await p.reload(); await p.waitForTimeout(2600);
+  await p.goto('http://localhost:4173/'); await p.evaluate(() => { localStorage.setItem('gn-time','day'); localStorage.setItem('gn-rules-fairway','1'); localStorage.setItem('gn-opp-fairway', JSON.stringify({cpu:false})); });
+  await p.goto('http://localhost:4173/#fairway'); await p.reload(); await p.waitForTimeout(2600);
   const F = (l) => l.click({ force: true });
   const turnText = () => p.textContent('.turnbar');
   const down = () => p.locator('.pgrid.turn .pcard:not(.up)').count();
@@ -70,8 +70,8 @@ const { chromium } = require('playwright');
     if (await flip.count()) { await F(flip.first()); await p.waitForTimeout(450); }
     else { const sw = p.locator('.pgrid.turn .pcard.active.m-swap'); if (await sw.count()) { await F(sw.first()); await p.waitForTimeout(450); } }
   }
-  ok((await p.locator('.holedone').count()) === 1, 'F) hole over: NEXT HOLE panel is in the centre (.pnmid .holedone): ' + (await p.locator('.pnmid .holedone').count()));
-  const box = await p.evaluate(() => { const h = document.querySelector('.holedone').getBoundingClientRect(), b = document.querySelector('.pnboard').getBoundingClientRect(); return { hx: Math.round(h.x + h.width / 2), bx: Math.round(b.x + b.width / 2) }; });
+  ok((await p.locator('.holedone').count()) === 1, 'F) hole over: NEXT HOLE panel is in the centre (.fwmid .holedone): ' + (await p.locator('.fwmid .holedone').count()));
+  const box = await p.evaluate(() => { const h = document.querySelector('.holedone').getBoundingClientRect(), b = document.querySelector('.fwboard').getBoundingClientRect(); return { hx: Math.round(h.x + h.width / 2), bx: Math.round(b.x + b.width / 2) }; });
   ok(Math.abs(box.hx - box.bx) < 40, `F) button is horizontally centred (button ${box.hx}px vs table centre ${box.bx}px)`);
   await p.screenshot({ path: d + '/flow_holeover.png' });
   await F(p.locator('.holedone .btn')); await p.waitForTimeout(900);

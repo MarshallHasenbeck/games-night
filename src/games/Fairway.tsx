@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   HOLES, deal, flipSetup, drawDeck, takeDiscard, swapSlot, flipAfterDiscard, discardAndFlip, skipDrawn,
   visibleScore, finalScore, putBackDiscard, downCount, cpuDecide, applyAction, type Round, type Slot,
-} from '../lib/playnine';
+} from '../lib/fairway';
 import { sfx } from '../lib/sfx';
 import { CardBack, FlagArt, Leaf } from '../art';
 import { Celebrate, ModeBar, Overlay, useOpponent } from '../ui';
@@ -74,8 +74,8 @@ function Ghost({ f, done }: { f: Flight; done: () => void }) {
   );
 }
 
-export default function PlayNine() {
-  const opp = useOpponent('playnine');
+export default function Fairway() {
+  const opp = useOpponent('fairway');
   const [hole, setHole] = useState(1);
   const [round, setRound] = useState<Round>(() => deal(0));
   const [totals, setTotals] = useState<[number[], number[]]>([[], []]);
@@ -95,7 +95,7 @@ export default function PlayNine() {
     if (recorded.current) return;
     recorded.current = true;
     const [a, b] = [sum(totals[0]), sum(totals[1])];
-    recordResult('playnine', a === b ? 'draw' : a < b ? 0 : 1);
+    recordResult('fairway', a === b ? 'draw' : a < b ? 0 : 1);
     setTimeout(sfx.win, 300);
   }, [over]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -142,7 +142,7 @@ export default function PlayNine() {
     const [a, b] = [sum(totals[0]), sum(totals[1])];
     const title = a === b ? `TIE AT ${a}!` : `${names[a < b ? 0 : 1]} WINS!`;
     return (
-      <div className="game playnine">
+      <div className="game fairway">
         <ModeBar opp={opp} onChange={reset} />
         <div className="status">{title} {a === b ? '' : `${Math.min(a, b)} TO ${Math.max(a, b)}`}</div>
         <Scoreboard totals={totals} names={names} />
@@ -202,7 +202,7 @@ export default function PlayNine() {
 
   const t0 = finalScore(r.grids[0]), t1 = finalScore(r.grids[1]);
   return (
-    <div className="game playnine">
+    <div className="game fairway">
       <div className="head">
         <ModeBar opp={opp} onChange={reset} />
         <button className="btn ghost newgame-top" onClick={() => setConfirmNew(true)}>↺ NEW GAME</button>
@@ -211,9 +211,9 @@ export default function PlayNine() {
         </div>
         <p className="hint prompt">{prompt}</p>
       </div>
-      <div className={`main pnboard ${live ? 'live' : ''}`}>
+      <div className={`main fwboard ${live ? 'live' : ''}`}>
         <div className="area p1">{grid(0)}</div>
-        <div className="area pnmid">
+        <div className="area fwmid">
           {live ? (
             <div className="piles">
               <div className="pile">

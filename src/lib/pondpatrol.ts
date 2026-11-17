@@ -5,7 +5,7 @@ export type Fleet = { ships: Ship[]; shots: Shot[][] };
 
 export const FLEET = [
   { id: 0, len: 5, name: 'Carrier' },
-  { id: 1, len: 4, name: 'Battleship' },
+  { id: 1, len: 4, name: 'Pond Patrol' },
   { id: 2, len: 3, name: 'Cruiser' },
   { id: 3, len: 3, name: 'Submarine' },
   { id: 4, len: 2, name: 'Destroyer' },

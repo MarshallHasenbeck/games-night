@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 import Chess from './games/Chess';
-import Yahtzee from './games/Yahtzee';
-import PlayNine from './games/PlayNine';
+import DiceHarvest from './games/DiceHarvest';
+import Fairway from './games/Fairway';
 import Palace from './games/Palace';
 import Checkers from './games/Checkers';
-import Connect4 from './games/Connect4';
+import DropFour from './games/DropFour';
 import Backgammon from './games/Backgammon';
 import Dominoes from './games/Dominoes';
 import Mancala from './games/Mancala';
-import Battleship from './games/Battleship';
+import PondPatrol from './games/PondPatrol';
 import AcornPop from './games/AcornPop';
 import SlideSwap from './games/SlideSwap';
-import Pugdoku from './games/Pugdoku';
+import PugPatch from './games/PugPatch';
 import FarmFit, { FarmFitIcon } from './games/FarmFit';
 import GiantPumpkin, { GiantPumpkinIcon } from './games/GiantPumpkin';
 import pugUrl from './assets/pug.png';
@@ -26,16 +26,16 @@ const MI = ({ n }: { n: string }) => <img className="gicon" src={menuIcon(n)} al
 const GAMES = [
   { id: 'chess', name: 'Chess', icon: <MI n="Chess" />, blurb: 'Classic kings & pawns. Legal moves glow.', C: Chess },
   { id: 'checkers', name: 'Checkers', icon: <MI n="Checkers" />, blurb: 'Jump, crown, conquer. Captures forced.', C: Checkers },
-  { id: 'connect4', name: 'Connect 4', icon: <MI n="Connect4" />, blurb: 'Drop discs. Four in a row wins.', C: Connect4 },
-  { id: 'yahtzee', name: 'Yahtzee', icon: <MI n="Yahtzee" />, blurb: 'Roll, hold, score. 13 rounds.', C: Yahtzee },
-  { id: 'playnine', name: 'Play Nine', icon: <MI n="Play Nine" />, blurb: 'Card golf. We deal. Low score wins.', C: PlayNine },
+  { id: 'dropfour', name: 'Drop Four', icon: <MI n="DropFour" />, blurb: 'Drop discs. Four in a row wins.', C: DropFour },
+  { id: 'diceharvest', name: 'Dice Harvest', icon: <MI n="Dice Harvest" />, blurb: 'Roll, hold, score. 13 rounds.', C: DiceHarvest },
+  { id: 'fairway', name: 'Fairway', icon: <MI n="Fairway" />, blurb: 'Card golf. We deal. Low score wins.', C: Fairway },
   { id: 'palace', name: 'Palace', icon: <MI n="Palace" />, blurb: 'Climb the pile, burn it, and get out first. 2-4 players!', C: Palace },
-  { id: 'pugdoku', name: 'Pugdoku', icon: <img className="pugicon" src={pugUrl} alt="" />, blurb: 'Find one pug per row, column and color. No touching! Solo or team up.', C: Pugdoku },
+  { id: 'pugpatch', name: 'Pug Patch', icon: <img className="pugicon" src={pugUrl} alt="" />, blurb: 'Find one pug per row, column and color. No touching! Solo or team up.', C: PugPatch },
   { id: 'farmfit', name: 'Farm Fit', icon: <FarmFitIcon />, blurb: 'Drop colorful blocks on the field. Fill a row or column to clear it!', C: FarmFit },
   { id: 'pumpkin', name: 'Bumper Crop', icon: <GiantPumpkinIcon />, blurb: 'Swipe to match crops and grow them, all the way to a pumpkin and beyond!', C: GiantPumpkin },
   { id: 'backgammon', name: 'Backgammon', icon: <MI n="Backgammon" />, blurb: 'Race, hit, and bear off. We roll.', C: Backgammon },
   { id: 'mancala', name: 'Mancala', icon: <MI n="Mancala" />, blurb: 'Sow stones, capture pits, fill your store.', C: Mancala },
-  { id: 'battleship', name: 'Battleship', icon: <MI n="Battleship" />, blurb: 'Hunt the cute little boats. Pass-the-device secret!', C: Battleship },
+  { id: 'pondpatrol', name: 'Pond Patrol', icon: <MI n="Pond Patrol" />, blurb: 'Hunt the cute little boats. Pass-the-device secret!', C: PondPatrol },
   { id: 'acorn', name: 'Acorn Pop', icon: <MI n="Acorn Pop" />, blurb: 'Pop the dice, race your acorns home. 2-4 players!', C: AcornPop },
   { id: 'slide', name: 'Slide & Swap', icon: <MI n="Slide & Swap" />, blurb: 'Draw cards, slide, bump, swap. A friendly race!', C: SlideSwap },
   { id: 'dominoes', name: 'Dominoes', icon: <MI n="Dominoes" />, blurb: 'Match the ends. First to 100.', C: Dominoes },
@@ -110,7 +110,7 @@ export default function App() {
     <Scenery />
     <div className="shell">
       <div className="menutop">{toggles}</div>
-      <div className="hero"><TreeIcon h={34} px={3} /><h1 className="title">GAME{' '}<br />NIGHT</h1><TreeIcon h={34} px={3} /></div>
+      <div className="hero"><TreeIcon h={34} px={3} /><h1 className="title">COZY{' '}<br />TABLE</h1><TreeIcon h={34} px={3} /></div>
       <p className="sub blink"><span>Pick a game, grab a friend</span></p>
       <div className="menu">
         {GAMES.map((g) => (

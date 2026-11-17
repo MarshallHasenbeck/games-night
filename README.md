@@ -1,7 +1,7 @@
-# Game Night — forest edition
+# Cozy Table — forest edition
 
-Eleven pass-and-play games for one screen in a cozy pixel-art forest: **Chess**, **Checkers**, **Connect 4**, **Yahtzee**,
-**Play Nine** (card golf), **Backgammon**, **Mancala**, **Battleship**, **Dominoes**, plus the 2-4 player race games
+Eleven pass-and-play games for one screen in a cozy pixel-art forest: **Chess**, **Checkers**, **Drop Four**, **Dice Harvest**,
+**Fairway** (card golf), **Backgammon**, **Mancala**, **Pond Patrol**, **Dominoes**, plus the 2-4 player race games
 **Acorn Pop** (dice) and **Slide & Swap** (cards). Play against a friend on the same device, or **vs CPU**
 (Easy / Medium / Hard). The app rolls, deals, and scores for you.
 

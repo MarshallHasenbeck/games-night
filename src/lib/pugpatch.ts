@@ -1,5 +1,5 @@
-/** Pugdoku: pure puzzle logic (no React). One pug in every row, column and colour; pugs never touch, even diagonally.
- *  Every puzzle must have exactly ONE answer, so the bank (pugdoku-bank.ts) is pre-verified and live-built puzzles are verified before use. */
+/** Pug Patch: pure puzzle logic (no React). One pug in every row, column and colour; pugs never touch, even diagonally.
+ *  Every puzzle must have exactly ONE answer, so the bank (pugpatch-bank.ts) is pre-verified and live-built puzzles are verified before use. */
 export type Grid = number[][];
 export type Puzzle = { g: Grid; p: number[] };   // g = colour region per cell, p[row] = column of that row's pug
 

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { PixelArt } from '../Sprite';
 import { Overlay } from '../ui';
 import { sfx } from '../lib/sfx';
-import { COLORS, DIFFS, decodePuzzle, pickGivens, rnd, shuf, transformPuzzle, type Diff, type Puzzle } from '../lib/pugdoku';
+import { COLORS, DIFFS, decodePuzzle, pickGivens, rnd, shuf, transformPuzzle, type Diff, type Puzzle } from '../lib/pugpatch';
 import pugUrl from '../assets/pug.png';
 
 type Mode = 'solo' | 'coop';
@@ -57,11 +57,11 @@ function PugWin({ title, sub, onNext }: { title: string; sub: string; onNext: ()
         ))}
       </div>
       <div className="banner">
-        <div className="pgdwin" aria-hidden>
-          <div className="pgdhero">
-            <img className="pgdhappy" src={pugUrl} alt="" draggable={false} />
-            <div className="pgdbone"><PixelArt rows={BIG_BONE} palette={{ o: '#3a2410', w: '#fff4d6', s: '#d9bf86', h: '#ffffff' }} px={5} /></div>
-            {SPARKS.map(([dx, dy, c], i) => <i key={i} className="pgdspark" style={{ ['--dx' as string]: `${dx}px`, ['--dy' as string]: `${dy}px`, ['--c' as string]: c }} />)}
+        <div className="ptcwin" aria-hidden>
+          <div className="ptchero">
+            <img className="ptchappy" src={pugUrl} alt="" draggable={false} />
+            <div className="ptcbone"><PixelArt rows={BIG_BONE} palette={{ o: '#3a2410', w: '#fff4d6', s: '#d9bf86', h: '#ffffff' }} px={5} /></div>
+            {SPARKS.map(([dx, dy, c], i) => <i key={i} className="ptcspark" style={{ ['--dx' as string]: `${dx}px`, ['--dy' as string]: `${dy}px`, ['--c' as string]: c }} />)}
           </div>
         </div>
         <h2>{title}</h2>
@@ -78,8 +78,8 @@ function PugWin({ title, sub, onNext }: { title: string; sub: string; onNext: ()
 const read = <T,>(k: string): T | null => { try { return JSON.parse(localStorage.getItem(k) || 'null') as T | null; } catch { return null; } };
 const write = (k: string, v: unknown) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private mode */ } };
 
-export default function Pugdoku() {
-  const cfg0 = read<{ mode?: Mode; diff?: Diff; names?: [string, string]; named?: boolean }>('gn-pugdoku');
+export default function PugPatch() {
+  const cfg0 = read<{ mode?: Mode; diff?: Diff; names?: [string, string]; named?: boolean }>('gn-pugpatch');
   const [mode, setModeState] = useState<Mode>(cfg0?.mode === 'coop' ? 'coop' : 'solo');
   const [diff, setDiffState] = useState<Diff>(cfg0?.diff && cfg0.diff in DIFFS ? cfg0.diff : 'easy');
   const [names, setNames] = useState<[string, string]>(cfg0?.names ?? ['P1', 'P2']);
@@ -93,18 +93,18 @@ export default function Pugdoku() {
   const diffRef = useRef(diff); diffRef.current = diff;
   /** Puzzles solved + points per difficulty. Just for fun; nothing depends on it, so losing it costs nothing. */
   const prog = useRef<Record<Diff, { w: number; s: number; b?: number }>>({
-    easy: { w: 0, s: 0 }, medium: { w: 0, s: 0 }, hard: { w: 0, s: 0 }, relaxed: { w: 0, s: 0 }, ...(read<Record<Diff, { w: number; s: number; b?: number }>>('gn-pugdoku-stats') ?? {}),
+    easy: { w: 0, s: 0 }, medium: { w: 0, s: 0 }, hard: { w: 0, s: 0 }, relaxed: { w: 0, s: 0 }, ...(read<Record<Diff, { w: number; s: number; b?: number }>>('gn-pugpatch-stats') ?? {}),
   });
   const bank = useRef<Bank | null>(null);
   const pool = useRef<Record<number, Puzzle[]>>({});
   const pending = useRef<Record<number, number>>({});
   const worker = useRef<Worker | null>(null);
-  const used = useRef<string[]>(read<string[]>('gn-pugdoku-used') ?? []);
+  const used = useRef<string[]>(read<string[]>('gn-pugpatch-used') ?? []);
   const nm = (i: number) => names[i] || `P${i + 1}`;
 
   const saveCfg = (over: Partial<{ mode: Mode; diff: Diff; names: [string, string]; named: boolean }> = {}) =>
-    write('gn-pugdoku', { mode, diff, names, named, ...over });
-  const saveProg = () => write('gn-pugdoku-stats', prog.current);
+    write('gn-pugpatch', { mode, diff, names, named, ...over });
+  const saveProg = () => write('gn-pugpatch-stats', prog.current);
 
   /* ---- where puzzles come from: the verified bank (instant) + fresh ones built in the background ---- */
   const ensure = (n: number) => {
@@ -121,7 +121,7 @@ export default function Pugdoku() {
     const i = free[rnd(free.length)];
     used.current.push(`${n}:${i}`);
     if (used.current.length > 600) used.current = used.current.slice(-600);
-    write('gn-pugdoku-used', used.current);
+    write('gn-pugpatch-used', used.current);
     return transformPuzzle(decodePuzzle(list[i], n), n);
   };
   const nextPuzzle = (n: number): Puzzle | null => {
@@ -156,7 +156,7 @@ export default function Pugdoku() {
 
   useEffect(() => {
     try {
-      const w = new Worker(new URL('../lib/pugdoku.worker.ts', import.meta.url), { type: 'module' });
+      const w = new Worker(new URL('../lib/pugpatch.worker.ts', import.meta.url), { type: 'module' });
       w.onmessage = (e: MessageEvent<{ n: number; g: number[][]; p: number[] }>) => {
         const { n, g, p } = e.data;
         (pool.current[n] ??= []).push({ g, p });
@@ -166,7 +166,7 @@ export default function Pugdoku() {
       worker.current = w;
     } catch { worker.current = null; }
     let alive = true;
-    import('../lib/pugdoku-bank').then((m) => { if (!alive) return; bank.current = m.BANK; startLevel(modeRef.current); if (modeRef.current === 'coop' && !cfg0?.named) openNames(); });
+    import('../lib/pugpatch-bank').then((m) => { if (!alive) return; bank.current = m.BANK; startLevel(modeRef.current); if (modeRef.current === 'coop' && !cfg0?.named) openNames(); });
     return () => { alive = false; worker.current?.terminate(); worker.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -306,7 +306,7 @@ export default function Pugdoku() {
   const fmt = (t: number) => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
 
   return (
-    <div className="game split pgd">
+    <div className="game split ptc">
       <div className="head">
         <div className="modebar">
           <div className="seg">
@@ -317,35 +317,35 @@ export default function Pugdoku() {
             {(Object.keys(DIFFS) as Diff[]).map((d) => <button key={d} className={diff === d ? 'on' : ''} onClick={() => setDiff(d)}>{DIFFS[d].label}</button>)}
           </div>
         </div>
-        <div className={`status pgdstatus ${mode === 'coop' && s ? `t${s.turn}` : ''}`}>
-          {mode === 'coop' && s ? <><i className="pgdtag" onClick={openNames}>{nm(s.turn)}</i> YOUR TURN</> : status}
+        <div className={`status ptcstatus ${mode === 'coop' && s ? `t${s.turn}` : ''}`}>
+          {mode === 'coop' && s ? <><i className="ptctag" onClick={openNames}>{nm(s.turn)}</i> YOUR TURN</> : status}
         </div>
-        <div className="captures pgdhud">
-          <span className="pgdcount"><img src={pugUrl} alt="" />{pugs}/{s?.n ?? 0}</span>
-          <span className="pgdtime" aria-label="time">TIME {fmt(s?.secs ?? 0)}</span>
-          {s && <span className="pgdbones">{[0, 1, 2].map((i) => <span key={i} className={diff !== 'relaxed' && i < s.lives ? '' : 'off'}><PixelArt rows={BONE_ROWS} palette={{ w: '#fff4d6' }} px={3} /></span>)}</span>}
-          {mode === 'coop' && <span className="pgdscore">{DIFFS[diff].label} · SOLVED {pr.w}</span>}
+        <div className="captures ptchud">
+          <span className="ptccount"><img src={pugUrl} alt="" />{pugs}/{s?.n ?? 0}</span>
+          <span className="ptctime" aria-label="time">TIME {fmt(s?.secs ?? 0)}</span>
+          {s && <span className="ptcbones">{[0, 1, 2].map((i) => <span key={i} className={diff !== 'relaxed' && i < s.lives ? '' : 'off'}><PixelArt rows={BONE_ROWS} palette={{ w: '#fff4d6' }} px={3} /></span>)}</span>}
+          {mode === 'coop' && <span className="ptcscore">{DIFFS[diff].label} · SOLVED {pr.w}</span>}
         </div>
-        {mode === 'coop' && s?.msg && <div className="hint pgdmsg">{s.msg}</div>}
+        {mode === 'coop' && s?.msg && <div className="hint ptcmsg">{s.msg}</div>}
       </div>
 
-      <div className="main pgdframe">
+      <div className="main ptcframe">
         {s ? (
-          <div className="pgdboard" style={{ gridTemplateColumns: `repeat(${s.n}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${s.n}, minmax(0, 1fr))` }}
+          <div className="ptcboard" style={{ gridTemplateColumns: `repeat(${s.n}, minmax(0, 1fr))`, gridTemplateRows: `repeat(${s.n}, minmax(0, 1fr))` }}
             onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={() => { drag.current = { down: null, moved: false, last: null, mode: null }; }} onContextMenu={(e) => e.preventDefault()}>
             {s.g.map((row, r) => row.map((reg, c) => {
               const v = s.st[r][c];
               const isGiven = s.given[r] && v === 2;
               const wrong = v === 2 && diff === 'relaxed' && s.p[r] !== c;   // relaxed: a wrong pug is allowed but shown in red
               return (
-                <div key={`${r}-${c}`} data-pr={r} data-pc={c} className={`pgdcell${isGiven ? ' given' : ''}${wrong ? ' bad' : ''}${v === 2 ? ' haspug' : ''}`} style={{ background: s.pal[reg], ['--rc' as string]: s.pal[reg] }}>
-                  {v === 1 && <span className={`pgdx${s.bad[r][c] ? ' bad' : ''}`}><PixelArt rows={X_ROWS} palette={{ x: s.bad[r][c] ? '#ff2a2a' : '#3a2410a8' }} px={4} /></span>}
-                  {v === 2 && <img className="pgdpug" src={pugUrl} alt="pug" draggable={false} />}
+                <div key={`${r}-${c}`} data-pr={r} data-pc={c} className={`ptccell${isGiven ? ' given' : ''}${wrong ? ' bad' : ''}${v === 2 ? ' haspug' : ''}`} style={{ background: s.pal[reg], ['--rc' as string]: s.pal[reg] }}>
+                  {v === 1 && <span className={`ptcx${s.bad[r][c] ? ' bad' : ''}`}><PixelArt rows={X_ROWS} palette={{ x: s.bad[r][c] ? '#ff2a2a' : '#3a2410a8' }} px={4} /></span>}
+                  {v === 2 && <img className="ptcpug" src={pugUrl} alt="pug" draggable={false} />}
                 </div>
               );
             }))}
           </div>
-        ) : <div className="pgdboard pgdload">SNIFFING OUT A PUZZLE...</div>}
+        ) : <div className="ptcboard ptcload">SNIFFING OUT A PUZZLE...</div>}
       </div>
 
       <div className="foot">
@@ -365,10 +365,10 @@ export default function Pugdoku() {
         </div></div></Overlay>
       )}
       {namesOpen && (
-        <Overlay><div className="celebrate" role="dialog"><div className="banner pgdnames">
+        <Overlay><div className="celebrate" role="dialog"><div className="banner ptcnames">
           <h2>WHO'S PLAYING?</h2><p>Enter names, or keep P1 and P2.</p>
           {[0, 1].map((i) => (
-            <label key={i} className="pgdnm"><b className={`pgdtag t${i}`}>{i + 1}</b>
+            <label key={i} className="ptcnm"><b className={`ptctag t${i}`}>{i + 1}</b>
               <input value={draft[i]} maxLength={10} placeholder={`P${i + 1}`} autoComplete="off" autoCapitalize="words"
                 onChange={(e) => setDraft((d) => (i === 0 ? [e.target.value, d[1]] : [d[0], e.target.value]))}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (i === 0) (e.currentTarget.parentElement?.nextElementSibling?.querySelector('input') as HTMLInputElement | null)?.focus(); else saveNames(); } }} />

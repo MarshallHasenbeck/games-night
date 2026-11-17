@@ -1,4 +1,4 @@
-# Game Night — developer guide (for working on it from your iMac)
+# Cozy Table — developer guide (for working on it from your iMac)
 
 A personal, pixel-art "forest" web app of pass-and-play board and card games for iPad / iPhone / desktop.
 Live site: **https://marshallhasenbeck.github.io/games-night/** · Repo: **github.com/MarshallHasenbeck/games-night** (public, deploys on every push to `main`).
@@ -57,19 +57,19 @@ docs/ROADMAP.md       saved ideas (online play etc.)
 |---|---|---|---|
 | Chess | chess.js | `cpu` in `chessAI` | undo, flip board, auto-rotate |
 | Checkers | `lib/checkers.ts` | `checkersAI` | forced captures |
-| Connect 4 | `lib/connect4.ts` | `connect4AI` | |
-| Yahtzee | `lib/yahtzee.ts` | in lib | scorecard |
-| Play Nine | `lib/playnine.ts` | `cpuDecide` | 9 holes, tap-to-place/flip, flying-card animation, official scoring (-5 pairs, four-of-a-kind bonus) |
+| Drop Four | `lib/dropfour.ts` | `dropfourAI` | |
+| Dice Harvest | `lib/diceharvest.ts` | in lib | scorecard |
+| Fairway | `lib/fairway.ts` | `cpuDecide` | 9 holes, tap-to-place/flip, flying-card animation, official scoring (-5 pairs, four-of-a-kind bonus) |
 | Backgammon | `lib/backgammon.ts` | in lib | |
 | Mancala (Kalah) | `lib/mancala.ts` | minimax | stones hop between pits (Web Animations) |
-| Battleship | `lib/battleship.ts` | in lib | pass-the-iPad curtain, ponds laid out absolutely (Safari bug) |
+| Pond Patrol | `lib/pondpatrol.ts` | in lib | pass-the-iPad curtain, ponds laid out absolutely (Safari bug) |
 | Dominoes | `lib/dominoes.ts` | in lib | hidden hands + hand-off screen |
-| **Acorn Pop** | `lib/acorn.ts` | in lib | Trouble-style dice race, 2–4 players, per-seat HUMAN/CPU |
-| **Slide & Swap** | `lib/slide.ts` | in lib | Sorry!-style card race, slides, swap, 7-split, 2–4 players |
-| **Pugdoku** | `lib/pugdoku.ts` (+ `pugdoku-bank.ts`, `pugdoku.worker.ts`) | none (solo or 2-player co-op) | Queens-style logic puzzle: one pug per row/column/colour, none touching. Every puzzle has exactly ONE answer: 789 pre-verified puzzles in `pugdoku-bank.ts` (rotated/flipped/recoloured per play) + fresh ones built in a Web Worker. Co-op pass-and-play with custom names. Art is `src/assets/pug.png` (Marshall's own picture). Test: `npx tsx tools/tests/pugdoku-bank.ts` |
+| **Acorn Pop** | `lib/acorn.ts` | in lib | Dice race, 2–4 players, per-seat HUMAN/CPU |
+| **Slide & Swap** | `lib/slide.ts` | in lib | Card race with slides, swap, 7-split, 2–4 players |
+| **Pug Patch** | `lib/pugpatch.ts` (+ `pugpatch-bank.ts`, `pugpatch.worker.ts`) | none (solo or 2-player co-op) | Logic puzzle: one pug per row/column/colour, none touching. Every puzzle has exactly ONE answer: 789 pre-verified puzzles in `pugpatch-bank.ts` (rotated/flipped/recoloured per play) + fresh ones built in a Web Worker. Co-op pass-and-play with custom names. Art is `src/assets/pug.png` (Marshall's own picture). Test: `npx tsx tools/tests/pugpatch-bank.ts` |
 | **Palace** | `lib/palace.ts` | `cpuAction` | Marshall's house rules: 2 down/2 up/3 hand, 2 wild, 3 wild+reverse, 8 window, 10 burn, four of a kind = go again; pass-and-play with hand-off screens, 2-4 players. Test: `npx tsx tools/tests/palace-engine.ts` |
-| **Farm Fit** | `lib/farmfit.ts` | none (solo, best score saved) | 10x10 block puzzle: three colour-coded tetromino-style blocks at a time (never rotated), drag onto the field, full rows/columns clear (1 line 10, 2 lines 30, 3 lines 60, 4 lines 100...). Test: `npx tsx tools/tests/farmfit-engine.ts` |
-| **Bumper Crop** | `lib/pumpkin.ts` (+ `lib/cropart.ts` pixel crops, `games/GiantPumpkin.tsx`) | none (solo, best score saved per size and rocks setting) | 4x4 / 5x5 / 6x6 merge puzzle with crops instead of numbers: seed ... Pumpkin (the win, tier 10, = the 2048 tile) and it keeps growing through Giant, Ribbon, Golden... to Mythic (tier 20). ROCKS mode adds stones (never more than 2) that block and crack on adjacent merges; hoe / water / swap tools earned every 8 merges. Bigger gardens are easier. Test: `npx tsx tools/tests/pumpkin-engine.ts` |
+| **Farm Fit** | `lib/farmfit.ts` | none (solo, best score saved) | 10x10 block puzzle: three colour-coded colour-coded blocks at a time (never rotated), drag onto the field, full rows/columns clear (1 line 10, 2 lines 30, 3 lines 60, 4 lines 100...). Test: `npx tsx tools/tests/farmfit-engine.ts` |
+| **Bumper Crop** | `lib/pumpkin.ts` (+ `lib/cropart.ts` pixel crops, `games/GiantPumpkin.tsx`) | none (solo, best score saved per size and rocks setting) | 4x4 / 5x5 / 6x6 merge puzzle with crops instead of numbers: seed ... Pumpkin (the win, tier 10) and it keeps growing through Giant, Ribbon, Golden... to Mythic (tier 20). ROCKS mode adds stones (never more than 2) that block and crack on adjacent merges; hoe / water / swap tools earned every 8 merges. Bigger gardens are easier. Test: `npx tsx tools/tests/pumpkin-engine.ts` |
 
 ### Adding a new game (checklist)
 1. `src/lib/<game>.ts` — pure state + legal-move functions (+ simple CPU). Write a quick `tools/tests/*.ts` that plays hundreds of random games and asserts invariants.
@@ -83,7 +83,7 @@ docs/ROADMAP.md       saved ideas (online play etc.)
 ## 4. Look & feel rules
 - Palette tokens are CSS variables at the top of `styles.css` (`--wood`, `--parch`, `--berry`, …). Fonts: *Pixelify Sans* (UI) and *Fredoka* (numerals).
 - Players are **P1 / P2 / P3 / P4** (`CPU n` when a seat is CPU) — colours red, blue, green, yellow (`PLAYER_COLORS`). Don't invent themed names.
-- Style goal: "Stardew-ish 12-bit" — pixel art, but softened. Keep the background landscape as is; add to it rather than changing it.
+- Style goal: "cozy farm-ish 12-bit" — pixel art, but softened. Keep the background landscape as is; add to it rather than changing it.
 - Everything should animate a little: dealing, flipping, hopping, bumping, bursts (`FxLayer` in `racers.tsx`), idle bobbing.
 - Don't make buttons for things a tap on the piece/card can do. Keep layouts **stable** (nothing shifts when text changes — reserve space).
 
@@ -96,9 +96,9 @@ These all caused real bugs on the iPad Air 13" / iPhone 14 Pro Max:
 - `viewport-fit=cover` is only enabled on phones (JS in `main.tsx`); iPads use the plain viewport.
 - The background (`.scenery`) is `position: fixed` and sized from `--app-h`; the landscape/farm animals sit on the *visible* bottom; the page colour (html) is grass-green and **body must stay transparent** (a painted body covers the z-index:-1 scenery).
 - A transformed ancestor breaks `position: fixed` → popups are rendered through `Overlay` (portal to `<body>`).
-- Class-name collisions bit us several times (`.ring`, `.mid`, `.critters`, `.peg`): use game-specific prefixes (`.apc`, `.slc`, `.pnmid`, …).
+- Class-name collisions bit us several times (`.ring`, `.mid`, `.critters`, `.peg`): use game-specific prefixes (`.apc`, `.slc`, `.fwmid`, …).
 - Percent `padding` is relative to the container *width* — don't use it inside pieces.
-- Safari quirks: `aspect-ratio` + grid rows (Battleship ponds are laid out with absolute positioning instead), buttons stretch grid rows, `container-type` is fine.
+- Safari quirks: `aspect-ratio` + grid rows (Pond Patrol ponds are laid out with absolute positioning instead), buttons stretch grid rows, `container-type` is fine.
 - Bobbing/animated elements fail Playwright "not stable" clicks → use `{ force: true }` in tests.
 
 ## 6. Debugging on the device
@@ -109,28 +109,28 @@ Browser checks need Playwright (`npm i -D playwright && npx playwright install c
 ```bash
 node tools/noscroll.cjs     # every game × 11 iPad/iPhone sizes: nothing scrolls/overflows (prints @0.9 where auto-fit had to shrink)
 node tools/iph.cjs          # same for real iPhone Safari sizes (portrait + landscape)
-node tools/flow.cjs         # Play Nine play-through (16 assertions: controls, turn banner, skip, next hole, new game)
-node tools/prompt.cjs       # Play Nine layout is identical while drawing / taking discard / flipping
+node tools/flow.cjs         # Fairway play-through (16 assertions: controls, turn banner, skip, next hole, new game)
+node tools/prompt.cjs       # Fairway layout is identical while drawing / taking discard / flipping
 node tools/stale.cjs <outdir>   # rotation with stale innerWidth/innerHeight (the iOS bug) still lays out right
-npx tsx tools/tests/playnine-scoring.ts   # scoring vs reference on 50k deals
+npx tsx tools/tests/fairway-scoring.ts   # scoring vs reference on 50k deals
 npx tsx tools/tests/acorn-engine.ts       # 400 simulated games, invariants
 npx tsx tools/tests/slide-engine.ts       # 300 simulated games
-npx tsx tools/tests/slide-rules.ts        # slide / sorry / swap / 7-split cases
+npx tsx tools/tests/slide-rules.ts        # slide / shoo / swap / 7-split cases
 ```
 Scripts take an optional output folder for screenshots as `argv[2]`.
 
 ## 8. Rules sources / decisions worth remembering
-- **Play Nine** official scoring: matched column = 0; **two −5 cards in a column do NOT cancel** (−10); two columns matching the same number ("four of a kind") = −10 bonus (−15 / −20 for 3 / 4 columns). The official rulebook text wasn't found directly (sources: Kingpanda/Geeky Hobbies guides) — treat the −15/−20 as the least certain.
+- **Fairway** official scoring: matched column = 0; **two −5 cards in a column do NOT cancel** (−10); two columns matching the same number ("four of a kind") = −10 bonus (−15 / −20 for 3 / 4 columns). The official rulebook text wasn't found directly (sources: Kingpanda/Geeky Hobbies guides) — treat the −15/−20 as the least certain.
   Skip rule: with one face-down card you may draw and skip. 108-card deck (0–12 ×8 plus four −5).
-- **Acorn Pop** (Trouble-like): 32 squares, 6 to leave the pen (3 tries if nothing is out), 6 = roll again, bump = back to pen, exact count into 4 home slots.
-- **Slide & Swap** (Sorry!-like): 60 squares, cards 1,2,3,4(back),5,7(split),8,10,11(swap),12,Sorry!; slides of other colours bump everyone on them; safe zone + exact home.
+- **Acorn Pop**: 32 squares, 6 to leave the pen (3 tries if nothing is out), 6 = roll again, bump = back to pen, exact count into 4 home slots.
+- **Slide & Swap**: 60 squares, cards 1,2,3,4(back),5,7(split),8,10,11(swap),12,Shoo!; slides of other colours bump everyone on them; safe zone + exact home.
 
 ## 9. Known open items / ideas
-- **Online play on separate devices** — decided: Supabase Realtime in a *new* project (not the gettoit one); not set up yet. Battleship + Play Nine first, then the rest; sync layer must support up to 4 seats (see `docs/ROADMAP.md`).
+- **Online play on separate devices** — decided: Supabase Realtime in a *new* project (not the gettoit one); not set up yet. Pond Patrol + Fairway first, then the rest; sync layer must support up to 4 seats (see `docs/ROADMAP.md`).
 - Verify on real devices after each layout change: iPad Air 13" (Safari, landscape + portrait) and iPhone 14 Pro Max (portrait, landscape, rotating between them). Rotation/viewport handling was the most fragile area.
 - Mancala in iPhone portrait is small — idea: lay the board out vertically.
-- Play Nine: user once reported both players scoring −3 in a hole; couldn't reproduce (scoring matches a reference implementation). If it happens again, get a screenshot of both grids.
-- Ideas: custom player names/colours, more games (Cribbage, Go Fish, Uno-style), achievements.
+- Fairway: user once reported both players scoring −3 in a hole; couldn't reproduce (scoring matches a reference implementation). If it happens again, get a screenshot of both grids.
+- Ideas: custom player names/colours, more games (Cribbage, Go Fish, colour-matching), achievements.
 
 ## 10. Working style notes (from the owner)
 - Wants honest reporting: say what was tested vs. only built; no overclaiming.

@@ -121,7 +121,7 @@ export default function AcornPop() {
   const status = g.winner !== null ? `${nameOf(g.winner)} WINS!`
     : cpuTurn ? `${nameOf(g.turn)} IS PLAYING...`
     : pending ? `${nameOf(g.turn)}: TAP AN ACORN TO MOVE ${g.roll}`
-    : `${nameOf(g.turn)}: POP THE DICE!`;
+    : `${nameOf(g.turn)}: ROLL THE DICE!`;
   const homeCount = (seat: number) => g.pegs[seat].filter((p) => p >= HOME).length;
 
   const cell = (rc: [number, number], cls: string, key: string, style?: CSSProperties) => (
@@ -157,14 +157,14 @@ export default function AcornPop() {
           }))}
         </div>
         <div className="appanel">
-          <button className={`popper ${rolling ? 'popping' : ''}`} disabled={!canPop} onClick={() => { sfx.click(); pop(); }} aria-label="Pop the dice">
+          <button className={`popper ${rolling ? 'popping' : ''}`} disabled={!canPop} onClick={() => { sfx.click(); pop(); }} aria-label="Roll the dice">
             <span className="dome">
               {rolling && <span className="sparks" key={pops} aria-hidden>{Array.from({ length: 10 }, (_, k) => <s key={k} style={{ ['--a' as string]: `${k * 36}deg` }} />)}</span>}
               <span key={rolling ? 'r' : die} className={`die small ${rolling ? 'rolling' : die ? 'landed' : ''}`}>
                 {die ? <span className="face">{Array.from({ length: 9 }, (_, i) => <i key={i} className={PIPS[die].includes(i) ? 'pip' : ''} />)}</span> : <span className="face qm">?</span>}
               </span>
             </span>
-            <em>{canPop ? 'TAP TO POP!' : rolling ? 'POP!' : ' '}</em>
+            <em>{canPop ? 'TAP TO ROLL!' : rolling ? 'ROLL!' : ' '}</em>
           </button>
           <div className="apscore">
             {seats.map((s) => (

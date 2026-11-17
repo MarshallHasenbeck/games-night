@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { sfx } from '../lib/sfx';
-import { R, C, empty, findWin, landingRow, type Grid } from '../lib/connect4';
-import { bestColumn } from '../cpu/connect4AI';
+import { R, C, empty, findWin, landingRow, type Grid } from '../lib/dropfour';
+import { bestColumn } from '../cpu/dropfourAI';
 import { Celebrate, ModeBar, useOpponent } from '../ui';
 import { recordResult } from '../lib/stats';
 
 
-export default function Connect4() {
-  const opp = useOpponent('connect4');
+export default function DropFour() {
+  const opp = useOpponent('dropfour');
   const NAMES = ['P1', opp.cpu ? 'CPU' : 'P2'];
   const [g, setG] = useState<Grid>(empty);
   const [turn, setTurn] = useState<0 | 1>(0);
@@ -25,7 +25,7 @@ export default function Connect4() {
     if (!over) { recorded.current = false; return; }
     if (recorded.current) return;
     recorded.current = true;
-    recordResult('connect4', winner ?? 'draw');
+    recordResult('dropfour', winner ?? 'draw');
     if (winner !== null) { setScore((s) => (winner === 0 ? [s[0] + 1, s[1]] : [s[0], s[1] + 1])); setTimeout(sfx.win, 350); }
   }, [over, winner]);
 
@@ -48,20 +48,20 @@ export default function Connect4() {
   const status = winner !== null ? `${NAMES[winner]} WINS!` : full ? 'DRAW!' : cpuTurn ? 'CPU IS THINKING...' : `${NAMES[turn]} TO DROP`;
 
   return (
-    <div className="game split connect4">
+    <div className="game split dropfour">
       <div className="head">
         <ModeBar opp={opp} onChange={() => { again(); setScore([0, 0]); }} />
         <div className="status">{status}</div>
         <div className="captures">{NAMES[0]} {score[0]} · {NAMES[1]} {score[1]}</div>
       </div>
-      <div className="main c4board">
+      <div className="main dfboard">
         {Array.from({ length: C }, (_, c) => (
-          <button key={c} className={`c4col ${over || cpuTurn ? '' : `t${turn}`}`} onClick={() => !cpuTurn && !over && drop(c, turn)} aria-label={`column ${c + 1}`}>
+          <button key={c} className={`dfcol ${over || cpuTurn ? '' : `t${turn}`}`} onClick={() => !cpuTurn && !over && drop(c, turn)} aria-label={`column ${c + 1}`}>
             {Array.from({ length: R }, (_, r) => {
               const v = g[r][c];
               const isLast = last && last[0] === r && last[1] === c;
               return (
-                <span key={r} className="c4cell">
+                <span key={r} className="dfcell">
                   {v !== null && (
                     <i
                       key={isLast ? `d${last![2]}` : 'c'}
