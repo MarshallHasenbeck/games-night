@@ -1,0 +1,8 @@
+{
+  "name": "pug-patch-engine",
+  "private": true,
+  "type": "module",
+  "description": "Pug Patch puzzle engine: unique-answer generator, human-style logic solver / grader / hint finder, and 789 pre-verified puzzles. Reference implementation (TypeScript) for a Swift port.",
+  "scripts": { "test": "tsx tests/bank.ts && tsx tests/logic.ts" },
+  "devDependencies": { "tsx": "^4.23.15", "typescript": "^5.6.0" }
+}
