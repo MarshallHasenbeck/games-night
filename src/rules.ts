@@ -22,6 +22,10 @@ export const RULES: Record<string, Rules> = {
         'Hoe: tap any crop or stone to pull it up. Water: tap a crop to grow it one step. Swap: tap two crops to trade places.',
         'Tap a tool, then tap the garden. Tap the tool again to cancel. Stuck? A tool can often get you moving again.',
       ] },
+      { h: 'Playing with others', items: [
+        'Pick SOLO, 2 PLAYERS or VS CPU at the top. In the two-player and computer modes everybody gets the same garden and the same new crops for each swipe, and a game lasts 150 swipes. The highest score wins.',
+        '2 PLAYERS: one person plays a whole game, then passes the device and the second person plays the same garden. VS CPU: the computer plays alongside you, one swipe for each of yours. Pick EASY, MEDIUM or HARD.',
+      ] },
       { h: 'Scoring', items: [
         'Every match scores points equal to the new crop, so bigger crops are worth much more. Reaching the Pumpkin is a win, and you can keep growing for a much higher score.',
       ] },
@@ -35,6 +39,10 @@ export const RULES: Record<string, Rules> = {
         'You always have three blocks waiting at the bottom. Drag one onto the field and let go. Blocks never turn, so look at the shape and plan ahead.',
         'Fill a whole row or a whole column and it clears away. A row and a column can clear at the same time.',
         'When you have used all three blocks, three new ones arrive.',
+      ] },
+      { h: 'Playing with others', items: [
+        'Pick SOLO, 2 PLAYERS or VS CPU at the top. In the two-player and computer modes everybody gets exactly the same blocks in the same order, and a game lasts 10 hands (30 blocks). The highest score wins.',
+        '2 PLAYERS: one person plays a whole game, then passes the device and the second person plays the same blocks. VS CPU: the computer plays the same blocks alongside you, one block for each of yours. Pick EASY, MEDIUM or HARD.',
       ] },
       { h: 'Scoring', items: [
         'Every square you place is worth 1 point.',
