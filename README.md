@@ -1,4 +1,4 @@
-# Cozy Table — forest edition
+# Game Night — forest edition
 
 Eleven pass-and-play games for one screen in a cozy pixel-art forest: **Chess**, **Checkers**, **Drop Four**, **Dice Harvest**,
 **Fairway** (card golf), **Backgammon**, **Mancala**, **Pond Patrol**, **Dominoes**, plus the 2-4 player race games

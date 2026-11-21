@@ -1,4 +1,4 @@
-# Cozy Table — developer guide (for working on it from your iMac)
+# Game Night — developer guide (for working on it from your iMac)
 
 A personal, pixel-art "forest" web app of pass-and-play board and card games for iPad / iPhone / desktop.
 Live site: **https://marshallhasenbeck.github.io/games-night/** · Repo: **github.com/MarshallHasenbeck/games-night** (public, deploys on every push to `main`).

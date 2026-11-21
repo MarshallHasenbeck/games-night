@@ -9,7 +9,7 @@ Goal: each person plays on their own device, same game, with hidden hands stayin
 
 ## Option B: Supabase Realtime (recommended)
 - Not WebRTC. Devices talk through Supabase's message channel (WebSockets). Works on every network, no relay needed.
-- Free tier covers family game nights. Needs a NEW Supabase project for Cozy Table (don't mix with GetToIt).
+- Free tier covers family game nights. Needs a NEW Supabase project for Game Night (don't mix with GetToIt).
 - Same user experience: make a room, share a 4-letter code, friends join.
 
 ## How a game works online (either option)
@@ -20,7 +20,7 @@ Goal: each person plays on their own device, same game, with hidden hands stayin
 Caveat: the host's device technically holds all cards. Fine for friends/family; a stricter server-side referee is a bigger build.
 
 ## Build steps
-1. Create Cozy Table Supabase project (staging habit: no real data, nothing sensitive stored).
+1. Create Game Night Supabase project (staging habit: no real data, nothing sensitive stored).
 2. Room screen: create/join by code, player names, seats.
 3. Network layer: host/guest message passing, reconnect, "waiting for player" states. No accounts needed.
 4. Palace: per-player view of state, remote turn handling, replace the pass-device screens.

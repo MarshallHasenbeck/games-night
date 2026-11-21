@@ -1,4 +1,4 @@
-# Cozy Table
+# Game Night
 
 Pixel-art forest pass-and-play games (Vite + React 19 + TS). **Read `docs/DEV-GUIDE.md` first** — it has the project map, the iOS layout rules
 (never use vh/vw/innerWidth; use `--app-h`/`--app-w`), how to add a game, and the checks in `tools/`.

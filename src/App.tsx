@@ -110,7 +110,7 @@ export default function App() {
     <Scenery />
     <div className="shell">
       <div className="menutop">{toggles}</div>
-      <div className="hero"><TreeIcon h={34} px={3} /><h1 className="title">COZY{' '}<br />TABLE</h1><TreeIcon h={34} px={3} /></div>
+      <div className="hero"><TreeIcon h={34} px={3} /><h1 className="title">GAME{' '}<br />NIGHT</h1><TreeIcon h={34} px={3} /></div>
       <p className="sub blink"><span>Pick a game, grab a friend</span></p>
       <div className="menu">
         {GAMES.map((g) => (
