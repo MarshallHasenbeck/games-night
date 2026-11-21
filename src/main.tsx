@@ -1,8 +1,12 @@
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles.css';
+import { logIssue, startFlightLog } from './lib/flightlog';
 
-createRoot(document.getElementById('root')!).render(<App />);
+startFlightLog(); // before anything else, so startup problems are caught too
+createRoot(document.getElementById('root')!, {
+  onUncaughtError: (e) => logIssue('crash', (e as Error)?.message || String(e), (e as Error)?.stack),
+}).render(<App />);
 
 // What the page really has to lay out in. window.innerWidth/innerHeight (and vw/vh) can be left stale by iOS after rotating,
 // but an element sized 100% of the fixed viewport is always the true layout size, and ResizeObserver reports real changes.

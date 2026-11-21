@@ -21,6 +21,7 @@ import { cycleTime, useTime } from './lib/theme';
 import { getStats, resetStats } from './lib/stats';
 import { RulesModal } from './ui';
 import { menuIcon } from './lib/menuicons';
+import { GameGuard, LogModal, useLogCount } from './LogView';
 const MI = ({ n }: { n: string }) => <img className="gicon" src={menuIcon(n)} alt="" draggable={false} />;
 
 const GAMES = [
@@ -74,6 +75,8 @@ export default function App() {
   };
   const game = GAMES.find((g) => g.id === id);
   const [rulesOpen, setRulesOpen] = useState(false);
+  const [logOpen, setLogOpen] = useState(() => location.search.includes('log'));
+  const logCount = useLogCount();
   // first time in each game, show how to play
   useEffect(() => {
     if (!id) return;
@@ -99,7 +102,7 @@ export default function App() {
           <h1>{game.name}</h1>
           {toggles}
         </header>
-        <game.C />
+        <GameGuard onExit={() => go(null)}><game.C /></GameGuard>
         </div>
         {rulesOpen && <RulesModal game={game.id} onClose={() => setRulesOpen(false)} />}
       </>
@@ -123,7 +126,9 @@ export default function App() {
       </div>
       <Scoreboard />
       <p className="credit"><span>2 players · or vs CPU · pass the device</span></p>
+      {logCount > 0 && <p className="credit"><button className="btn small ghost" onClick={() => { sfx.click(); setLogOpen(true); }}>⚠ LOG ({logCount})</button></p>}
     </div>
+    {logOpen && <LogModal onClose={() => setLogOpen(false)} />}
     </>
   );
 }
